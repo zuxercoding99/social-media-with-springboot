@@ -1,0 +1,59 @@
+# ================================
+# BUILD SYSTEM
+# ================================
+/build/
+/.gradle/
+/bin/
+
+# ================================
+# LOGS
+# ================================
+logs/
+
+# ================================
+# JAVA / JVM
+# ================================
+*.class
+*.jar
+*.war
+*.ear
+*.iml
+
+# Allow Gradle Wrapper JAR
+!gradle/wrapper/gradle-wrapper.jar
+
+# ================================
+# OPERATING SYSTEM
+# ================================
+.DS_Store
+Thumbs.db
+
+# ================================
+# IDEs
+# ================================
+# IntelliJ IDEA
+.idea/
+*.ipr
+*.iws
+
+# VS Code
+.vscode/
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# ================================
+# OTHERS
+# ================================
+*.tmp
+*.bak
+
+# ================================
+# DOCKER
+# ================================
+# (No ignorar Dockerfile)
+# (Ignorar outputs si creás imágenes guardadas localmente)
+*.tar
+
