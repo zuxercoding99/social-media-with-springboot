@@ -14,6 +14,7 @@ import org.example.security.CustomAccessDeniedHandler;
 import org.example.security.JwtUtil;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.*;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -90,7 +91,7 @@ public class SecurityConfig {
             @Override
             protected boolean shouldNotFilter(HttpServletRequest request) {
                 String path = request.getRequestURI();
-                return path.startsWith("/api/auth/")
+                return path.startsWith("/api/v1/auth/")
                         || path.startsWith("/h2-console/")
                         || path.startsWith("/ws/");
             }
@@ -154,8 +155,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()
                         .requestMatchers("/actuator/**").hasRole("MONITORING")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/files/**").permitAll()
                         .requestMatchers(
-                                "/api/auth/**",
+                                "/api/v1/auth/**",
                                 "/h2-console/**",
                                 "/ws/**",
                                 "/swagger-ui/**",

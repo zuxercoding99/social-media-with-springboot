@@ -19,6 +19,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.util.Map;
@@ -126,6 +127,27 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     // --- Handlers con logs ---
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ProblemDetail> handleMethodArgumentTypeMismatch(
+            MethodArgumentTypeMismatchException ex,
+            WebRequest request) {
+
+        String field = ex.getName();
+        String value = ex.getValue() != null ? ex.getValue().toString() : "null";
+
+        String message = "El valor '" + value + "' no es válido para el campo '" + field + "'.";
+
+        // Logging
+        logError(errorLog, "WARN", ex, (ServletWebRequest) request, message);
+
+        ProblemDetail problem = buildProblemDetail(
+                HttpStatus.BAD_REQUEST,
+                "Invalid Parameter Type",
+                message);
+
+        return ResponseEntity.badRequest().body(problem);
+    }
+
     @ExceptionHandler(HttpStatusException.class)
     public ResponseEntity<ProblemDetail> handleHttpStatusException(HttpStatusException ex, WebRequest request) {
         logError(errorLog, "WARN", ex, (ServletWebRequest) request, ex.getMessage());

@@ -96,7 +96,7 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     // === Helpers ===
 
     private String getKeyForRequest(String ip, String uri) {
-        if (uri.startsWith("/api/auth/"))
+        if (uri.startsWith("/api/v1/auth/"))
             return "auth:" + ip;
         if (uri.startsWith("/api/"))
             return "api:" + ip;
@@ -115,7 +115,7 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     }
 
     private int getLimitForUri(String uri) {
-        if (uri.startsWith("/api/auth/"))
+        if (uri.startsWith("/api/v1/auth/"))
             return authLimit;
         if (uri.startsWith("/api/"))
             return apiLimit;

@@ -1,5 +1,6 @@
 package org.example.service;
 
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -114,6 +115,7 @@ public class AuthService {
         refreshTokenService.deleteByUser(tokenEntity.getUser());
     }
 
+    // Metodos para endpoints que requieren al usuario autenticado
     @Transactional(readOnly = true)
     public User getCurrentUser() {
 
@@ -134,6 +136,32 @@ public class AuthService {
     @Transactional(readOnly = true)
     public UUID getCurrentUserId() {
         return getCurrentUser().getId();
+    }
+
+    // Metodos recomendados para endpoints que estar autenticado es opcional
+    @Transactional(readOnly = true)
+    public Optional<User> getCurrentUserOptional() {
+
+        var authentication = SecurityContextHolder
+                .getContext()
+                .getAuthentication();
+
+        // No hay contexto o no está autenticado
+        if (authentication == null ||
+                !authentication.isAuthenticated() ||
+                "anonymousUser".equals(authentication.getPrincipal())) {
+            return Optional.empty();
+        }
+
+        String username = authentication.getName();
+
+        return userRepository.findByUsername(username);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<String> getCurrentUsernameOptional() {
+        return getCurrentUserOptional()
+                .map(User::getUsername);
     }
 
 }

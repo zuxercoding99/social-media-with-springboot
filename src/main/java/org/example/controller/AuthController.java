@@ -18,7 +18,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1/auth")
 public class AuthController {
 
     private final AuthService authService;
@@ -42,10 +42,11 @@ public class AuthController {
         // set cookie HttpOnly (el frontend no puede leerla)
         ResponseCookie cookie = ResponseCookie.from("refresh_token", auth.refreshToken())
                 .httpOnly(true)
-                .secure(true) // true en producción con HTTPS
-                .path("/api/auth/") // se enviará a /api/auth/refresh y logout
+                // Configuracion para reglas de seguridad del navegador
+                .secure(true) // true: La cookie SOLO se envía por HTTPS, false para dev
+                .path("/api/v1/auth/") // se enviará a /api/v1/auth/refresh y logout
                 .maxAge(refreshCookieMaxAgeSec / 1000)
-                .sameSite("None")
+                .sameSite("None") // Lax para dev
                 .build();
 
         response.addHeader("Set-Cookie", cookie.toString());
@@ -70,7 +71,7 @@ public class AuthController {
         ResponseCookie cookie = ResponseCookie.from("refresh_token", authResponse.refreshToken())
                 .httpOnly(true)
                 .secure(true)
-                .path("/api/auth/")
+                .path("/api/v1/auth/")
                 .maxAge(refreshCookieMaxAgeSec / 1000)
                 .sameSite("None") // mejor compatibilidad que Strict si usás dominios distintos
                 .build();
@@ -94,7 +95,7 @@ public class AuthController {
         ResponseCookie cookie = ResponseCookie.from("refresh_token", "")
                 .httpOnly(true)
                 .secure(true)
-                .path("/api/auth/")
+                .path("/api/v1/auth/")
                 .maxAge(0)
                 .sameSite("None")
                 .build();

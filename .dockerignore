@@ -53,3 +53,6 @@ Thumbs.db
 # DOCKER
 # ================================
 *.tar
+
+# Archivos subidos o generados por la app
+uploads/
