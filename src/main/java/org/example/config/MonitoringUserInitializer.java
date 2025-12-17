@@ -36,6 +36,7 @@ public class MonitoringUserInitializer {
                 User monitor = new User();
                 monitor.setUsername(username);
                 monitor.setPassword(encoder.encode(rawPassword));
+                monitor.setAvatarKey("default.png");
                 monitor.setEnabled(true);
                 monitor.setBirthDate(LocalDate.of(1970, 1, 1));
                 monitor.setDisplayName("Monitoring User");

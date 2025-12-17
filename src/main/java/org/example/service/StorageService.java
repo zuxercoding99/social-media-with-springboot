@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 
 public interface StorageService {
-    String save(MultipartFile file, String keyPrefix, String filename) throws IOException;
+    void save(MultipartFile file, String keyPrefix, String filename) throws IOException;
 
     Resource loadAsResource(String keyPrefix, String filename) throws MalformedURLException;
 

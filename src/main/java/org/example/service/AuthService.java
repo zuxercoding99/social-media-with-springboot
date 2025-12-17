@@ -40,11 +40,14 @@ public class AuthService {
     @Transactional
     public String register(RegisterDto registerDto) {
 
-        if (userRepository.existsByUsername(registerDto.username())) {
+        String username = registerDto.username().trim().toLowerCase();
+        String email = registerDto.email().trim().toLowerCase();
+
+        if (userRepository.existsByUsernameIgnoreCase(username)) {
             throw new ConflictException("El username ya está en uso");
         }
 
-        if (userRepository.existsByEmail(registerDto.email())) {
+        if (userRepository.existsByEmail(email)) {
             throw new ConflictException("El email ya está en uso");
         }
 
@@ -58,10 +61,12 @@ public class AuthService {
 
         // Crear usuario
         User user = new User();
-        user.setEmail(registerDto.email());
-        user.setUsername(registerDto.username());
-        user.setPassword(passwordEncoder.encode(registerDto.password()));
-        user.setDisplayName(registerDto.username());
+        user.setEmail(email);
+        user.setUsername(username);
+        user.setBio("");
+        user.setAvatarKey("default.png");
+        user.setPassword(passwordEncoder.encode(registerDto.password().trim()));
+        user.setDisplayName(username);
         user.setBirthDate(registerDto.birthDate());
         user.getRoles().add(roleUser);
 
@@ -72,12 +77,17 @@ public class AuthService {
 
     @Transactional
     public AuthResponse login(LoginDto loginDto) {
-        User user = userRepository.findByEmail(loginDto.email())
+
+        User user = userRepository.findByEmail(loginDto.email().trim().toLowerCase())
                 .orElseThrow(() -> new UsernameNotFoundException("No existe usuario con ese email"));
+
+        if (!user.isEnabled()) {
+            throw new UnauthorizedException("Usuario deshabilitado");
+        }
 
         // autenticación (lanza excepción si falla)
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(user.getUsername(), loginDto.password()));
+                new UsernamePasswordAuthenticationToken(user.getUsername(), loginDto.password().trim()));
 
         // generar access token (JWT)
         String accessToken = jwtUtil.generateToken(user.getUsername(), authentication.getAuthorities());
@@ -129,7 +139,7 @@ public class AuthService {
 
         String username = authentication.getName();
 
-        return userRepository.findByUsername(username)
+        return userRepository.findByUsernameIgnoreCase(username)
                 .orElseThrow(() -> new NotFoundException("Usuario no encontrado"));
     }
 
@@ -155,7 +165,7 @@ public class AuthService {
 
         String username = authentication.getName();
 
-        return userRepository.findByUsername(username);
+        return userRepository.findByUsernameIgnoreCase(username);
     }
 
     @Transactional(readOnly = true)

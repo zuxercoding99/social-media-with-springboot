@@ -44,7 +44,9 @@ public class FileService {
 
         // 3) Guardar físicamente (usamos un keyPrefix CONSISTENTE)
         String keyPrefix = "posts/" + owner.getUsername();
-        String url = storageService.save(file, keyPrefix, filename);
+        storageService.save(file, keyPrefix, filename);
+
+        String url = "/api/v1/files/" + filename;
 
         // 4) Crear metadata con relación obligatoria al post
         FileMetadata metadata = new FileMetadata();

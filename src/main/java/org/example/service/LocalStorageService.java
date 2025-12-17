@@ -22,36 +22,35 @@ public class LocalStorageService implements StorageService {
 
     @PostConstruct
     public void init() throws IOException {
-        Files.createDirectories(rootPath);
+        Files.createDirectories(rootPath.resolve("avatars"));
     }
 
     @Override
-    public String save(MultipartFile file, String keyPrefix, String filename) throws IOException {
+    public void save(MultipartFile file, String keyPrefix, String filename) throws IOException {
         Path dir = rootPath.resolve(keyPrefix);
         Files.createDirectories(dir);
 
-        Path filePath = dir.resolve(filename);
-
-        try (var inputStream = file.getInputStream()) {
-            Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+        try (var is = file.getInputStream()) {
+            Files.copy(is, dir.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
         }
-
-        return "/api/v1/files/" + filename; // URL para acceder al archivo
     }
 
     @Override
-    public Resource loadAsResource(String keyPrefix, String filename) throws MalformedURLException {
-        Path filePath = rootPath.resolve(keyPrefix).resolve(filename);
-        Resource resource = new UrlResource(filePath.toUri());
+    public Resource loadAsResource(String keyPrefix, String filename)
+            throws MalformedURLException {
+
+        Path path = rootPath.resolve(keyPrefix).resolve(filename);
+        Resource resource = new UrlResource(path.toUri());
+
         if (!resource.exists() || !resource.isReadable()) {
-            throw new NotFoundException("Archivo no encontrado: " + filename);
+            throw new NotFoundException("Archivo no encontrado");
         }
+
         return resource;
     }
 
     @Override
     public void delete(String keyPrefix, String filename) throws IOException {
-        Path filePath = rootPath.resolve(keyPrefix).resolve(filename);
-        Files.deleteIfExists(filePath);
+        Files.deleteIfExists(rootPath.resolve(keyPrefix).resolve(filename));
     }
 }

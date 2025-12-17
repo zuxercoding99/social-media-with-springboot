@@ -132,7 +132,7 @@ public class PostService {
 
         User viewer = userRepo.getReferenceById(viewerId);
 
-        User author = userRepo.findByUsername(username)
+        User author = userRepo.findByUsernameIgnoreCase(username.trim())
                 .orElseThrow(() -> new NotFoundException("Usuario no encontrado: " + username));
 
         Pageable pageable = PageRequest.of(page, size);

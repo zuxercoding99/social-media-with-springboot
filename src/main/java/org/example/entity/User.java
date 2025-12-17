@@ -45,13 +45,19 @@ public class User {
     @GeneratedValue
     private UUID id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = 30)
     private String username;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = 254)
     private String email;
 
     @Column(nullable = false)
+    private String avatarKey; // ej: default.png
+
+    @Column(length = 101)
+    private String bio;
+
+    @Column(nullable = false, length = 200)
     private String password;
 
     @Builder.Default
@@ -61,7 +67,7 @@ public class User {
     @Builder.Default
     private Set<Role> roles = new HashSet<>();
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 30)
     private String displayName;
 
     @Column(nullable = false)
