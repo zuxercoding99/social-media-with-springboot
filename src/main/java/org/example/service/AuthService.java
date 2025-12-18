@@ -1,5 +1,6 @@
 package org.example.service;
 
+import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -40,7 +41,7 @@ public class AuthService {
     @Transactional
     public String register(RegisterDto registerDto) {
 
-        String username = registerDto.username().trim().toLowerCase();
+        String username = registerDto.username().trim().toLowerCase(Locale.ROOT);
         String email = registerDto.email().trim().toLowerCase();
 
         if (userRepository.existsByUsernameIgnoreCase(username)) {

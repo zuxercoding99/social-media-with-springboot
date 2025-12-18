@@ -57,5 +57,9 @@ Thumbs.db
 # (Ignorar outputs si creás imágenes guardadas localmente)
 *.tar
 
-# Archivos subidos o generados por la app
+# Ignora todo dentro de uploads
 uploads/
+# No ignores la carpeta avatars
+!uploads/avatars/
+# Incluye solo este archivo
+!uploads/avatars/default.png
