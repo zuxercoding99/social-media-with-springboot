@@ -5,6 +5,7 @@ import org.example.entity.Friend.FriendStatus;
 import org.example.entity.User;
 import org.example.exception.customs.httpstatus.BadRequestException;
 import org.example.exception.customs.httpstatus.ConflictException;
+import org.example.exception.customs.httpstatus.ForbiddenException;
 import org.example.exception.customs.httpstatus.NotFoundException;
 import org.example.repository.FriendRepository;
 import org.example.repository.UserRepository;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -155,5 +157,30 @@ public class FriendService {
                     .build();
         }
         friendRepo.save(relation);
+    }
+
+    // Validacion ¿Este usuario puede acceder a este chat?
+    public Friend getAcceptedFriendForUser(Long friendId, User user) {
+        Friend friend = friendRepo.findById(friendId)
+                .orElseThrow(() -> new NotFoundException("Chat no encontrado"));
+
+        if (friend.getStatus() != Friend.FriendStatus.ACCEPTED) {
+            throw new ForbiddenException("Chat no disponible");
+        }
+
+        boolean participant = friend.getRequester().getId().equals(user.getId()) ||
+                friend.getReceiver().getId().equals(user.getId());
+
+        if (!participant) {
+            throw new ForbiddenException("No perteneces a este chat");
+        }
+
+        return friend;
+    }
+
+    public List<Friend> getAllAcceptedFriends(User user) {
+        return friendRepo.findAllByUserAndStatus(
+                user,
+                Friend.FriendStatus.ACCEPTED);
     }
 }
