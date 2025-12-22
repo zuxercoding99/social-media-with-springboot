@@ -3,6 +3,7 @@ package org.example.service;
 import lombok.RequiredArgsConstructor;
 import org.example.dto.ChatPreviewDto;
 import org.example.dto.LastMessageDto;
+import org.example.dto.UserSummaryDto;
 import org.example.entity.Friend;
 import org.example.entity.Message;
 import org.example.entity.User;
@@ -16,39 +17,44 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ChatService {
 
-    private final FriendService friendService;
-    private final MessageRepository messageRepository;
-    private final AuthService authService;
+        private final FriendService friendService;
+        private final MessageRepository messageRepository;
+        private final AuthService authService;
 
-    @Transactional(readOnly = true)
-    public List<ChatPreviewDto> getChats() {
+        @Transactional(readOnly = true)
+        public List<ChatPreviewDto> getChats() {
 
-        User me = authService.getCurrentUser();
-        List<Friend> friends = friendService.getAllAcceptedFriends(me);
+                User me = authService.getCurrentUser();
+                List<Friend> friends = friendService.getAllAcceptedFriends(me);
 
-        return friends.stream().map(friend -> {
+                return friends.stream().map(friend -> {
 
-            User other = friend.getRequester().equals(me)
-                    ? friend.getReceiver()
-                    : friend.getRequester();
+                        User other = friend.getRequester().equals(me)
+                                        ? friend.getReceiver()
+                                        : friend.getRequester();
 
-            Message last = messageRepository
-                    .findTopByFriendOrderBySentAtDesc(friend);
+                        Message last = messageRepository
+                                        .findTopByFriendOrderBySentAtDesc(friend);
 
-            LastMessageDto lastDto = last == null ? null
-                    : new LastMessageDto(
-                            last.getSender().getId(),
-                            last.getContent(),
-                            last.getSentAt());
+                        LastMessageDto lastDto = last == null ? null
+                                        : new LastMessageDto(
+                                                        new UserSummaryDto(
+                                                                        last.getSender().getId(),
+                                                                        last.getSender().getUsername(),
+                                                                        last.getSender().getDisplayName(),
+                                                                        "/api/v1/avatars/" + last.getSender()
+                                                                                        .getAvatarKey()),
+                                                        last.getContent(),
+                                                        last.getSentAt());
 
-            return new ChatPreviewDto(
-                    friend.getId(),
-                    other.getId(),
-                    other.getUsername(),
-                    other.getDisplayName(),
-                    "/api/v1/avatars/" + other.getAvatarKey(),
-                    lastDto,
-                    0);
-        }).toList();
-    }
+                        return new ChatPreviewDto(
+                                        friend.getId(),
+                                        other.getId(),
+                                        other.getUsername(),
+                                        other.getDisplayName(),
+                                        "/api/v1/avatars/" + other.getAvatarKey(),
+                                        lastDto,
+                                        0);
+                }).toList();
+        }
 }

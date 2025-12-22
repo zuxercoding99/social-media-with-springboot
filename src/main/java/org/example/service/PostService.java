@@ -13,6 +13,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -111,8 +112,11 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public Page<PostDto> getMyPosts(int page, int size) {
+
         User currentUser = authService.getCurrentUser();
-        Pageable pageable = PageRequest.of(page, size);
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
         return postRepo.findByUser(currentUser, pageable).map(PostDto::from);
     }
 
@@ -135,7 +139,7 @@ public class PostService {
         User author = userRepo.findByUsernameIgnoreCase(username.trim())
                 .orElseThrow(() -> new NotFoundException("Usuario no encontrado: " + username));
 
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
         if (author.getId().equals(viewerId)) {
             return postRepo.findByUser(author, pageable).map(PostDto::from);
@@ -187,8 +191,7 @@ public class PostService {
         if (post.getPrivacy() == Privacy.PRIVATE)
             return false;
 
-        Optional<Friend> rel = friendRepo.findByRequesterAndReceiverOrRequesterAndReceiver(
-                post.getUser(), currentUser, currentUser, post.getUser());
+        Optional<Friend> rel = friendRepo.findRelationBetween(currentUser, post.getUser());
 
         return rel.isPresent() &&
                 rel.get().getStatus() == Friend.FriendStatus.ACCEPTED;

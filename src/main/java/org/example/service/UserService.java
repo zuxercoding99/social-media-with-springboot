@@ -29,6 +29,31 @@ public class UserService {
 
         // ----------------- PERFIL PÚBLICO -----------------
 
+        // Obtener mi perfil
+        public UserProfileDto getMyProfile() {
+
+                User currentUser = authService.getCurrentUser();
+
+                long postCount = postRepository.countByUserId(currentUser.getId());
+                long friendCount = friendRepository.countFriends(currentUser.getId());
+
+                String avatarUrl = "/api/v1/avatars/" + currentUser.getAvatarKey();
+                String bio = Optional.ofNullable(currentUser.getBio()).orElse("");
+
+                return new UserProfileDto(
+                                currentUser.getId(),
+                                currentUser.getUsername(),
+                                currentUser.getDisplayName(),
+                                avatarUrl,
+                                bio,
+                                currentUser.getCreatedAt(),
+                                postCount,
+                                friendCount,
+                                true, // isFriend → siempre true para uno mismo
+                                false, // sentRequest → nunca aplica
+                                false); // receivedRequest → nunca aplica
+        }
+
         // Obtener perfil público
         public UserProfileDto getUserProfile(String username) {
 
@@ -37,16 +62,21 @@ public class UserService {
                 User profileUser = userRepository.findByUsernameIgnoreCase(username.trim())
                                 .orElseThrow(() -> new NotFoundException("Usuario no encontrado"));
 
-                boolean isFriend = friendRepository
-                                .findByRequesterAndReceiverOrRequesterAndReceiver(
-                                                currentUser, profileUser, profileUser, currentUser)
-                                .map(rel -> rel.getStatus() == Friend.FriendStatus.ACCEPTED)
-                                .orElse(false);
+                // Obtener la relación de amistad entre ambos usuarios (bidireccional)
+                Optional<Friend> relationOpt = friendRepository.findRelationBetween(currentUser, profileUser);
 
-                boolean requestPending = friendRepository
-                                .findByRequesterAndReceiver(profileUser, currentUser)
-                                .map(rel -> rel.getStatus() == Friend.FriendStatus.PENDING)
-                                .orElse(false);
+                boolean isFriend = false;
+                boolean sentRequest = false;
+                boolean receivedRequest = false;
+
+                if (relationOpt.isPresent()) {
+                        Friend rel = relationOpt.get();
+                        isFriend = rel.getStatus() == Friend.FriendStatus.ACCEPTED;
+                        sentRequest = rel.getRequester().equals(currentUser)
+                                        && rel.getStatus() == Friend.FriendStatus.PENDING;
+                        receivedRequest = rel.getReceiver().equals(currentUser)
+                                        && rel.getStatus() == Friend.FriendStatus.PENDING;
+                }
 
                 long postCount = postRepository.countByUserId(profileUser.getId());
                 long friendCount = friendRepository.countFriends(profileUser.getId());
@@ -64,7 +94,8 @@ public class UserService {
                                 postCount,
                                 friendCount,
                                 isFriend,
-                                requestPending);
+                                sentRequest,
+                                receivedRequest);
         }
 
         // ----------------- ACTUALIZACIONES -----------------
@@ -96,19 +127,37 @@ public class UserService {
 
                 return friendRepository.findAllFriends(user.getId())
                                 .stream()
-                                .map(u -> new FriendDto(u.getId(), u.getUsername(), u.getDisplayName()))
+                                .map(u -> new FriendDto(u.getId(), u.getUsername(), u.getDisplayName(),
+                                                "/api/v1/avatars/" + u.getAvatarKey()))
                                 .collect(Collectors.toList());
         }
 
         // Listar solicitudes pendientes recibidas
         public List<FriendRequestDto> getPendingRequests() {
                 User currentUser = authService.getCurrentUser();
+
                 return friendRepository.findPendingRequests(currentUser.getId())
                                 .stream()
                                 .map(f -> new FriendRequestDto(
                                                 f.getRequester().getId(),
                                                 f.getRequester().getUsername(),
                                                 f.getRequester().getDisplayName(),
+                                                "/api/v1/avatars/" + f.getRequester().getAvatarKey(),
+                                                f.getCreatedAt()))
+                                .collect(Collectors.toList());
+        }
+
+        @Transactional(readOnly = true)
+        public List<FriendRequestDto> getSentRequests() {
+                User currentUser = authService.getCurrentUser();
+
+                return friendRepository.findSentPendingRequests(currentUser.getId())
+                                .stream()
+                                .map(f -> new FriendRequestDto(
+                                                f.getReceiver().getId(),
+                                                f.getReceiver().getUsername(),
+                                                f.getReceiver().getDisplayName(),
+                                                "/api/v1/avatars/" + f.getReceiver().getAvatarKey(),
                                                 f.getCreatedAt()))
                                 .collect(Collectors.toList());
         }

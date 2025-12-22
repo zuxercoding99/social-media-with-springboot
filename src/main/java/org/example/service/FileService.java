@@ -88,8 +88,7 @@ public class FileService {
             } else if (post.getPrivacy() == Privacy.FRIENDS) {
                 User current = userRepo.findByUsername(currentUsername)
                         .orElseThrow(() -> new AccessDeniedException("Acceso denegado"));
-                var rel = friendRepo.findByRequesterAndReceiverOrRequesterAndReceiver(
-                        owner, current, current, owner);
+                var rel = friendRepo.findRelationBetween(owner, current);
                 if (rel.isEmpty() || rel.get().getStatus() != Friend.FriendStatus.ACCEPTED) {
                     throw new AccessDeniedException("Acceso denegado");
                 }

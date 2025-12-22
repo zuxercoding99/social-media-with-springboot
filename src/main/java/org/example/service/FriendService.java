@@ -41,37 +41,50 @@ public class FriendService {
         User receiver = userRepo.findById(receiverId)
                 .orElseThrow(() -> new NotFoundException("Receiver no encontrado"));
 
-        Optional<Friend> existing = friendRepo.findByRequesterAndReceiverOrRequesterAndReceiver(
-                requester, receiver,
-                receiver, requester);
+        Optional<Friend> existing = friendRepo.findRelationBetween(requester, receiver);
 
         if (existing.isPresent()) {
             Friend relation = existing.get();
-            if (relation.getStatus() == FriendStatus.BLOCKED) {
-                throw new ConflictException("El usuario está bloqueado, no se puede enviar solicitud");
-            }
-            if (relation.getStatus() == FriendStatus.PENDING) {
-                throw new ConflictException("Ya existe una solicitud pendiente");
-            }
-            if (relation.getStatus() == FriendStatus.ACCEPTED) {
-                throw new ConflictException("Ya son amigos");
-            }
-            if (relation.getStatus() == FriendStatus.REJECTED) {
-                // permitir reintentar → se actualiza a PENDING
-                relation.setRequester(requester);
-                relation.setReceiver(receiver);
-                relation.setStatus(FriendStatus.PENDING);
-                friendRepo.save(relation);
-                return;
+
+            switch (relation.getStatus()) {
+
+                case BLOCKED ->
+                    throw new ConflictException("El usuario está bloqueado");
+
+                case ACCEPTED ->
+                    throw new ConflictException("Ya son amigos");
+
+                case PENDING -> {
+                    // 🔐 Diferenciar dirección
+                    if (relation.getRequester().getId().equals(requesterId)) {
+                        // yo ya envié
+                        throw new ConflictException("Ya enviaste una solicitud");
+                    } else {
+                        // 🔥 el otro me envió → auto-aceptar
+                        relation.setStatus(FriendStatus.ACCEPTED);
+                        friendRepo.save(relation);
+                        return;
+                    }
+                }
+
+                case REJECTED -> {
+                    // reintentar
+                    relation.setRequester(requester);
+                    relation.setReceiver(receiver);
+                    relation.setStatus(FriendStatus.PENDING);
+                    friendRepo.save(relation);
+                    return;
+                }
             }
         }
 
-        // Crear nueva relación
+        // Nueva solicitud
         Friend friend = Friend.builder()
                 .requester(requester)
                 .receiver(receiver)
                 .status(FriendStatus.PENDING)
                 .build();
+
         friendRepo.save(friend);
     }
 
@@ -79,12 +92,10 @@ public class FriendService {
     public void acceptRequest(UUID requesterId) {
         UUID receiverId = authService.getCurrentUserId();
 
-        Friend relation = friendRepo.findByRequesterIdAndReceiverId(requesterId, receiverId)
+        Friend relation = friendRepo
+                .findPendingRequest(requesterId, receiverId)
                 .orElseThrow(() -> new NotFoundException("Solicitud no encontrada"));
 
-        if (relation.getStatus() != FriendStatus.PENDING) {
-            throw new ConflictException("No se puede aceptar esta solicitud");
-        }
         relation.setStatus(FriendStatus.ACCEPTED);
         friendRepo.save(relation);
     }
@@ -92,11 +103,10 @@ public class FriendService {
     public void rejectRequest(UUID requesterId) {
         UUID receiverId = authService.getCurrentUserId();
 
-        Friend relation = friendRepo.findByRequesterIdAndReceiverId(requesterId, receiverId)
+        Friend relation = friendRepo
+                .findPendingRequest(requesterId, receiverId)
                 .orElseThrow(() -> new NotFoundException("Solicitud no encontrada"));
-        if (relation.getStatus() != FriendStatus.PENDING) {
-            throw new ConflictException("No se puede rechazar esta solicitud");
-        }
+
         relation.setStatus(FriendStatus.REJECTED);
         friendRepo.save(relation);
     }
@@ -104,12 +114,11 @@ public class FriendService {
     public void cancelRequest(UUID receiverId) {
         UUID requesterId = authService.getCurrentUserId();
 
-        Friend relation = friendRepo.findByRequesterIdAndReceiverId(requesterId, receiverId)
-                .orElseThrow(() -> new NotFoundException("Solicitud no encontrada"));
+        Friend relation = friendRepo
+                .findPendingRequest(requesterId, receiverId)
+                .orElseThrow(() -> new NotFoundException(
+                        "No existe una solicitud enviada por este usuario"));
 
-        if (relation.getStatus() != FriendStatus.PENDING) {
-            throw new ConflictException("Solo se pueden cancelar solicitudes pendientes");
-        }
         friendRepo.delete(relation); // se elimina la relación
     }
 
@@ -117,11 +126,7 @@ public class FriendService {
     public void removeFriend(UUID userId2) {
         UUID userId1 = authService.getCurrentUserId();
 
-        Optional<Friend> relation = friendRepo.findByRequesterAndReceiverOrRequesterAndReceiver(
-                userRepo.getReferenceById(userId1),
-                userRepo.getReferenceById(userId2),
-                userRepo.getReferenceById(userId2),
-                userRepo.getReferenceById(userId1));
+        Optional<Friend> relation = friendRepo.findRelationBetweenUserIds(userId1, userId2);
 
         if (relation.isEmpty() || relation.get().getStatus() != FriendStatus.ACCEPTED) {
             throw new ConflictException("No son amigos");
@@ -139,9 +144,7 @@ public class FriendService {
         User blocked = userRepo.findById(blockedId)
                 .orElseThrow(() -> new NotFoundException("Blocked no encontrado"));
 
-        Optional<Friend> existing = friendRepo.findByRequesterAndReceiverOrRequesterAndReceiver(
-                blocker, blocked,
-                blocked, blocker);
+        Optional<Friend> existing = friendRepo.findRelationBetween(blocker, blocked);
 
         Friend relation;
         if (existing.isPresent()) {
@@ -179,7 +182,7 @@ public class FriendService {
     }
 
     public List<Friend> getAllAcceptedFriends(User user) {
-        return friendRepo.findAllByUserAndStatus(
+        return friendRepo.findAllByFriendRelationsOfUserByStatus(
                 user,
                 Friend.FriendStatus.ACCEPTED);
     }

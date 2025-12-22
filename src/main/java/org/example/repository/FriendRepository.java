@@ -12,35 +12,7 @@ import java.util.UUID;
 
 public interface FriendRepository extends JpaRepository<Friend, Long> {
 
-        // Encuentra la relación en un sentido: requester → receiver
-        Optional<Friend> findByRequesterAndReceiver(User requester, User receiver);
-
-        // Alternativa
-        @Query("""
-                            SELECT f FROM Friend f
-                            WHERE f.requester = :requester
-                              AND f.receiver = :receiver
-                        """)
-        Optional<Friend> findDirectRelation(User requester, User receiver);
-
-        Optional<Friend> findByRequesterIdAndReceiverId(UUID requesterId, UUID receiverId);
-
-        // Alternativa
-        @Query("""
-                            SELECT f FROM Friend f
-                            WHERE f.requester.id = :requesterId
-                              AND f.receiver.id = :receiverId
-                        """)
-        Optional<Friend> findDirectRelationByIds(
-                        UUID requesterId,
-                        UUID receiverId);
-
-        // Buscar si ya existe relación en cualquier sentido
-        Optional<Friend> findByRequesterAndReceiverOrRequesterAndReceiver(
-                        User requester1, User receiver1,
-                        User requester2, User receiver2);
-
-        // Alternativa
+        // Buscar relacion entre dos usuarios
         @Query("""
                         SELECT f FROM Friend f
                         WHERE
@@ -50,7 +22,7 @@ public interface FriendRepository extends JpaRepository<Friend, Long> {
                         """)
         Optional<Friend> findRelationBetween(@Param("a") User a, @Param("b") User b);
 
-        // Alternativa con ids
+        // // Buscar relacion entre dos usuarios por user id
         @Query("""
                             SELECT f FROM Friend f
                             WHERE
@@ -59,6 +31,17 @@ public interface FriendRepository extends JpaRepository<Friend, Long> {
                                 (f.requester.id = :id2 AND f.receiver.id = :id1)
                         """)
         Optional<Friend> findRelationBetweenUserIds(UUID id1, UUID id2);
+
+        // Buscar si hay una pending request enviada por usuario A a usuario B
+        @Query("""
+                            SELECT f FROM Friend f
+                            WHERE f.requester.id = :requesterId
+                              AND f.receiver.id = :receiverId
+                              AND f.status = 'PENDING'
+                        """)
+        Optional<Friend> findPendingRequest(
+                        UUID requesterId,
+                        UUID receiverId);
 
         @Query("""
                             SELECT f.receiver
@@ -95,8 +78,15 @@ public interface FriendRepository extends JpaRepository<Friend, Long> {
                             WHERE f.status = :status
                               AND (f.requester = :user OR f.receiver = :user)
                         """)
-        List<Friend> findAllByUserAndStatus(
+        List<Friend> findAllByFriendRelationsOfUserByStatus(
                         @Param("user") User user,
                         @Param("status") Friend.FriendStatus status);
+
+        @Query("""
+                            SELECT f FROM Friend f
+                            WHERE f.requester.id = :userId
+                            AND f.status = 'PENDING'
+                        """)
+        List<Friend> findSentPendingRequests(UUID userId);
 
 }

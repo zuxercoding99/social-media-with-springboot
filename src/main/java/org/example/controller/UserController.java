@@ -22,9 +22,15 @@ public class UserController {
     private final UserService userService;
 
     // Perfil público
-    @GetMapping("/{username}")
+    @GetMapping("/{username}/profile")
     public UserProfileDto getUserProfile(@PathVariable String username) {
         return userService.getUserProfile(username);
+    }
+
+    // Mi perfil
+    @GetMapping("/me")
+    public UserProfileDto getMyProfile() {
+        return userService.getMyProfile();
     }
 
     // Amigos
@@ -33,10 +39,16 @@ public class UserController {
         return userService.getFriends(username);
     }
 
-    // Solicitudes pendientes (para usuario autenticado)
-    @GetMapping("/requests")
+    // Solicitudes recibidas pendientes (para usuario autenticado)
+    @GetMapping("/me/requests-received")
     public List<FriendRequestDto> getPendingRequests() {
         return userService.getPendingRequests();
+    }
+
+    // Solicitudes enviadas pendientes (para usuario autenticado)
+    @GetMapping("/me/requests-sent")
+    public List<FriendRequestDto> getSentRequests() {
+        return userService.getSentRequests();
     }
 
     // Actualiza el nombre de usuario

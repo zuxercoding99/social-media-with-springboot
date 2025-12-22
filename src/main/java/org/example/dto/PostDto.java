@@ -23,39 +23,39 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class PostDto {
 
-    @JsonProperty(access = Access.READ_ONLY)
-    private Long id;
+        @JsonProperty(access = Access.READ_ONLY)
+        private Long id;
 
-    @NotBlank
-    @Size(max = 300)
-    private String content;
+        @NotBlank
+        @Size(max = 300)
+        private String content;
 
-    private Privacy privacy;
+        private Privacy privacy;
 
-    @JsonProperty(access = Access.READ_ONLY)
-    private PostAuthorDto author;
+        @JsonProperty(access = Access.READ_ONLY)
+        private PostAuthorDto author;
 
-    @JsonProperty(access = Access.READ_ONLY)
-    private FileMetadataDto file;
+        @JsonProperty(access = Access.READ_ONLY)
+        private FileMetadataDto file;
 
-    @JsonProperty(access = Access.READ_ONLY)
-    private Instant createdAt;
+        @JsonProperty(access = Access.READ_ONLY)
+        private Instant createdAt;
 
-    public static PostDto from(Post entity) {
-        User u = entity.getUser();
+        public static PostDto from(Post entity) {
+                User u = entity.getUser();
 
-        return PostDto.builder()
-                .id(entity.getId())
-                .content(entity.getContent())
-                .privacy(entity.getPrivacy())
-                .author(new PostAuthorDto(
-                        u.getId(),
-                        u.getUsername(),
-                        u.getDisplayName()))
-                .file(entity.getFileMetadata() != null
-                        ? FileMetadataDto.from(entity.getFileMetadata())
-                        : null)
-                .createdAt(entity.getCreatedAt())
-                .build();
-    }
+                return PostDto.builder()
+                                .id(entity.getId())
+                                .content(entity.getContent())
+                                .privacy(entity.getPrivacy())
+                                .author(new PostAuthorDto(
+                                                u.getId(),
+                                                u.getUsername(),
+                                                u.getDisplayName(), "/api/v1/avatars/" + u.getAvatarKey()))
+                                .file(entity.getFileMetadata() != null
+                                                ? FileMetadataDto.from(entity.getFileMetadata())
+                                                : null)
+                                .createdAt(entity.getCreatedAt())
+                                .build();
+        }
 }
