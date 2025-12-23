@@ -80,6 +80,7 @@ public class MessageService {
                                 m.getSender().getId(),
                                 m.getSender().getUsername(),
                                 m.getSender().getDisplayName(),
+                                "/api/v1/avatars/" + m.getSender().getAvatarKey(),
                                 m.getContent(),
                                 m.getSentAt());
         }
