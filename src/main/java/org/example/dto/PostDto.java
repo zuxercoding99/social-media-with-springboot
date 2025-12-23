@@ -41,21 +41,22 @@ public class PostDto {
         @JsonProperty(access = Access.READ_ONLY)
         private Instant createdAt;
 
-        public static PostDto from(Post entity) {
-                User u = entity.getUser();
+        @JsonProperty(access = Access.READ_ONLY)
+        private long commentCount;
 
+        public static PostDto from(Post entity, long commentCount) {
+                User u = entity.getUser();
                 return PostDto.builder()
                                 .id(entity.getId())
                                 .content(entity.getContent())
                                 .privacy(entity.getPrivacy())
-                                .author(new PostAuthorDto(
-                                                u.getId(),
-                                                u.getUsername(),
-                                                u.getDisplayName(), "/api/v1/avatars/" + u.getAvatarKey()))
-                                .file(entity.getFileMetadata() != null
-                                                ? FileMetadataDto.from(entity.getFileMetadata())
+                                .author(new PostAuthorDto(u.getId(), u.getUsername(), u.getDisplayName(),
+                                                "/api/v1/avatars/" + u.getAvatarKey()))
+                                .file(entity.getFileMetadata() != null ? FileMetadataDto.from(entity.getFileMetadata())
                                                 : null)
                                 .createdAt(entity.getCreatedAt())
+                                .commentCount(commentCount)
                                 .build();
         }
+
 }

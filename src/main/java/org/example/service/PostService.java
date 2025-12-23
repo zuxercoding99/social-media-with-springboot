@@ -60,8 +60,8 @@ public class PostService {
             FileMetadata meta = fileService.uploadForPost(file, author, saved);
             saved.setFileMetadata(meta);
         }
-
-        return PostDto.from(saved);
+        long count = postRepo.countComments(post.getId());
+        return PostDto.from(saved, count);
     }
 
     // -------------------------------------------------------
@@ -86,7 +86,8 @@ public class PostService {
             throw new AccessDeniedException("No tenés permiso para ver este post");
         }
 
-        return PostDto.from(post);
+        long count = postRepo.countComments(post.getId());
+        return PostDto.from(post, count);
     }
 
     // -------------------------------------------------------
@@ -103,7 +104,10 @@ public class PostService {
     public Page<PostDto> getFeedCached(UUID userId, int page, int size) {
         User currentUser = userRepo.getReferenceById(userId);
         Pageable pageable = PageRequest.of(page, size);
-        return postRepo.findFeed(currentUser, pageable).map(PostDto::from);
+        return postRepo.findFeed(currentUser, pageable).map(post -> {
+            long count = postRepo.countComments(post.getId());
+            return PostDto.from(post, count);
+        });
     }
 
     // -------------------------------------------------------
@@ -117,7 +121,10 @@ public class PostService {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
-        return postRepo.findByUser(currentUser, pageable).map(PostDto::from);
+        return postRepo.findByUser(currentUser, pageable).map(post -> {
+            long count = postRepo.countComments(post.getId());
+            return PostDto.from(post, count);
+        });
     }
 
     // -------------------------------------------------------
@@ -142,10 +149,16 @@ public class PostService {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
         if (author.getId().equals(viewerId)) {
-            return postRepo.findByUser(author, pageable).map(PostDto::from);
+            return postRepo.findByUser(author, pageable).map(post -> {
+                long count = postRepo.countComments(post.getId());
+                return PostDto.from(post, count);
+            });
         }
 
-        return postRepo.findVisibleByUser(author, viewer, pageable).map(PostDto::from);
+        return postRepo.findVisibleByUser(author, viewer, pageable).map(post -> {
+            long count = postRepo.countComments(post.getId());
+            return PostDto.from(post, count);
+        });
     }
 
     // -------------------------------------------------------
@@ -180,7 +193,7 @@ public class PostService {
     // HELPERS
     // -------------------------------------------------------
 
-    private boolean canView(Post post, User currentUser) {
+    public boolean canView(Post post, User currentUser) {
 
         if (post.getPrivacy() == Privacy.PUBLIC)
             return true;

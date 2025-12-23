@@ -1,6 +1,8 @@
 package org.example.entity;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -65,6 +67,22 @@ public class Post {
             this.fileMetadata.setPost(null);
             this.fileMetadata = null;
         }
+    }
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    List<Comment> comments = new ArrayList<>();
+
+    public void addComment(Comment comment) {
+        if (!comments.contains(comment)) {
+            comments.add(comment);
+            comment.setPost(this);
+        }
+    }
+
+    public void removeComment(Comment comment) {
+        if (comments.remove(comment))
+            comment.setPost(null);
     }
 
 }

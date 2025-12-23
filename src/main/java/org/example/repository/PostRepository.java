@@ -60,4 +60,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     // Contar posts de un usuario por su id
     long countByUserId(UUID userId);
+
+    @Query("SELECT COUNT(c) FROM Comment c WHERE c.post.id = :postId")
+    long countComments(@Param("postId") Long postId);
 }
