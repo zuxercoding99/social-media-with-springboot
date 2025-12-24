@@ -3,6 +3,7 @@ package org.example.controller;
 import lombok.RequiredArgsConstructor;
 import org.example.dto.FriendDto;
 import org.example.dto.FriendRequestDto;
+import org.example.dto.UpdateBannerColorDto;
 import org.example.dto.UpdateBioDto;
 import org.example.dto.UpdateDisplayNameDto;
 import org.example.dto.UserProfileDto;
@@ -70,4 +71,13 @@ public class UserController {
 
         return ResponseEntity.noContent().build();
     }
+
+    @PatchMapping("/me/banner-color")
+    public ResponseEntity<Void> updateBannerColor(
+            @RequestBody @Valid UpdateBannerColorDto dto) {
+
+        userService.updateBannerColor(dto.bannerColor());
+        return ResponseEntity.noContent().build();
+    }
+
 }

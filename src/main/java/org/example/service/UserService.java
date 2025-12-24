@@ -39,6 +39,8 @@ public class UserService {
 
                 String avatarUrl = "/api/v1/avatars/" + currentUser.getAvatarKey();
                 String bio = Optional.ofNullable(currentUser.getBio()).orElse("");
+                String bannerColor = Optional.ofNullable(currentUser.getBannerColor())
+                                .orElse("#1da1f2"); // default lindo
 
                 return new UserProfileDto(
                                 currentUser.getId(),
@@ -51,7 +53,8 @@ public class UserService {
                                 friendCount,
                                 true, // isFriend → siempre true para uno mismo
                                 false, // sentRequest → nunca aplica
-                                false); // receivedRequest → nunca aplica
+                                false,
+                                bannerColor); // receivedRequest → nunca aplica
         }
 
         // Obtener perfil público
@@ -83,6 +86,8 @@ public class UserService {
 
                 String avatarUrl = "/api/v1/avatars/" + profileUser.getAvatarKey();
                 String bio = Optional.ofNullable(profileUser.getBio()).orElse("");
+                String bannerColor = Optional.ofNullable(profileUser.getBannerColor())
+                                .orElse("#1da1f2"); // default lindo
 
                 return new UserProfileDto(
                                 profileUser.getId(),
@@ -95,7 +100,8 @@ public class UserService {
                                 friendCount,
                                 isFriend,
                                 sentRequest,
-                                receivedRequest);
+                                receivedRequest,
+                                bannerColor);
         }
 
         // ----------------- ACTUALIZACIONES -----------------
@@ -115,6 +121,12 @@ public class UserService {
                 User user = authService.getCurrentUser();
 
                 user.setDisplayName(displayName.trim());
+        }
+
+        @Transactional
+        public void updateBannerColor(String color) {
+                User user = authService.getCurrentUser();
+                user.setBannerColor(color.trim());
         }
 
         // ----------------- AMIGOS -----------------

@@ -73,6 +73,9 @@ public class User {
     @Column(nullable = false)
     private LocalDate birthDate;
 
+    @Column(length = 7)
+    private String bannerColor;
+
     @CreatedDate
     private Instant createdAt;
 
