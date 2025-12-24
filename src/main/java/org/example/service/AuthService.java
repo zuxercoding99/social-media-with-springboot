@@ -16,6 +16,7 @@ import org.example.exception.customs.httpstatus.UnauthorizedException;
 import org.example.repository.RoleRepository;
 import org.example.repository.UserRepository;
 import org.example.security.JwtUtil;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -65,13 +66,18 @@ public class AuthService {
         user.setEmail(email);
         user.setUsername(username);
         user.setBio("");
+        user.setBannerColor("#1da1f2");
         user.setAvatarKey("default.png");
         user.setPassword(passwordEncoder.encode(registerDto.password().trim()));
         user.setDisplayName(username);
         user.setBirthDate(registerDto.birthDate());
         user.getRoles().add(roleUser);
 
-        userRepository.save(user);
+        try {
+            userRepository.save(user);
+        } catch (DataIntegrityViolationException e) {
+            throw new ConflictException("El email o username ya está en uso");
+        }
 
         return "Usuario registrado con éxito!";
     }
