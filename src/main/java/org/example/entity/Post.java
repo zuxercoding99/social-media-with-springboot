@@ -3,6 +3,7 @@ package org.example.entity;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -27,7 +28,7 @@ public class Post {
 
     @Id
     @GeneratedValue
-    private Long id;
+    private UUID id;
 
     @Column(columnDefinition = "TEXT", length = 300)
     private String content;

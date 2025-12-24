@@ -14,6 +14,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import java.io.IOException;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/posts")
@@ -34,7 +35,7 @@ public class PostController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PostDto> getPost(@PathVariable Long id) {
+    public ResponseEntity<PostDto> getPost(@PathVariable UUID id) {
         PostDto dto = postService.getPostById(id);
         return ResponseEntity.ok(dto);
     }
@@ -62,8 +63,15 @@ public class PostController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePost(@PathVariable Long id) {
+    public ResponseEntity<Void> deletePost(@PathVariable UUID id) {
         postService.deletePost(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{id}/like")
+    public ResponseEntity<Void> toggleLike(@PathVariable UUID id) {
+        postService.toggleLike(id);
+        return ResponseEntity.ok().build();
+    }
+
 }

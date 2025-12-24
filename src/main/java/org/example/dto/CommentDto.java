@@ -1,7 +1,6 @@
 package org.example.dto;
 
 import java.time.Instant;
-import java.util.UUID;
 
 import org.example.entity.Comment;
 import org.example.entity.User;

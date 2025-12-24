@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface PostRepository extends JpaRepository<Post, Long> {
+public interface PostRepository extends JpaRepository<Post, UUID> {
     Page<Post> findByUser(User user, Pageable pageable);
 
     // 1) Todos los posts visibles en el feed
@@ -62,5 +62,5 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     long countByUserId(UUID userId);
 
     @Query("SELECT COUNT(c) FROM Comment c WHERE c.post.id = :postId")
-    long countComments(@Param("postId") Long postId);
+    long countComments(@Param("postId") UUID postId);
 }

@@ -1,6 +1,7 @@
 package org.example.service;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.example.dto.CommentDto;
@@ -29,7 +30,7 @@ public class CommentService {
     // CREAR COMENTARIO
     @Transactional
     @CacheEvict(value = { "feeds", "posts", "postsByUser" }, allEntries = true)
-    public CommentDto createComment(Long postId, String content) {
+    public CommentDto createComment(UUID postId, String content) {
 
         if (content == null || content.isBlank()) {
             throw new IllegalArgumentException("El contenido no puede estar vacío");
@@ -58,7 +59,7 @@ public class CommentService {
 
     // OBTENER COMENTARIOS DE UN POST
     @Transactional(readOnly = true)
-    public List<CommentDto> getCommentsForPost(Long postId) {
+    public List<CommentDto> getCommentsForPost(UUID postId) {
         User currentUser = authService.getCurrentUser();
 
         Post post = postRepo.findById(postId)
@@ -93,7 +94,7 @@ public class CommentService {
 
     // CONTAR COMENTARIOS
     @Transactional(readOnly = true)
-    public long countComments(Long postId) {
+    public long countComments(UUID postId) {
         Post post = postRepo.findById(postId)
                 .orElseThrow(() -> new NotFoundException("Post no encontrado"));
 

@@ -4,8 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.example.dto.PostDto;
 import org.example.entity.*;
 import org.example.exception.customs.httpstatus.BadRequestException;
+import org.example.exception.customs.httpstatus.ForbiddenException;
 import org.example.exception.customs.httpstatus.NotFoundException;
 import org.example.repository.FriendRepository;
+import org.example.repository.PostLikeRepository;
 import org.example.repository.PostRepository;
 import org.example.repository.UserRepository;
 import org.springframework.cache.annotation.CacheEvict;
@@ -18,6 +20,8 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
+import jakarta.persistence.EntityNotFoundException;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -33,6 +37,7 @@ public class PostService {
     private final FriendRepository friendRepo;
     private final StorageService storageService;
     private final AuthService authService;
+    private final PostLikeRepository postLikeRepository;
 
     // -------------------------------------------------------
     // CREATE POST
@@ -61,7 +66,11 @@ public class PostService {
             saved.setFileMetadata(meta);
         }
         long count = postRepo.countComments(post.getId());
-        return PostDto.from(saved, count);
+        long likeCount = postLikeRepository.countByPost(post);
+        boolean liked = postLikeRepository.existsByPostAndUser(post, author);
+
+        return PostDto.from(post, count, likeCount, liked);
+
     }
 
     // -------------------------------------------------------
@@ -69,14 +78,14 @@ public class PostService {
     // -------------------------------------------------------
 
     @Transactional(readOnly = true)
-    public PostDto getPostById(Long postId) {
+    public PostDto getPostById(UUID postId) {
         UUID userId = authService.getCurrentUserId();
         return getPostByIdCached(postId, userId);
     }
 
     @Cacheable(value = "posts", key = "#postId + '-' + #userId")
     @Transactional(readOnly = true)
-    public PostDto getPostByIdCached(Long postId, UUID userId) {
+    public PostDto getPostByIdCached(UUID postId, UUID userId) {
         User currentUser = userRepo.getReferenceById(userId);
 
         Post post = postRepo.findById(postId)
@@ -87,7 +96,11 @@ public class PostService {
         }
 
         long count = postRepo.countComments(post.getId());
-        return PostDto.from(post, count);
+        long likeCount = postLikeRepository.countByPost(post);
+        boolean liked = postLikeRepository.existsByPostAndUser(post, currentUser);
+
+        return PostDto.from(post, count, likeCount, liked);
+
     }
 
     // -------------------------------------------------------
@@ -106,7 +119,11 @@ public class PostService {
         Pageable pageable = PageRequest.of(page, size);
         return postRepo.findFeed(currentUser, pageable).map(post -> {
             long count = postRepo.countComments(post.getId());
-            return PostDto.from(post, count);
+            long likeCount = postLikeRepository.countByPost(post);
+            boolean liked = postLikeRepository.existsByPostAndUser(post, currentUser);
+
+            return PostDto.from(post, count, likeCount, liked);
+
         });
     }
 
@@ -123,7 +140,11 @@ public class PostService {
 
         return postRepo.findByUser(currentUser, pageable).map(post -> {
             long count = postRepo.countComments(post.getId());
-            return PostDto.from(post, count);
+            long likeCount = postLikeRepository.countByPost(post);
+            boolean liked = postLikeRepository.existsByPostAndUser(post, currentUser);
+
+            return PostDto.from(post, count, likeCount, liked);
+
         });
     }
 
@@ -148,16 +169,25 @@ public class PostService {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
+        User currentUser = authService.getCurrentUser();
+
         if (author.getId().equals(viewerId)) {
             return postRepo.findByUser(author, pageable).map(post -> {
                 long count = postRepo.countComments(post.getId());
-                return PostDto.from(post, count);
+                long likeCount = postLikeRepository.countByPost(post);
+                boolean liked = postLikeRepository.existsByPostAndUser(post, currentUser);
+
+                return PostDto.from(post, count, likeCount, liked);
             });
         }
 
         return postRepo.findVisibleByUser(author, viewer, pageable).map(post -> {
             long count = postRepo.countComments(post.getId());
-            return PostDto.from(post, count);
+            long likeCount = postLikeRepository.countByPost(post);
+            boolean liked = postLikeRepository.existsByPostAndUser(post, currentUser);
+
+            return PostDto.from(post, count, likeCount, liked);
+
         });
     }
 
@@ -167,7 +197,7 @@ public class PostService {
 
     @CacheEvict(value = { "feeds", "posts", "postsByUser" }, allEntries = true)
     @Transactional
-    public void deletePost(Long postId) {
+    public void deletePost(UUID postId) {
         User currentUser = authService.getCurrentUser();
 
         Post post = postRepo.findById(postId)
@@ -187,6 +217,27 @@ public class PostService {
         }
 
         postRepo.delete(post);
+    }
+
+    @Transactional
+    public void toggleLike(UUID postId) {
+        User currentUser = authService.getCurrentUser();
+
+        Post post = postRepo.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("Post no encontrado"));
+
+        if (!canView(post, currentUser)) {
+            throw new ForbiddenException("No tenés permiso para ver este post");
+        }
+
+        postLikeRepository.findByPostAndUser(post, currentUser)
+                .ifPresentOrElse(
+                        postLikeRepository::delete,
+                        () -> postLikeRepository.save(
+                                PostLike.builder()
+                                        .post(post)
+                                        .user(currentUser)
+                                        .build()));
     }
 
     // -------------------------------------------------------
@@ -209,4 +260,5 @@ public class PostService {
         return rel.isPresent() &&
                 rel.get().getStatus() == Friend.FriendStatus.ACCEPTED;
     }
+
 }
