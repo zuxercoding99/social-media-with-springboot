@@ -37,7 +37,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void configureMessageBroker(MessageBrokerRegistry config) {
 
         // solo push privado
-        config.enableSimpleBroker("/queue");
+        config.enableSimpleBroker("/queue", "/topic");
 
         // /user/queue/...
         config.setUserDestinationPrefix("/user");

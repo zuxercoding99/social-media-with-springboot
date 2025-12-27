@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.Set;
 
 import org.example.entity.Role;
+import org.example.entity.ThemeMode;
 import org.example.entity.User;
 import org.example.repository.RoleRepository;
 import org.example.repository.UserRepository;
@@ -38,6 +39,7 @@ public class MonitoringUserInitializer {
                 monitor.setPassword(encoder.encode(rawPassword));
                 monitor.setAvatarKey("default.png");
                 monitor.setEnabled(true);
+                monitor.setThemeMode(ThemeMode.LIGHT);
                 monitor.setBirthDate(LocalDate.of(1970, 1, 1));
                 monitor.setDisplayName("Monitoring User");
                 monitor.setEmail("monitor@system.local");

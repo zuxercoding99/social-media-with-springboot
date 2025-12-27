@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Post - Red Social</title>
+    <style>
+      :root {
+        --user-color: #1fe1d2;
+        --user-color-dark: #3076e0;
+      }
+
+      body.theme-loading header,
+      body.theme-loading .sidebar::before {
+        opacity: 0;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        line-height: 1.4;
+        color: #0f1419;
+        margin: 0;
+        background: #fff;
+      }
+
+      /* HEADER */
+      header {
+        background: linear-gradient(
+          135deg,
+          var(--user-color),
+          var(--user-color-dark)
+        );
+        color: white;
+        padding: 12px 20px;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        position: sticky;
+        top: 0;
+        z-index: 1500;
+        transition: background 0.3s, opacity 0.3s;
+      }
+      header.scrolled {
+        opacity: 0.62;
+      }
+      header a.header-title {
+        color: white;
+        text-decoration: none;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: bold;
+        font-size: 18px;
+      }
+      .header-more-btn {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        filter: invert(1);
+        opacity: 0.95;
+      }
+      .header-more-btn:hover {
+        opacity: 0.8;
+        transform: scale(1.05);
+        transition: 0.12s;
+      }
+
+      /* SIDEBAR */
+      #sidebarBackdrop {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.18);
+        display: none;
+        z-index: 1200;
+      }
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 220px;
+        max-width: 80%;
+        background: white;
+        box-shadow: 2px 0 12px rgba(0, 0, 0, 0.12);
+        z-index: 1300;
+        transform: translateX(-100%);
+        transition: transform 0.22s ease;
+        display: flex;
+        flex-direction: column;
+        padding: 12px;
+        overflow: hidden;
+      }
+
+      .sidebar-nav a:hover {
+        background: color-mix(in srgb, var(--user-color), white 85%);
+      }
+
+      .sidebar-nav a.active {
+        color: var(--user-color);
+      }
+
+      .sidebar::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 120px;
+        width: 100%;
+        background: linear-gradient(
+          135deg,
+          var(--user-color),
+          var(--user-color-dark)
+        );
+        z-index: -1;
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .sidebar-user {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+        padding-top: 40px;
+        padding-bottom: 24px;
+      }
+      .sidebar-user img {
+        width: 96px;
+        height: 96px;
+        border-radius: 50%;
+        object-fit: cover;
+        cursor: pointer;
+      }
+      .sidebar-user .displayname {
+        font-weight: bold;
+        color: #000;
+        font-size: 20px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .sidebar-user .username-small {
+        font-size: 16px;
+        color: #657786;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .sidebar-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 24px;
+      }
+      .sidebar-nav a {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #111;
+        text-decoration: none;
+        padding: 12px 16px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 16px;
+      }
+      .sidebar-nav a img {
+        width: 24px;
+        height: 24px;
+        object-fit: cover;
+      }
+      .sidebar-nav a:hover {
+        background: #f5f8fa;
+      }
+
+      /* LAYOUT */
+      .container {
+        width: 100%;
+        max-width: 618px;
+        margin: 12px auto;
+        padding: 0;
+        background: white;
+        border-left: 1px solid #eff3f4;
+        border-right: 1px solid #eff3f4;
+      }
+
+      /* TWEET (unificado) */
+      .tweet {
+        margin: 0 auto;
+        padding: 12px 16px 0;
+        background: white;
+        border-top: 1px solid #eff3f4;
+        border-radius: 0;
+      }
+      .tweet-layout {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+      }
+      .tweet-avatar {
+        width: 40px;
+        flex-shrink: 0;
+      }
+      .tweet-avatar img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        cursor: pointer;
+      }
+      .tweet-body {
+        flex: 1;
+        padding-bottom: 12px;
+        min-width: 0;
+      }
+      .tweet-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: relative;
+        gap: 8px;
+      }
+      .tweet-user {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        min-width: 0;
+        font-size: 15px;
+        gap: 8px;
+      }
+      .display-name {
+        font-weight: bold;
+        color: #000;
+        cursor: pointer;
+      }
+      .username {
+        font-size: 15px;
+        color: #657786;
+        cursor: pointer;
+      }
+      .post-time {
+        font-size: 15px;
+        color: #657786;
+        white-space: nowrap;
+      }
+      .tweet-privacy-inline {
+        font-size: 13px;
+        color: rgb(83, 100, 113);
+        white-space: nowrap;
+        opacity: 0.85;
+        margin-left: 6px;
+      }
+      .tweet-content {
+        font-size: 15px;
+        line-height: 1.45;
+        word-wrap: break-word;
+        white-space: pre-wrap;
+      }
+      .tweet-image {
+        margin-top: 12px;
+        cursor: pointer;
+        border-radius: 16px;
+        overflow: hidden;
+        max-width: 516px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        background: #fff;
+      }
+      .tweet-image img {
+        max-width: 100%;
+        max-height: 500px;
+        border: 1px solid #eff3f4;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        display: block;
+        border-radius: 16px;
+        overflow: hidden;
+      }
+
+      .more-btn {
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+        cursor: pointer;
+        opacity: 0.8;
+      }
+      .more-btn:hover {
+        opacity: 1;
+      }
+      .options-menu {
+        position: absolute;
+        top: 28px;
+        right: 0;
+        background: white;
+        border: 1px solid #eff3f4;
+        border-radius: 12px;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+        display: none;
+        flex-direction: column;
+        min-width: 160px;
+        padding: 6px 0;
+        z-index: 50;
+      }
+      .options-menu .option {
+        padding: 10px 14px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        cursor: pointer;
+        font-size: 14px;
+      }
+      .options-menu .option:hover {
+        background: #f5f8fa;
+      }
+      .options-menu .delete-option {
+        color: #e0245e;
+      }
+
+      .empty {
+        text-align: center;
+        color: #657786;
+        margin: 30px 0;
+      }
+
+      /* COMMENTS */
+      .comments {
+        margin-top: 12px;
+        padding: 12px;
+        background: white;
+        border-top: 1px solid #eff3f4;
+      }
+      .comments .composer {
+        padding: 8px 0;
+        border-bottom: none;
+      }
+      .comment-item {
+        display: flex;
+        gap: 10px;
+        padding: 12px 0;
+        border-bottom: 1px solid #f2f4f6;
+        align-items: flex-start;
+      }
+      .comment-avatar img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        cursor: pointer;
+      }
+
+      .comment-body .username {
+        cursor: pointer;
+      }
+
+      .comment-displayname {
+        cursor: pointer;
+      }
+
+      .comment-body {
+        flex: 1;
+      }
+      .comment-meta {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        font-size: 14px;
+        color: #657786;
+      }
+      .comment-content {
+        margin-top: 6px;
+        font-size: 15px;
+        line-height: 1.4;
+      }
+      .comment-delete-btn {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        color: #e0245e;
+        font-weight: bold;
+        padding: 6px;
+      }
+
+      /* COMMENT INPUT */
+      .comment-input {
+        width: 100%;
+        border: 1px solid #eff3f4;
+        border-radius: 10px;
+        padding: 8px 10px;
+        min-height: 44px;
+        resize: none;
+        outline: none;
+        font-size: 15px;
+      }
+      .comment-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin-top: 8px;
+        justify-content: space-between;
+      }
+      .comment-btn {
+        background: #1da1f2;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+      .comment-btn:disabled {
+        background: #aab8c2;
+        cursor: default;
+      }
+
+      /* IMAGE LIGHTBOX */
+      .image-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.95);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 3000;
+        padding: 24px;
+      }
+      .image-overlay img {
+        width: 80vw;
+        height: 80vh;
+        max-width: 900px;
+        max-height: 700px;
+        object-fit: contain;
+        border-radius: 14px;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+        cursor: zoom-out;
+      }
+
+      /* 404 centered */
+      .notfound-wrapper {
+        height: calc(100vh - 64px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .notfound {
+        text-align: center;
+      }
+      .notfound h1 {
+        font-size: 120px;
+        margin: 0;
+        line-height: 1;
+        color: #d0d3d8;
+      }
+      .notfound p {
+        margin-top: 12px;
+        font-size: 18px;
+        color: #657786;
+      }
+
+      #charCount {
+        font-size: 13px;
+        color: #888;
+      }
+
+      #charCount.limit {
+        color: #e0245e; /* rojo estilo Twitter */
+        font-weight: 600;
+      }
+
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      /* Defensivo para cualquier texto ingresado por el usuario*/
+      .user-text {
+        white-space: normal !important;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+
+      /* ===== TWEET ACTIONS ===== */
+      .tweet-actions {
+        display: flex;
+        gap: 132px;
+        margin-top: 14px;
+        color: #657786;
+        font-size: 14px;
+      }
+
+      .tweet-action {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .tweet-action img {
+        width: 18px;
+        height: 18px;
+        stroke: #657786;
+        fill: white;
+      }
+
+      .tweet-action svg {
+        width: 18px;
+        height: 18px;
+        display: block;
+      }
+
+      .like-action svg {
+        transition: transform 0.15s ease, color 0.15s ease;
+      }
+
+      .like-action.liked svg {
+        transform: scale(1.2);
+      }
+
+      .like-action {
+        color: #657786;
+        cursor: pointer;
+      }
+
+      .like-action.liked {
+        color: #f91880;
+      }
+
+      .like-icon {
+        width: 20px;
+        height: 20px;
+      }
+
+      /* responsive */
+      @media (max-width: 480px) {
+        .container {
+          margin: 6px auto;
+        }
+        .tweet-image img {
+          max-height: 300px;
+        }
+        .notfound h1 {
+          font-size: 80px;
+        }
+      }
+
+      /* RESPONSIVE */
+
+      @media (max-width: 480px) {
+        .container {
+          margin: 0px;
+          border: none;
+          padding: 0 0px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .sidebar {
+          width: 100%;
+          max-width: 100%;
+        }
+
+        .sidebar-user .displayname,
+        .sidebar-user .username-small {
+          white-space: normal;
+          text-align: center;
+        }
+      }
+
+      @media (max-width: 480px) {
+        /* Tweet actions */
+        .tweet-actions {
+          gap: 12px;
+          font-size: 13px;
+        }
+        .tweet-action img,
+        .tweet-action svg {
+          width: 16px;
+          height: 16px;
+        }
+        .like-icon {
+          width: 18px;
+          height: 18px;
+        }
+
+        /* Comments */
+        .comments {
+          padding: 8px;
+        }
+        .comment-item {
+          gap: 8px;
+          padding: 8px 0;
+        }
+        .comment-avatar img {
+          width: 36px;
+          height: 36px;
+        }
+        .comment-meta {
+          font-size: 13px;
+          gap: 4px;
+        }
+        .comment-content {
+          font-size: 14px;
+        }
+        .comment-input {
+          font-size: 14px;
+          padding: 6px 8px;
+        }
+        .comment-btn {
+          padding: 6px 10px;
+          font-size: 13px;
+        }
+        #charCount {
+          font-size: 12px;
+        }
+
+        /* Image lightbox */
+        .image-overlay img {
+          width: 90vw;
+          height: auto;
+          max-height: 60vh;
+        }
+
+        /* 404 */
+        .notfound h1 {
+          font-size: 60px;
+        }
+        .notfound p {
+          font-size: 16px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .tweet-actions {
+          gap: 12px;
+          flex-wrap: wrap;
+        }
+        .tweet-image iframe {
+          width: 100%;
+          height: auto;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .image-overlay {
+          padding: 12px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        body {
+          font-size: 16px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="header-left">
+        <img
+          id="headerMoreBtn"
+          src="icons/more.png"
+          alt="menu"
+          class="header-more-btn"
+        />
+        <a href="feed.html" class="header-title">RED SOCIAL</a>
+      </div>
+    </header>
+
+    <div id="sidebarBackdrop"></div>
+    <aside id="sidebar" class="sidebar" aria-hidden="true">
+      <div class="sidebar-user">
+        <img
+          id="sidebarAvatar"
+          src="icons/upload.png"
+          alt="me"
+          title="Ver perfil"
+        />
+        <div class="displayname" id="sidebarDisplayName" title="Ver perfil">
+          Usuario
+        </div>
+        <div class="username-small" id="sidebarUsername" title="Ver perfil">
+          @usuario
+        </div>
+      </div>
+
+      <div class="sidebar-nav">
+        <a href="feed.html"><img src="icons/home.png" alt="" /> Home</a>
+        <a href="requests.html"
+          ><img src="icons/add-friend.png" alt="" /> Solicitudes</a
+        >
+        <a href="chat.html"><img src="icons/email.png" alt="" /> Chat</a>
+        <a href="user.html"><img src="icons/user.png" alt="" /> Profile</a>
+        <a href="#" id="sidebarLogout"
+          ><img src="icons/exit.png" alt="" /> Log out</a
+        >
+      </div>
+    </aside>
+
+    <div class="container" id="mainContainer">
+      <!-- Post area will be injected here -->
+      <div id="postArea"></div>
+      <!-- Comments area -->
+      <div id="commentsArea"></div>
+    </div>
+
+    <!-- IMAGE LIGHTBOX -->
+    <div id="imageOverlay" class="image-overlay">
+      <img id="overlayImg" alt="imagen completa" />
+    </div>
+
+    <script>
+      document.body.classList.add("theme-loading");
+      const API = "http://localhost:8080";
+      const token = localStorage.getItem("accessToken");
+      const myUsername = localStorage.getItem("username");
+      const displayName = localStorage.getItem("displayName");
+      const avatarUrl = localStorage.getItem("avatarUrl");
+      console.log(avatarUrl);
+      if (!token) location.href = "login.html";
+
+      /* UTIL / CACHE */
+      const cache = new Map();
+      async function loadAvatar(url) {
+        if (!url) return "https://via.placeholder.com/64";
+        if (cache.has(url)) return cache.get(url);
+        try {
+          const r = await fetch(API + url, {
+            headers: { Authorization: "Bearer " + token },
+          });
+          if (!r.ok) return "https://via.placeholder.com/64";
+          const o = URL.createObjectURL(await r.blob());
+          cache.set(url, o);
+          return o;
+        } catch {
+          return "https://via.placeholder.com/64";
+        }
+      }
+      async function loadImg(url) {
+        try {
+          const r = await fetch(API + url, {
+            headers: { Authorization: "Bearer " + token },
+          });
+          if (!r.ok) return null;
+          return URL.createObjectURL(await r.blob());
+        } catch {
+          return null;
+        }
+      }
+
+      /* SIDEBAR / HEADER */
+      const headerMoreBtn = document.getElementById("headerMoreBtn");
+      const sidebar = document.getElementById("sidebar");
+      const sidebarBackdrop = document.getElementById("sidebarBackdrop");
+      const sidebarAvatar = document.getElementById("sidebarAvatar");
+      const sidebarDisplayName = document.getElementById("sidebarDisplayName");
+      const sidebarUsernameEl = document.getElementById("sidebarUsername");
+      const sidebarLogout = document.getElementById("sidebarLogout");
+
+      function openSidebar() {
+        sidebar.classList.add("open");
+        sidebarBackdrop.style.display = "block";
+        sidebar.setAttribute("aria-hidden", "false");
+      }
+      function closeSidebar() {
+        sidebar.classList.remove("open");
+        sidebarBackdrop.style.display = "none";
+        sidebar.setAttribute("aria-hidden", "true");
+      }
+      headerMoreBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        sidebar.classList.contains("open") ? closeSidebar() : openSidebar();
+      });
+      sidebarBackdrop.addEventListener("click", closeSidebar);
+      sidebarDisplayName.innerText = displayName || myUsername;
+      sidebarUsernameEl.innerText = "@" + (myUsername || "usuario");
+      if (avatarUrl)
+        loadAvatar(avatarUrl).then((a) => {
+          sidebarAvatar.src = a;
+        });
+      else {
+        sidebarAvatar.src = "https://via.placeholder.com/64";
+      }
+      sidebarAvatar.addEventListener(
+        "click",
+        () => (location.href = `user.html?username=${myUsername}`)
+      );
+      sidebarDisplayName.addEventListener(
+        "click",
+        () => (location.href = `user.html?username=${myUsername}`)
+      );
+      sidebarUsernameEl.addEventListener(
+        "click",
+        () => (location.href = `user.html?username=${myUsername}`)
+      );
+      sidebarLogout.addEventListener("click", () => {
+        localStorage.clear();
+        location.href = "login.html";
+      });
+
+      function timeAgo(date) {
+        const d = new Date(date),
+          now = new Date(),
+          diff = (now - d) / 1000;
+        if (diff < 60) return `${Math.floor(diff)}s`;
+        if (diff < 3600) return `${Math.floor(diff / 60)}m`;
+        if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
+        return `${Math.floor(diff / 86400)}d`;
+      }
+      function renderUserText(text) {
+        if (!text) return "";
+        let safe = text
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+        safe = safe.replace(
+          /(https?:\/\/[^\s<]+)/g,
+          '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
+        );
+        safe = safe.replace(/\n/g, "<br>");
+        return safe;
+      }
+      function formatPrivacyIcon(p) {
+        switch (p) {
+          case "FRIENDS":
+            return "👥";
+          case "PRIVATE":
+            return "🔒";
+          default:
+            return "";
+        }
+      }
+
+      /* IMAGE LIGHTBOX */
+      const imageOverlay = document.getElementById("imageOverlay");
+      const overlayImg = document.getElementById("overlayImg");
+      function openImage(src) {
+        overlayImg.src = src;
+        imageOverlay.style.display = "flex";
+      }
+      imageOverlay.addEventListener("click", () => {
+        imageOverlay.style.display = "none";
+        overlayImg.src = "";
+      });
+
+      /* HANDLE OUTSIDE CLICK (close menus) */
+      document.addEventListener("click", () => {
+        document
+          .querySelectorAll(".options-menu, .profile-options-menu")
+          .forEach((m) => {
+            if (m) m.style.display = "none";
+          });
+      });
+
+      /* POST ID */
+      const postId = new URLSearchParams(location.search).get("id");
+      const postArea = document.getElementById("postArea");
+      const commentsArea = document.getElementById("commentsArea");
+
+      function show404() {
+        // clear container and show centered 404
+        postArea.innerHTML = "";
+        commentsArea.innerHTML = "";
+        document.getElementById("mainContainer").innerHTML = `
+                <div class="notfound-wrapper">
+                  <div class="notfound">
+                    <h1>404</h1>
+                    <p>No se encontró el post.</p>
+                  </div>
+                </div>
+              `;
+      }
+
+      if (!postId) {
+        show404();
+      } else {
+        loadPostAndComments(postId);
+      }
+
+      async function loadPostAndComments(id) {
+        try {
+          const r = await fetch(`${API}/api/v1/posts/${id}`, {
+            headers: { Authorization: "Bearer " + token },
+          });
+          if (!r.ok) {
+            // If backend responds 403 or 404, show 404 page (según tu requisito)
+            if (r.status === 403 || r.status === 404) {
+              show404();
+              return;
+            }
+            // other errors: show message
+            postArea.innerHTML = `<div class="empty">Error al cargar el post</div>`;
+            return;
+          }
+          const post = await r.json();
+          renderPost(post);
+          // load comments (separado)
+          await loadComments(id);
+        } catch (e) {
+          console.error("Error cargando post", e);
+          postArea.innerHTML = `<div class="empty">Error al cargar el post</div>`;
+        }
+      }
+
+      async function renderPost(x) {
+        const body = document.createElement("div");
+        body.className = "tweet-body";
+
+        // contenido de texto
+        const content = document.createElement("div");
+        content.className = "tweet-content user-text";
+        content.innerHTML = renderUserText(x.content);
+        body.appendChild(content);
+
+        // === operaciones asíncronas: imagen / embed ===
+        let mediaAppended = false;
+
+        if (x.file) {
+          const fileUrl = await loadImg(x.file.url);
+          if (fileUrl) {
+            const wrap = document.createElement("div");
+            wrap.className = "tweet-image";
+            const im = document.createElement("img");
+            im.src = fileUrl;
+            wrap.appendChild(im);
+            body.appendChild(wrap);
+            wrap.addEventListener("click", () => openImage(fileUrl));
+            mediaAppended = true;
+          }
+        } else {
+          const tweetUrlRaw = (x.content || "").match(
+            /(https?:\/\/(?:www\.)?(?:twitter|x)\.com\/\w+\/status\/\d+)/
+          );
+          const tweetUrl = tweetUrlRaw
+            ? tweetUrlRaw[1].replace("x.com", "twitter.com")
+            : null;
+          const yt = (x.content || "").match(
+            /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/
+          );
+          const ytId = yt ? yt[1] : null;
+
+          if (ytId) {
+            const wrap = document.createElement("div");
+            wrap.className = "tweet-image";
+            wrap.innerHTML = `<iframe width="516" height="290" src="https://www.youtube.com/embed/${ytId}" frameborder="0" allowfullscreen></iframe>`;
+            body.appendChild(wrap);
+            mediaAppended = true;
+          } else if (tweetUrl) {
+            const wrap = document.createElement("div");
+            wrap.className = "tweet-image";
+            wrap.innerHTML = `<blockquote class="twitter-tweet"><a href="${tweetUrl}"></a></blockquote>`;
+            body.appendChild(wrap);
+            if (window.twttr && window.twttr.widgets)
+              window.twttr.widgets.load(wrap);
+            else {
+              const s = document.createElement("script");
+              s.src = "https://platform.twitter.com/widgets.js";
+              s.async = true;
+              s.onload = () => window.twttr.widgets.load(wrap);
+              document.body.appendChild(s);
+            }
+            mediaAppended = true;
+          }
+        }
+
+        // === acciones, después de media ===
+        const actions = document.createElement("div");
+        actions.className = "tweet-actions";
+        actions.innerHTML = `
+    <div class="tweet-action comment-action">
+      <img src="icons/comment.png">
+      <span class="comment-count">${x.commentCount}</span>
+    </div>
+    <div class="tweet-action like-action ${x.liked ? "liked" : ""}">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M15.7 4C18.87 4 21 6.98 21 9.76C21 15.39 12.16 20 12 20C11.84 20 3 15.39 3 9.76C3 6.98 5.13 4 8.3 4C10.12 4 11.31 4.91 12 5.71C12.69 4.91 13.88 4 15.7 4Z"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="like-count">${x.likeCount}</span>
+    </div>
+  `;
+        body.appendChild(actions);
+        console.log(x);
+        console.log(x.id);
+
+        const likeBtn = actions.querySelector(".like-action");
+        likeBtn.addEventListener("click", async () => {
+          // estado actual del like
+          const currentlyLiked = likeBtn.classList.contains("liked");
+          const likeCountSpan = likeBtn.querySelector(".like-count");
+          let likeCount = parseInt(likeCountSpan.textContent, 10);
+
+          // === Optimistic UI ===
+          likeBtn.classList.toggle("liked", !currentlyLiked);
+          likeCountSpan.textContent = currentlyLiked
+            ? likeCount - 1
+            : likeCount + 1;
+
+          try {
+            // fetch al endpoint de like del post
+            const res = await fetch(`${API}/api/v1/posts/${x.id}/like`, {
+              method: "POST",
+              headers: { Authorization: "Bearer " + token },
+            });
+
+            if (!res.ok) throw new Error("Error al dar like");
+
+            // no necesitamos parsear JSON porque tu endpoint no devuelve nada
+          } catch (e) {
+            console.error(e);
+            alert("No se pudo actualizar el like");
+
+            // revertir el cambio optimista si falla
+            likeBtn.classList.toggle("liked", currentlyLiked);
+            likeCountSpan.textContent = likeCount;
+          }
+        });
+
+        // ahora appendear body al tweet
+        const tweet = document.createElement("article");
+        tweet.className = "tweet";
+        const layout = document.createElement("div");
+        layout.className = "tweet-layout";
+
+        // avatar
+        const avatarDiv = document.createElement("div");
+        avatarDiv.className = "tweet-avatar";
+        const avatarImg = document.createElement("img");
+        loadAvatar(x.author.avatarUrl).then((a) => (avatarImg.src = a));
+        avatarDiv.appendChild(avatarImg);
+
+        // header
+        const header = document.createElement("div");
+        header.className = "tweet-header";
+        header.innerHTML = `
+    <div class="tweet-user user-text">
+      <span class="display-name">${x.author.displayName}</span>
+      <span class="username">@${x.author.username}</span>
+      <span class="dot">·</span>
+      <span class="post-time">${timeAgo(x.createdAt)}</span>
+    </div>
+    <img src="icons/more.png" class="more-btn" alt="more">
+    <div class="options-menu"></div>
+  `;
+
+        /*eventos user profile*/
+        const displayNameEl = header.querySelector(".display-name");
+        const usernameEl = header.querySelector(".username");
+        avatarImg.onclick = () =>
+          (location.href = `user.html?username=${x.author.username}`);
+        displayNameEl.onclick = () =>
+          (location.href = `user.html?username=${x.author.username}`);
+        usernameEl.onclick = () =>
+          (location.href = `user.html?username=${x.author.username}`);
+
+        body.insertBefore(header, content);
+
+        layout.appendChild(avatarDiv);
+        layout.appendChild(body);
+        tweet.appendChild(layout);
+        postArea.appendChild(tweet);
+      }
+
+      /* COMMENTS: composer + list */
+      async function loadComments(id) {
+        commentsArea.innerHTML = `
+                <div class="comments">
+                  <div class="composer">
+                    <div style="display:flex; gap:12px; align-items:flex-start;">
+                      <div class="comment-avatar"><img id="myCommentAvatar" alt="mi avatar"></div>
+                      <div style="flex:1">
+                        <div class="comment-box">
+                          <textarea
+                              id="commentInput"
+                              class="comment-input"
+                              placeholder="Agregar un comentario"
+                              maxlength="300"
+                              ></textarea>
+
+                              <div class="comment-row">
+                              <div
+                                  id="charCount"
+                                  style="color:#657786; font-size:13px"
+                              >
+                                  0 / 300
+                              </div>
+
+                              <button
+                                  id="commentBtn"
+                                  class="comment-btn"
+                                  disabled
+                              >
+                                  Comentar
+                              </button>
+                              </div>
+
+                      </div>
+                    </div>
+                  </div>
+                  <div id="commentsList"></div>
+                </div>
+              `;
+        // avatar for composer
+        const myAv = document.getElementById("myCommentAvatar");
+        if (avatarUrl) loadAvatar(avatarUrl).then((a) => (myAv.src = a));
+        else myAv.src = "https://via.placeholder.com/64";
+
+        // input handlers (CORRECTO)
+        const commentInput = document.getElementById("commentInput");
+        const commentBtn = document.getElementById("commentBtn");
+        const charCount = document.getElementById("charCount");
+
+        commentInput.addEventListener("input", () => {
+          const length = commentInput.value.length;
+
+          // contador
+          charCount.textContent = `${length} / 300`;
+
+          if (length >= 300) {
+            charCount.classList.add("limit");
+          } else {
+            charCount.classList.remove("limit");
+          }
+
+          // botón
+          commentBtn.disabled = commentInput.value.trim().length === 0;
+
+          // auto-resize
+          commentInput.style.height = "auto";
+          commentInput.style.height = commentInput.scrollHeight + "px";
+        });
+
+        commentBtn.addEventListener("click", async () => {
+          await createComment(postId, commentInput.value.trim());
+        });
+
+        // fetch comment list
+        try {
+          const r = await fetch(`${API}/api/v1/posts/${postId}/comments`, {
+            headers: { Authorization: "Bearer " + token },
+          });
+          if (!r.ok) {
+            if (r.status === 403) {
+              // no permission to view comments: show notice
+              document.getElementById(
+                "commentsList"
+              ).innerHTML = `<div class="empty">No tenés permiso para ver los comentarios de este post.</div>`;
+              return;
+            } else {
+              document.getElementById(
+                "commentsList"
+              ).innerHTML = `<div class="empty">Error al cargar comentarios</div>`;
+              return;
+            }
+          }
+          const list = await r.json();
+          renderCommentsList(list || []);
+        } catch (e) {
+          console.error("Error cargando comentarios", e);
+          document.getElementById(
+            "commentsList"
+          ).innerHTML = `<div class="empty">Error al cargar comentarios</div>`;
+        }
+      }
+
+      function renderCommentsList(list) {
+        const el = document.getElementById("commentsList");
+        el.innerHTML = "";
+        if (!list.length) {
+          el.innerHTML = `<div class="empty">Se el primero en comentar</div>`;
+          return;
+        }
+        for (const c of list) {
+          const item = document.createElement("div");
+          item.className = "comment-item";
+          item.dataset.commentId = c.id;
+          const avatarPlaceholder = "https://via.placeholder.com/64";
+          // create markup
+          item.innerHTML = `
+                  <div class="comment-avatar"><img alt="avatar"></div>
+                  <div class="comment-body">
+                    <div class="comment-meta">
+                      <strong class="comment-displayname">${
+                        c.author.displayName
+                      }</strong>
+                      <span class="username">@${c.author.username}</span>
+                      <span class="dot">·</span>
+                      <span class="comment-time" title="${new Date(
+                        c.createdAt
+                      ).toLocaleString()}">${timeAgo(c.createdAt)}</span>
+                    </div>
+                    <div class="comment-content user-text">${renderUserText(
+                      c.content
+                    )}</div>
+                  </div>
+                `;
+          // avatar
+          const avImg = item.querySelector(".comment-avatar img");
+          loadAvatar(c.author.avatarUrl).then(
+            (a) => (avImg.src = a || avatarPlaceholder)
+          );
+
+          // click to profile
+          const nameEl = item.querySelector(".comment-displayname");
+          const userEl = item.querySelector(".username");
+          avImg.onclick =
+            nameEl.onclick =
+            userEl.onclick =
+              () => (location.href = `user.html?username=${c.author.username}`);
+
+          // delete button if mine
+          if (c.author.username === myUsername) {
+            const btn = document.createElement("button");
+            btn.className = "comment-delete-btn";
+            btn.innerText = "Eliminar";
+            btn.onclick = async () => {
+              //if (!confirm("Eliminar comentario?")) return;
+              const res = await fetch(
+                `${API}/api/v1/posts/${postId}/comments/${c.id}`,
+                {
+                  method: "DELETE",
+                  headers: { Authorization: "Bearer " + token },
+                }
+              );
+              if (res.status === 204) item.remove();
+              else if (res.status === 403)
+                alert("No podés eliminar este comentario");
+              else if (res.status === 404) alert("Comentario no encontrado");
+              else alert("Error al eliminar comentario");
+            };
+            // append to meta area (right side)
+            const meta = item.querySelector(".comment-meta");
+            meta.appendChild(btn);
+          }
+
+          el.appendChild(item);
+        }
+      }
+
+      async function createComment(postIdToUse, content) {
+        if (!content) return;
+        const btn = document.getElementById("commentBtn");
+        btn.disabled = true;
+        try {
+          const res = await fetch(
+            `${API}/api/v1/posts/${postIdToUse}/comments`,
+            {
+              method: "POST",
+              headers: {
+                Authorization: "Bearer " + token,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ content }),
+            }
+          );
+          if (!res.ok) {
+            if (res.status === 403) {
+              alert("No tenés permiso para comentar este post");
+              return;
+            }
+            alert("Error al enviar comentario");
+            return;
+          }
+          const created = await res.json();
+          // prepend to list
+          const listEl = document.getElementById("commentsList");
+          // if empty message present, clear it
+          if (listEl.querySelector(".empty")) listEl.innerHTML = "";
+
+          const item = document.createElement("div");
+          item.className = "comment-item";
+          item.dataset.commentId = created.id;
+          item.innerHTML = `
+                  <div class="comment-avatar"><img alt="avatar"></div>
+                  <div class="comment-body">
+                    <div class="comment-meta">
+                      <strong class="comment-displayname">${
+                        created.author.displayName
+                      }</strong>
+                      <span class="username">@${created.author.username}</span>
+                      <span class="dot">·</span>
+                      <span class="comment-time" title="${new Date(
+                        created.createdAt
+                      ).toLocaleString()}">${timeAgo(created.createdAt)}</span>
+                    </div>
+                    <div class="comment-content user-text">${renderUserText(
+                      created.content
+                    )}</div>
+                  </div>
+                `;
+          const avImg = item.querySelector(".comment-avatar img");
+          loadAvatar(created.author.avatarUrl).then((a) => (avImg.src = a));
+          // delete if mine
+          if (created.author.username === myUsername) {
+            const btn = document.createElement("button");
+            btn.className = "comment-delete-btn";
+            btn.innerText = "Eliminar";
+            btn.onclick = async () => {
+              //if (!confirm("Eliminar comentario?")) return;
+              const res = await fetch(
+                `${API}/api/v1/posts/${postId}/comments/${created.id}`,
+                {
+                  method: "DELETE",
+                  headers: { Authorization: "Bearer " + token },
+                }
+              );
+              if (res.status === 204) item.remove();
+              else alert("Error al eliminar comentario");
+            };
+            item.querySelector(".comment-meta").appendChild(btn);
+          }
+          // insert at top
+          const listParent = document.getElementById("commentsList");
+          listParent.insertBefore(item, listParent.firstChild);
+          // clear input
+          const commentInput = document.getElementById("commentInput");
+          commentInput.value = "";
+          commentInput.style.height = "auto";
+          const charCount = document.getElementById("charCount");
+          charCount.textContent = "0 / 300";
+          charCount.classList.remove("limit");
+
+          document.getElementById("commentBtn").disabled = true;
+        } catch (e) {
+          console.error("Error creando comentario", e);
+          alert("Error al enviar comentario");
+        } finally {
+          btn.disabled = false;
+        }
+      }
+
+      // header scroll effect
+      const header = document.querySelector("header");
+      window.addEventListener("scroll", () => {
+        if (window.scrollY > 5) header.classList.add("scrolled");
+        else header.classList.remove("scrolled");
+      });
+
+      /*Color sidebar header banner*/
+      function applyUserTheme(color) {
+        const root = document.documentElement;
+
+        if (color) {
+          root.style.setProperty("--user-color", color);
+          root.style.setProperty("--user-color-dark", darkenColor(color, 25));
+        } else {
+          root.style.setProperty("--user-color", "#1fe1d2");
+          root.style.setProperty("--user-color-dark", "#3076e0");
+        }
+        document.body.classList.remove("theme-loading");
+      }
+
+      async function fetchMyProfile() {
+        const r = await fetch(`${API}/api/v1/users/me`, {
+          headers: { Authorization: "Bearer " + token },
+        });
+
+        if (!r.ok) throw new Error("No se pudo cargar el perfil");
+
+        return r.json();
+      }
+
+      async function initUserTheme() {
+        try {
+          const u = await fetchMyProfile();
+          applyUserTheme(u.bannerColor);
+        } catch (e) {
+          console.warn("Usando tema por defecto", e);
+          applyUserTheme(null);
+        }
+      }
+      function darkenColor(hex, percent) {
+        const num = parseInt(hex.replace("#", ""), 16);
+        const amt = Math.round(2.55 * percent);
+        const r = Math.max(0, (num >> 16) - amt);
+        const g = Math.max(0, ((num >> 8) & 0x00ff) - amt);
+        const b = Math.max(0, (num & 0x0000ff) - amt);
+
+        return `rgb(${r}, ${g}, ${b})`;
+      }
+      initUserTheme();
+    </script>
+  </body>
+</html>

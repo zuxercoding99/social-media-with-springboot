@@ -60,3 +60,4 @@ uploads/
 !uploads/avatars/
 # Incluye solo este archivo
 !uploads/avatars/default.png
+!uploads/avatars/owner.jpg

@@ -5,6 +5,7 @@ import org.example.dto.FriendDto;
 import org.example.dto.FriendRequestDto;
 import org.example.dto.UserProfileDto;
 import org.example.entity.Friend;
+import org.example.entity.ThemeMode;
 import org.example.entity.User;
 import org.example.exception.customs.httpstatus.NotFoundException;
 import org.example.repository.FriendRepository;
@@ -54,7 +55,8 @@ public class UserService {
                                 true, // isFriend → siempre true para uno mismo
                                 false, // sentRequest → nunca aplica
                                 false,
-                                bannerColor); // receivedRequest → nunca aplica
+                                bannerColor,
+                                currentUser.getThemeMode()); // receivedRequest → nunca aplica
         }
 
         // Obtener perfil público
@@ -101,7 +103,8 @@ public class UserService {
                                 isFriend,
                                 sentRequest,
                                 receivedRequest,
-                                bannerColor);
+                                bannerColor,
+                                null);
         }
 
         // ----------------- ACTUALIZACIONES -----------------
@@ -127,6 +130,12 @@ public class UserService {
         public void updateBannerColor(String color) {
                 User user = authService.getCurrentUser();
                 user.setBannerColor(color.trim());
+        }
+
+        @Transactional
+        public void updateThemeMode(ThemeMode mode) {
+                User user = authService.getCurrentUser();
+                user.setThemeMode(mode);
         }
 
         // ----------------- AMIGOS -----------------

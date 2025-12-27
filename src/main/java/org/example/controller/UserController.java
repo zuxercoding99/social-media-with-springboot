@@ -6,6 +6,7 @@ import org.example.dto.FriendRequestDto;
 import org.example.dto.UpdateBannerColorDto;
 import org.example.dto.UpdateBioDto;
 import org.example.dto.UpdateDisplayNameDto;
+import org.example.dto.UpdateThemeModeDto;
 import org.example.dto.UserProfileDto;
 import org.example.service.UserService;
 import org.springframework.http.ResponseEntity;
@@ -77,6 +78,14 @@ public class UserController {
             @RequestBody @Valid UpdateBannerColorDto dto) {
 
         userService.updateBannerColor(dto.bannerColor());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/me/theme")
+    public ResponseEntity<Void> updateTheme(
+            @RequestBody @Valid UpdateThemeModeDto dto) {
+
+        userService.updateThemeMode(dto.themeMode());
         return ResponseEntity.noContent().build();
     }
 

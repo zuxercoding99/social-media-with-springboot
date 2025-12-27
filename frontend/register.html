@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Registro - Red Social</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        line-height: 1.4;
+        color: #0f1419;
+        background: #f5f8fa;
+
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* Defensivo para cualquier texto ingresado por el usuario*/
+      .user-text {
+        white-space: normal !important;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+
+      .container {
+        width: 100%;
+        max-width: 380px;
+        margin: 16px;
+
+        background: white;
+        padding: 24px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      }
+
+      h2 {
+        text-align: center;
+        margin-bottom: 22px;
+      }
+
+      label {
+        font-size: 13px;
+        color: #555;
+        margin-top: 12px;
+        display: block;
+      }
+
+      input,
+      button {
+        width: 100%;
+        padding: 10px 12px;
+        margin-top: 6px;
+        border-radius: 8px;
+        font-size: 14px;
+      }
+
+      input {
+        border: 1px solid #ccd6dd;
+      }
+
+      input:focus {
+        outline: none;
+        border-color: #1da1f2;
+      }
+
+      button {
+        margin-top: 18px;
+        background: #1da1f2;
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      button:hover {
+        background: #1a91da;
+      }
+
+      .error {
+        color: #e0245e;
+        margin-top: 12px;
+        font-size: 14px;
+      }
+
+      .success {
+        color: #17bf63;
+        margin-top: 12px;
+        font-size: 14px;
+      }
+
+      .switch {
+        margin-top: 22px;
+        text-align: center;
+        font-size: 14px;
+        color: #555;
+      }
+
+      .switch a {
+        color: #1da1f2;
+        text-decoration: none;
+        font-weight: bold;
+      }
+
+      @media (max-width: 480px) {
+        .container {
+          margin: 40px 16px;
+          padding: 20px;
+          border-radius: 10px;
+        }
+
+        h2 {
+          font-size: 20px;
+        }
+
+        input,
+        button {
+          font-size: 16px; /* evita zoom automático en iOS */
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <h2>Crear cuenta</h2>
+
+      <label for="username">Username</label>
+      <input id="username" placeholder="ej: bob94" />
+
+      <label for="email">Email</label>
+      <input id="email" placeholder="bob@example.com" />
+
+      <label for="password">Password</label>
+      <input id="password" type="password" placeholder="6 a 12 caracteres" />
+
+      <label for="birthDate">Fecha de nacimiento</label>
+      <input id="birthDate" type="date" />
+
+      <button onclick="register()">Registrarse</button>
+
+      <div id="msg"></div>
+
+      <div class="switch">
+        ¿Ya tenés cuenta?
+        <a href="login.html">Iniciar sesión</a>
+      </div>
+    </div>
+
+    <script>
+      const API_BASE_URL = "http://localhost:8080";
+
+      if (localStorage.getItem("accessToken")) {
+        window.location.href = "feed.html";
+      }
+
+      async function register() {
+        const msg = document.getElementById("msg");
+        msg.innerText = "";
+        msg.className = "";
+
+        if (!birthDate.value) {
+          msg.className = "error";
+          msg.innerText = "La fecha de nacimiento es obligatoria";
+          return;
+        }
+
+        const res = await fetch(API_BASE_URL + "/api/v1/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: username.value.trim(),
+            email: email.value.trim(),
+            password: password.value,
+            birthDate: birthDate.value,
+          }),
+        });
+
+        if (res.ok) {
+          msg.className = "success";
+          msg.innerText =
+            "Usuario registrado con éxito. Ya podés iniciar sesión.";
+        } else {
+          msg.className = "error";
+          msg.innerText = await res.text();
+        }
+      }
+    </script>
+  </body>
+</html>

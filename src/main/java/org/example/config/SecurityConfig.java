@@ -6,12 +6,14 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.example.entity.User;
+import org.example.exception.customs.httpstatus.NotFoundException;
 import org.example.filter.ExceptionLoggingFilter;
 import org.example.filter.RateLimitingFilter;
 import org.example.repository.UserRepository;
 import org.example.security.CustomAuthenticationEntryPoint;
 import org.example.security.CustomAccessDeniedHandler;
 import org.example.security.JwtUtil;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -35,6 +37,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,6 +45,9 @@ import java.util.stream.Collectors;
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
+
+    @Value("${cors.allowed-origins}") // Inyecta como String comma-separated y lo convertimos a List
+    private String allowedOriginsString;
 
     private final JwtUtil jwtUtil;
     private final UserRepository userRepo;
@@ -63,7 +69,7 @@ public class SecurityConfig {
     public UserDetailsService userDetailsService() {
         return username -> {
             User user = userRepo.findByUsername(username)
-                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                    .orElseThrow(() -> new NotFoundException("User not found"));
 
             return new org.springframework.security.core.userdetails.User(
                     user.getUsername(),
@@ -127,8 +133,11 @@ public class SecurityConfig {
     // 6. Configuración de CORS (opcional pero recomendado)
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+        // Convierte el String comma-separated a List<String>
+        List<String> allowedOrigins = Arrays.asList(allowedOriginsString.split(","));
+
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://127.0.0.1:5500", "http://localhost:8080"));
+        config.setAllowedOrigins(allowedOrigins);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);

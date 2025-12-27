@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Editar perfil</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        line-height: 1.4;
+        color: #0f1419;
+        background: #f5f8fa;
+      }
+      /* Defensivo para cualquier texto ingresado por el usuario*/
+      .user-text {
+        overflow-wrap: break-word;
+        word-wrap: break-word;
+        white-space: normal;
+      }
+      .container {
+        width: 420px;
+        margin: 40px auto;
+        background: white;
+        padding: 24px;
+        border-radius: 12px;
+      }
+      h2 {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      label {
+        font-size: 14px;
+        color: #555;
+      }
+      input,
+      textarea {
+        width: 100%;
+        padding: 10px;
+        margin-top: 6px;
+        margin-bottom: 14px;
+        border-radius: 8px;
+        border: 1px solid #ccd6dd;
+      }
+      button {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        border-radius: 20px;
+        background: #1da1f2;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      .back {
+        text-align: center;
+        margin-top: 16px;
+      }
+      .back a {
+        color: #1da1f2;
+        text-decoration: none;
+        font-weight: bold;
+      }
+
+      input[type="color"] {
+        width: 105px;
+        height: 48px;
+        padding: 0;
+
+        border: 0px solid #ccd6dd;
+        cursor: pointer;
+        background: none;
+      }
+
+      /* Media query para móviles (ancho máximo 480px) */
+      @media screen and (max-width: 480px) {
+        .container {
+          width: 100%;
+          margin: 20px auto;
+          padding: 16px;
+        }
+
+        h2 {
+          font-size: 18px;
+          margin-bottom: 16px;
+        }
+
+        label {
+          font-size: 13px;
+        }
+
+        input,
+        textarea {
+          padding: 8px;
+          font-size: 14px;
+        }
+
+        button {
+          padding: 10px;
+          font-size: 14px;
+        }
+
+        .back a {
+          font-size: 14px;
+        }
+
+        input[type="color"] {
+          width: 90px;
+          height: 40px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <h2>Editar perfil</h2>
+
+      <label>Display name</label>
+      <input id="displayName" maxlength="30" />
+
+      <label>Biografía</label>
+      <textarea id="bio" rows="4" maxlength="300"></textarea>
+
+      <label>Color del banner</label>
+      <div style="margin-top: 0px; margin-bottom: 0px">
+        <input type="color" id="bannerColor" />
+      </div>
+
+      <label>Avatar</label>
+      <input type="file" accept=".jpg,.jpeg,.png" id="avatar" />
+
+      <button onclick="save()">Guardar cambios</button>
+
+      <div class="back">
+        <a href="user.html">← Volver al perfil</a>
+      </div>
+    </div>
+
+    <script>
+      const API = "http://localhost:8080";
+      const token = localStorage.getItem("accessToken");
+      if (!token) location.href = "login.html";
+
+      async function load() {
+        const r = await fetch(API + "/api/v1/users/me", {
+          headers: { Authorization: "Bearer " + token },
+        });
+        const u = await r.json();
+        displayName.value = u.displayName;
+        bio.value = u.bio || "";
+        bannerColor.value = u.bannerColor || "#1da1f2";
+      }
+
+      async function save() {
+        // Actualizar displayName
+        await fetch(API + "/api/v1/users/me/display-name", {
+          method: "PATCH",
+          headers: {
+            Authorization: "Bearer " + token,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ displayName: displayName.value }),
+        });
+
+        // Actualizar bio
+        await fetch(API + "/api/v1/users/me/bio", {
+          method: "PATCH",
+          headers: {
+            Authorization: "Bearer " + token,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ bio: bio.value }),
+        });
+
+        // Actualizar color del banner
+        await fetch(API + "/api/v1/users/me/banner-color", {
+          method: "PATCH",
+          headers: {
+            Authorization: "Bearer " + token,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ bannerColor: bannerColor.value }),
+        });
+
+        // Subir avatar si hay archivo
+        if (avatar.files[0]) {
+          const fd = new FormData();
+          fd.append("file", avatar.files[0]);
+          await fetch(API + "/api/v1/avatars", {
+            method: "POST",
+            headers: { Authorization: "Bearer " + token },
+            body: fd,
+          });
+        }
+
+        // 🔄 Obtener perfil actualizado
+        const res = await fetch(API + "/api/v1/users/me", {
+          headers: { Authorization: "Bearer " + token },
+        });
+        const updated = await res.json();
+        localStorage.setItem("displayName", updated.displayName);
+        localStorage.setItem("avatarUrl", updated.avatarUrl);
+        localStorage.setItem("bio", updated.bio || "");
+
+        // Redirigir
+        location.href = "user.html";
+      }
+
+      load();
+    </script>
+  </body>
+</html>

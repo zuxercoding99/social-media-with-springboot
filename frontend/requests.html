@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Solicitudes - Red Social</title>
+
+    <style>
+      :root {
+        --user-color: #1fe1d2;
+        --user-color-dark: #3076e0;
+      }
+      body.theme-loading header,
+      body.theme-loading .sidebar::before {
+        opacity: 0;
+      }
+
+      body {
+        transition: opacity 0.25s ease;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        line-height: 1.4;
+        color: #0f1419;
+        margin: 0;
+        background: #fff;
+      }
+
+      /* Defensivo para cualquier texto ingresado por el usuario*/
+      .user-text {
+        overflow-wrap: break-word;
+        word-wrap: break-word;
+        white-space: normal;
+      }
+
+      /* HEADER + SIDEBAR (idéntico a feed.html) */
+      header {
+        background: linear-gradient(
+          135deg,
+          var(--user-color),
+          var(--user-color-dark)
+        );
+        color: white;
+        padding: 12px 20px;
+        display: flex;
+        align-items: center;
+        position: sticky;
+        top: 0;
+        z-index: 1500;
+      }
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: bold;
+        font-size: 18px;
+      }
+      .header-more-btn {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        filter: invert(1);
+      }
+
+      #sidebarBackdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.18);
+        display: none;
+        z-index: 1200;
+      }
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 220px;
+        background: white;
+        box-shadow: 2px 0 12px rgba(0, 0, 0, 0.12);
+        transform: translateX(-100%);
+        transition: 0.22s;
+        z-index: 1300;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .sidebar-nav a:hover {
+        background: color-mix(in srgb, var(--user-color), white 85%);
+      }
+
+      .sidebar-nav a.active {
+        color: var(--user-color);
+      }
+
+      .sidebar::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 120px;
+        width: 100%;
+        background: linear-gradient(
+          135deg,
+          var(--user-color),
+          var(--user-color-dark)
+        );
+        z-index: -1;
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .sidebar-user {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+        padding: 40px 0 24px;
+      }
+      .sidebar-user img {
+        width: 96px;
+        height: 96px;
+        border-radius: 50%;
+        object-fit: cover;
+        cursor: pointer;
+      }
+      .sidebar-user .displayname {
+        font-size: 20px;
+        font-weight: bold;
+
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .sidebar-user .username-small {
+        color: #657786;
+
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .sidebar-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .sidebar-nav a {
+        text-decoration: none;
+        color: #111;
+        font-weight: 600;
+        padding: 12px 16px;
+        border-radius: 12px;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      .sidebar-nav a:hover {
+        background: #f5f8fa;
+      }
+
+      /* LAYOUT */
+      .container {
+        width: 100%;
+        max-width: 618px;
+        margin: 0 auto;
+        padding: 0;
+
+        /* Twitter-like */
+        background: white;
+      }
+      .section {
+        margin-bottom: 30px;
+      }
+      .section h2 {
+        font-size: 18px;
+        margin-bottom: 12px;
+      }
+
+      /* request card (discord-like) */
+      .request {
+        background: white;
+        border-radius: 12px;
+        padding: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      .req-left {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      .req-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+      .req-name {
+        font-weight: 700;
+      }
+      .req-user {
+        font-size: 13px;
+        color: #657786;
+      }
+
+      .actions {
+        display: flex;
+        gap: 8px;
+      }
+      button {
+        border: none;
+        border-radius: 20px;
+        padding: 6px 12px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      .accept {
+        background: #17bf63;
+        color: white;
+      }
+      .reject {
+        background: #e0245e;
+        color: white;
+      }
+      .block {
+        background: #ffad1f;
+        color: #111;
+      }
+      .cancel {
+        background: #657786;
+        color: white;
+      }
+
+      .empty {
+        text-align: center;
+        color: #657786;
+        padding: 20px;
+      }
+
+      /* RESPONSIVE */
+
+      @media (max-width: 480px) {
+        .container {
+          margin: 0px;
+          border: none;
+          padding: 0 0px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .sidebar {
+          width: 100%;
+          max-width: 100%;
+        }
+
+        .sidebar-user .displayname,
+        .sidebar-user .username-small {
+          white-space: normal;
+          text-align: center;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .profile-main {
+          padding-top: 16px;
+        }
+        .profile-avatar.big {
+          width: 100px;
+          height: 100px;
+          top: -75px;
+          left: 50%; /* mueve el borde izquierdo al 50% del contenedor */
+          transform: translateX(
+            -50%
+          ); /* desplaza el elemento hacia la izquierda la mitad de su ancho */
+          margin: 0 auto;
+          text-align: center;
+        }
+        .profile-info {
+          padding-top: 12px;
+          text-align: center;
+        }
+        .profile-top-actions {
+          position: static;
+          justify-content: center;
+          margin-bottom: 10px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .tweet-actions {
+          gap: 12px;
+          flex-wrap: wrap;
+        }
+        .tweet-image iframe {
+          width: 100%;
+          height: auto;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .image-overlay {
+          padding: 12px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        body {
+          font-size: 16px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .sidebar {
+          width: 100%;
+          max-width: 100%;
+        }
+
+        .sidebar-user .displayname,
+        .sidebar-user .username-small {
+          white-space: normal;
+          text-align: center;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <div class="header-left">
+        <img id="headerMoreBtn" src="icons/more.png" class="header-more-btn" />
+        <a href="feed.html" style="color: white; text-decoration: none"
+          >RED SOCIAL</a
+        >
+      </div>
+    </header>
+
+    <div id="sidebarBackdrop"></div>
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-user">
+        <img id="sidebarAvatar" />
+        <div class="displayname" id="sidebarDisplayName"></div>
+        <div class="username-small" id="sidebarUsername"></div>
+      </div>
+      <div class="sidebar-nav">
+        <a href="feed.html"><img src="icons/home.png" alt="" /> Home</a>
+        <a href="requests.html"
+          ><img src="icons/add-friend.png" alt="" /> Solicitudes</a
+        >
+        <a href="chat.html"><img src="icons/email.png" alt="" /> Chat</a>
+        <a href="user.html"><img src="icons/user.png" alt="" /> Profile</a>
+        <a href="#" id="sidebarLogout"
+          ><img src="icons/exit.png" alt="" /> Log out</a
+        >
+      </div>
+    </aside>
+
+    <div class="container">
+      <div class="section">
+        <h2>Solicitudes recibidas pendientes</h2>
+        <div id="received"></div>
+      </div>
+
+      <div class="section">
+        <h2>Solicitudes enviadas pendientes</h2>
+        <div id="sent"></div>
+      </div>
+    </div>
+
+    <script>
+      document.body.classList.add("theme-loading");
+      const API = "http://localhost:8080";
+      const token = localStorage.getItem("accessToken");
+      const username = localStorage.getItem("username");
+      const displayName = localStorage.getItem("displayName");
+      const avatarUrl = localStorage.getItem("avatarUrl");
+
+      if (!token) location.href = "login.html";
+
+      /* avatar loader */
+      async function loadAvatar(url) {
+        if (!url) return "https://via.placeholder.com/48";
+        const r = await fetch(API + url, {
+          headers: { Authorization: "Bearer " + token },
+        });
+        return URL.createObjectURL(await r.blob());
+      }
+
+      /* sidebar */
+      const sidebar = document.getElementById("sidebar");
+      const backdrop = document.getElementById("sidebarBackdrop");
+      document.getElementById("headerMoreBtn").onclick = () => {
+        sidebar.classList.toggle("open");
+        backdrop.style.display = sidebar.classList.contains("open")
+          ? "block"
+          : "none";
+      };
+      backdrop.onclick = () => {
+        sidebar.classList.remove("open");
+        backdrop.style.display = "none";
+      };
+
+      document.getElementById("sidebarDisplayName").innerText =
+        displayName || username;
+      document.getElementById("sidebarUsername").innerText = "@" + username;
+      if (avatarUrl) loadAvatar(avatarUrl).then((a) => (sidebarAvatar.src = a));
+
+      sidebarLogout.onclick = () => {
+        localStorage.clear();
+        location.href = "login.html";
+      };
+
+      /* ===== Requests ===== */
+      const receivedEl = document.getElementById("received");
+      const sentEl = document.getElementById("sent");
+
+      async function loadAll() {
+        loadReceived();
+        loadSent();
+      }
+
+      async function loadReceived() {
+        const r = await fetch(API + "/api/v1/users/me/requests-received", {
+          headers: { Authorization: "Bearer " + token },
+        });
+        const arr = await r.json();
+        if (!arr.length) {
+          receivedEl.innerHTML =
+            '<div class="empty">No hay solicitudes pendientes</div>';
+          return;
+        }
+        receivedEl.innerHTML = "";
+        for (const u of arr) {
+          const av = await loadAvatar(u.avatarUrl);
+          receivedEl.innerHTML += `
+      <div class="request">
+        <div class="req-left">
+          <img class="req-avatar" src="${av}">
+          <div>
+            <div class="req-name">${u.requesterDisplayName}</div>
+            <div class="req-user">@${u.requesterUsername}</div>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="accept" onclick="accept('${u.requesterId}')">Aceptar</button>
+          <button class="reject" onclick="reject('${u.requesterId}')">Rechazar</button>
+          <button class="block" onclick="block('${u.requesterId}')">Bloquear</button>
+        </div>
+      </div>`;
+        }
+      }
+
+      async function loadSent() {
+        const r = await fetch(API + "/api/v1/users/me/requests-sent", {
+          headers: { Authorization: "Bearer " + token },
+        });
+        const arr = await r.json();
+        if (!arr.length) {
+          sentEl.innerHTML =
+            '<div class="empty">No hay solicitudes enviadas</div>';
+          return;
+        }
+        sentEl.innerHTML = "";
+        for (const u of arr) {
+          const av = await loadAvatar(u.avatarUrl);
+          sentEl.innerHTML += `
+      <div class="request">
+        <div class="req-left">
+          <img class="req-avatar" src="${av}">
+          <div>
+            <div class="req-name">${u.requesterDisplayName}</div>
+            <div class="req-user">@${u.requesterUsername}</div>
+          </div>
+        </div>
+        <button class="cancel" onclick="cancel('${u.requesterId}')">Cancelar</button>
+      </div>`;
+        }
+      }
+
+      /* actions */
+      const h = { Authorization: "Bearer " + token };
+      const accept = (id) =>
+        fetch(API + "/api/v1/friends/accept/" + id, {
+          method: "POST",
+          headers: h,
+        }).then(() => location.reload());
+      const reject = (id) =>
+        fetch(API + "/api/v1/friends/reject/" + id, {
+          method: "POST",
+          headers: h,
+        }).then(() => location.reload());
+      const cancel = (id) =>
+        fetch(API + "/api/v1/friends/cancel/" + id, {
+          method: "DELETE",
+          headers: h,
+        }).then(() => location.reload());
+      const block = (id) =>
+        fetch(API + "/api/v1/friends/block/" + id, {
+          method: "POST",
+          headers: h,
+        }).then(() => location.reload());
+
+      loadAll();
+
+      /*Color sidebar header banner*/
+      function applyUserTheme(color) {
+        const root = document.documentElement;
+
+        if (color) {
+          root.style.setProperty("--user-color", color);
+          root.style.setProperty("--user-color-dark", darkenColor(color, 25));
+        } else {
+          root.style.setProperty("--user-color", "#1fe1d2");
+          root.style.setProperty("--user-color-dark", "#3076e0");
+        }
+        document.body.classList.remove("theme-loading");
+      }
+
+      async function fetchMyProfile() {
+        const r = await fetch(`${API}/api/v1/users/me`, {
+          headers: { Authorization: "Bearer " + token },
+        });
+
+        if (!r.ok) throw new Error("No se pudo cargar el perfil");
+
+        return r.json();
+      }
+
+      async function initUserTheme() {
+        try {
+          const u = await fetchMyProfile();
+          applyUserTheme(u.bannerColor);
+        } catch (e) {
+          console.warn("Usando tema por defecto", e);
+          applyUserTheme(null);
+        }
+      }
+      function darkenColor(hex, percent) {
+        const num = parseInt(hex.replace("#", ""), 16);
+        const amt = Math.round(2.55 * percent);
+        const r = Math.max(0, (num >> 16) - amt);
+        const g = Math.max(0, ((num >> 8) & 0x00ff) - amt);
+        const b = Math.max(0, (num & 0x0000ff) - amt);
+
+        return `rgb(${r}, ${g}, ${b})`;
+      }
+      initUserTheme();
+    </script>
+  </body>
+</html>

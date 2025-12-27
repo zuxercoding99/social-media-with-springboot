@@ -27,16 +27,25 @@ public class WebSocketAuthorizationInterceptor implements ChannelInterceptor {
         if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
 
             String destination = accessor.getDestination();
+            Authentication auth = (Authentication) accessor.getUser();
 
-            // SOLO endpoints privados
-            if (destination != null && destination.startsWith("/user/")) {
+            if (destination == null)
+                return message;
 
-                Authentication auth = (Authentication) accessor.getUser();
-
+            // privado
+            if (destination.startsWith("/user/")) {
                 if (auth == null || !auth.isAuthenticated()) {
                     throw new AccessDeniedException("Login requerido");
                 }
             }
+
+            // público autenticado
+            if (destination.equals("/topic/public")) {
+                if (auth == null || !auth.isAuthenticated()) {
+                    throw new AccessDeniedException("Login requerido");
+                }
+            }
+
         }
 
         return message;

@@ -1,0 +1,13 @@
+package org.example.dto;
+
+import java.time.Instant;
+import java.util.UUID;
+
+public record PublicMessageDto(
+        UUID senderId,
+        String senderUsername,
+        String senderDisplayName,
+        String senderAvatarUrl,
+        String content,
+        Instant sentAt) {
+}

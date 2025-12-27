@@ -9,6 +9,7 @@ import org.example.dto.AuthResponse;
 import org.example.dto.LoginDto;
 import org.example.dto.RegisterDto;
 import org.example.entity.Role;
+import org.example.entity.ThemeMode;
 import org.example.entity.User;
 import org.example.exception.customs.httpstatus.ConflictException;
 import org.example.exception.customs.httpstatus.NotFoundException;
@@ -67,6 +68,9 @@ public class AuthService {
         user.setUsername(username);
         user.setBio("");
         user.setBannerColor("#1da1f2");
+
+        user.setThemeMode(ThemeMode.LIGHT);
+
         user.setAvatarKey("default.png");
         user.setPassword(passwordEncoder.encode(registerDto.password().trim()));
         user.setDisplayName(username);

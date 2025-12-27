@@ -1,0 +1,1869 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Perfil - Red Social</title>
+    <style>
+      :root {
+        --user-color: #1fe1d2;
+        --user-color-dark: #3076e0;
+      }
+
+      body.theme-loading header,
+      body.theme-loading .sidebar::before {
+        opacity: 0;
+      }
+
+      body {
+        transition: opacity 0.25s ease;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        line-height: 1.4;
+        color: #0f1419;
+        margin: 0;
+        background: #fff;
+      }
+
+      /* HEADER */
+      header {
+        background: linear-gradient(
+          135deg,
+          var(--user-color),
+          var(--user-color-dark)
+        );
+        color: white;
+        padding: 12px 20px;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        position: sticky;
+        top: 0;
+        z-index: 1500;
+        transition: background 0.3s, opacity 0.3s;
+      }
+      header.scrolled {
+        opacity: 0.62;
+      }
+      header a.header-title {
+        color: white;
+        text-decoration: none;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: bold;
+        font-size: 18px;
+      }
+      .header-more-btn {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        filter: invert(1);
+        opacity: 0.95;
+      }
+      .header-more-btn:hover {
+        opacity: 0.8;
+        transform: scale(1.05);
+        transition: 0.12s;
+      }
+
+      /* SIDEBAR */
+      #sidebarBackdrop {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.18);
+        display: none;
+        z-index: 1200;
+      }
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 220px;
+        max-width: 80%;
+        background: white;
+        box-shadow: 2px 0 12px rgba(0, 0, 0, 0.12);
+        z-index: 1300;
+        transform: translateX(-100%);
+        transition: transform 0.22s ease;
+        display: flex;
+        flex-direction: column;
+        padding: 12px;
+        overflow: hidden;
+      }
+
+      .sidebar-nav a:hover {
+        background: color-mix(in srgb, var(--user-color), white 85%);
+      }
+
+      .sidebar-nav a.active {
+        color: var(--user-color);
+      }
+
+      .sidebar::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 120px;
+        width: 100%;
+        background: linear-gradient(
+          135deg,
+          var(--user-color),
+          var(--user-color-dark)
+        );
+        z-index: -1;
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .sidebar-user {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+        padding-top: 40px;
+        padding-bottom: 24px;
+      }
+      .sidebar-user img {
+        width: 96px;
+        height: 96px;
+        border-radius: 50%;
+        object-fit: cover;
+        cursor: pointer;
+      }
+      .sidebar-user .displayname {
+        font-weight: bold;
+        color: #000;
+        font-size: 20px;
+
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .sidebar-user .username-small {
+        font-size: 16px;
+        color: rgb(83, 100, 113);
+
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .sidebar-user-menu {
+        position: absolute;
+        right: 8px;
+        top: 110px;
+        background: white;
+        border: 1px solid #eff3f4;
+        border-radius: 8px;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+        padding: 6px;
+        display: none;
+        z-index: 1400;
+        min-width: 140px;
+      }
+      .sidebar-user-menu .opt {
+        padding: 8px 10px;
+        cursor: pointer;
+        border-radius: 6px;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .sidebar-user-menu .opt:hover {
+        background: #f5f8fa;
+      }
+      .sidebar-user-menu .opt.logout {
+        color: #e0245e;
+      }
+      .sidebar-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 24px;
+      }
+      .sidebar-nav a {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #111;
+        text-decoration: none;
+        padding: 12px 16px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 16px;
+      }
+      .sidebar-nav a img {
+        width: 24px;
+        height: 24px;
+        object-fit: cover;
+      }
+      .sidebar-nav a:hover {
+        background: #f5f8fa;
+      }
+
+      /* LAYOUT */
+      .container {
+        width: 100%;
+        max-width: 618px;
+        margin: 0 auto;
+        padding: 0;
+
+        /* Twitter-like */
+        background: white;
+        border-left: 1px solid #eff3f4;
+        border-right: 1px solid #eff3f4;
+      }
+
+      /* PROFILE */
+      .profile {
+        background: white;
+        padding: 15px;
+
+        display: flex;
+        gap: 12px;
+        margin-bottom: 15px;
+        flex-direction: column;
+      }
+      .profile-header {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+      }
+      .profile-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+      .profile-info h2 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: bold;
+      }
+
+      .profile-info .bio {
+        margin: 10px 0 13px 0;
+      }
+
+      .profile-info .stats {
+        font-size: 13px;
+        color: rgb(83, 100, 113);
+        margin: 4px 0;
+      }
+
+      .profile-info .friend-status {
+        margin-top: 8px;
+        font-size: 14px;
+        font-weight: bold;
+        color: #1da1f2;
+        text-align: right;
+      }
+
+      .actions {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .actions button {
+        padding: 6px 14px;
+        border: none;
+        border-radius: 20px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+      .actions .edit {
+        background: #1da1f2;
+        color: white;
+      }
+      .actions .add {
+        background: #1da1f2;
+        color: white;
+      }
+      .actions .remove {
+        background: #e0245e;
+        color: white;
+      }
+      .actions .cancel {
+        background: rgb(83, 100, 113);
+        color: white;
+      }
+
+      .tweeter-user .display-name {
+        font-weight: bold;
+        cursor: pointer;
+      }
+      .tweet-user .username {
+        font-size: 15px;
+        color: rgb(83, 100, 113);
+        cursor: pointer;
+      }
+      .post-time {
+        font-size: 15px;
+        color: rgb(83, 100, 113);
+        margin-left: auto;
+      }
+
+      .tweet-privacy {
+        margin-top: 2px;
+        margin-bottom: 2px;
+
+        font-size: 13px;
+        font-weight: 500;
+        color: rgb(29, 155, 240); /* azul exacto X */
+
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+
+        opacity: 0.9;
+      }
+
+      .tweet-privacy-inline {
+        font-size: 13px;
+        color: rgb(83, 100, 113); /* gris Twitter */
+        white-space: nowrap;
+        opacity: 0.85;
+      }
+
+      .post-image-container {
+        width: 100%;
+        max-height: 400px;
+        overflow: hidden;
+        border-radius: 12px;
+        margin-top: 8px;
+      }
+      .post-image-container img {
+        width: 100%;
+        height: auto;
+        max-height: 400px;
+        object-fit: contain;
+        display: block;
+        border-radius: 12px;
+      }
+
+      /* ===== MENU ⋮ EN POSTS (Twitter-like) ===== */
+      .tweet-header {
+        display: flex; /* 👈 ESTO FALTABA */
+        align-items: center;
+        justify-content: space-between;
+        position: relative;
+        font-size: 15px;
+        gap: 8px;
+      }
+
+      .tweet-header .options-menu {
+        position: absolute;
+        top: 22px; /* justo debajo del ⋮ */
+        right: 0;
+        background: white;
+        border: 1px solid #eff3f4;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        display: none;
+        flex-direction: column;
+        min-width: 160px;
+        padding: 6px 0;
+        z-index: 50;
+      }
+
+      .tweet-header .options-menu .option {
+        padding: 10px 14px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+
+      .tweet-header .options-menu .option:hover {
+        background: #f5f8fa;
+      }
+
+      .tweet-header .options-menu .delete-option {
+        color: #e0245e;
+      }
+
+      .tweet-header .options-menu .delete-option img {
+        width: 16px;
+        height: 16px;
+      }
+
+      /* EMPTY */
+      .empty {
+        text-align: center;
+        color: rgb(83, 100, 113);
+        margin-top: 30px;
+      }
+
+      .display-name {
+        font-weight: bold;
+        color: #000;
+        cursor: pointer;
+      }
+
+      .tweet-avatar img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        cursor: pointer;
+      }
+
+      /* Botón de menú en perfil (para eliminar amigo) */
+      .profile-more-btn {
+        position: absolute;
+        top: 14px;
+        right: 8px;
+        width: 19px;
+        height: 19px;
+        cursor: pointer;
+        z-index: 20;
+      }
+
+      .profile-top-actions .options-menu {
+        position: absolute;
+        top: 32px; /* debajo del ⋮ */
+        right: 0;
+
+        display: none;
+        flex-direction: column;
+
+        background: white;
+        border: 1px solid #eff3f4;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+        min-width: 160px;
+        padding: 6px 0;
+        z-index: 50;
+      }
+
+      /* FRIENDS MODAL */
+      #friendsBackdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        display: none;
+        z-index: 2000;
+      }
+      #friendsModal {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 92%;
+        max-width: 420px;
+        max-height: 75vh;
+        background: white;
+        border-radius: 14px;
+        display: none;
+        flex-direction: column;
+        z-index: 2100;
+        overflow: hidden;
+      }
+      .friends-header {
+        padding: 12px;
+        text-align: center;
+        font-weight: bold;
+        border-bottom: 1px solid #eff3f4;
+      }
+      .friends-search {
+        padding: 10px;
+        border-bottom: 1px solid #eff3f4;
+      }
+      .friends-search input {
+        width: 100%;
+        padding: 8px 12px;
+        border-radius: 20px;
+        border: 1px solid #ccd6dd;
+      }
+      .friends-list {
+        overflow-y: auto;
+        max-height: 56vh;
+      }
+      .friend-item {
+        display: flex;
+        gap: 12px;
+        padding: 10px 14px;
+        cursor: pointer;
+        align-items: center;
+      }
+      .friend-item:hover {
+        background: #f5f8fa;
+      }
+      .friend-item img {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+      .friend-info .username {
+        font-weight: bold;
+        font-size: 14px;
+      }
+      .friend-info .displayname {
+        font-size: 13px;
+        color: rgb(83, 100, 113);
+      }
+
+      /* Cursor clickable en autor del post */
+      .post-header .avatar,
+      .post-header .display-name,
+      .post-header .username {
+        cursor: pointer;
+      }
+
+      /* ===== IMAGE LIGHTBOX (PRO) ===== */
+      .image-overlay {
+        position: fixed;
+        inset: 0;
+        background: #fff; /* background: rgba(0, 0, 0, 0.55); /* ✨ translúcido, no negro */
+        backdrop-filter: blur(2px); /* ✨ efecto moderno */
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 3000;
+        padding: 24px; /* ✨ margen de seguridad */
+      }
+
+      .image-overlay img {
+        /* fuerza presencia visual */
+        width: 80vw;
+        height: 80vh;
+
+        /* límites reales */
+        max-width: 900px;
+        max-height: 700px;
+
+        /* pero sin deformar */
+        object-fit: contain;
+
+        border-radius: 14px;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+        cursor: zoom-out;
+      }
+
+      /* ===== TWITTER-LIKE PROFILE ===== */
+      .profile {
+        padding: 0;
+        overflow: hidden;
+      }
+
+      .profile-banner {
+        height: 199px;
+        background: linear-gradient(
+          135deg,
+          var(--user-color),
+          var(--user-color-dark)
+        );
+      }
+
+      .profile-main {
+        padding-top: 16px;
+        padding: 0 12px 16px;
+        position: relative;
+      }
+
+      .profile-avatar.big {
+        width: 133.5px;
+        height: 133.5px;
+        position: absolute;
+        top: -78px;
+
+        background: white;
+        border-radius: 50%;
+
+        /* Efecto Twitter */
+        box-shadow: rgba(255, 255, 255, 0.8) 0 0 0 4px,
+          rgba(0, 0, 0, 0.08) 0 2px 8px;
+      }
+
+      /* SOLO el botón ⋮ arriba */
+      /* Contenedor superior derecho del perfil (⋮ + estado) */
+      .profile-top-actions {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        z-index: 20;
+      }
+
+      /* Texto "Son amigos" */
+      .friend-status-top {
+        position: absolute;
+        top: 6px;
+        right: 44px; /* deja lugar para ⋮ */
+        font-size: 14px;
+        font-weight: bold;
+        color: #1da1f2;
+        white-space: nowrap;
+        pointer-events: none; /* opcional */
+      }
+
+      .friend-status-top span {
+        pointer-events: none;
+      }
+      .friend-status-top button {
+        pointer-events: auto;
+      }
+
+      /* Botones de amistad abajo */
+      .profile-actions-bottom {
+        margin-top: 10px;
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end; /* 👈 CLAVE */
+      }
+
+      .profile-info {
+        margin-top: 0;
+        padding-top: 70px; /* se adapta a cualquier caso */
+      }
+
+      .profile-info h2 {
+        margin: 0;
+        font-size: 20px;
+      }
+
+      .profile-info .username {
+        color: rgb(83, 100, 113);
+        margin-top: 0px;
+      }
+
+      .profile-joined {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 6px;
+        font-size: 14px;
+        color: rgb(83, 100, 113);
+      }
+
+      .profile-joined img {
+        width: 16px;
+        height: 16px;
+        opacity: 0.8;
+      }
+
+      .profile-info .stats {
+        margin-top: 10px;
+        font-size: 14px;
+      }
+
+      /*Posts como x*/
+      .tweet {
+        margin: 0 auto;
+        padding: 12px 16px 0;
+        background: white;
+
+        /* Twitter-like */
+        border-top: 1px solid #eff3f4;
+        border-radius: 0;
+      }
+
+      .tweet-layout {
+        display: flex;
+        align-items: flex-start;
+      }
+
+      .tweet-avatar {
+        width: 40px;
+        margin-right: 12px;
+        flex-shrink: 0;
+      }
+
+      .tweet-avatar img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+      }
+
+      .tweet-body {
+        flex: 1;
+        padding-bottom: 12px;
+        min-width: 0;
+      }
+
+      /* BOTÓN ⋮ EN POSTS (Twitter-like) */
+
+      .tweet-header .more-btn {
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0; /* 👈 importante */
+        cursor: pointer;
+        opacity: 0.7;
+      }
+
+      .tweet-header .more-btn:hover {
+        opacity: 1;
+      }
+
+      .tweet-user {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        flex-wrap: wrap; /* permite salto si falta ancho */
+        min-width: 0;
+      }
+
+      .tweet-content {
+        margin-top: 4px;
+        font-size: 15px;
+        line-height: 1.45;
+
+        overflow-wrap: break-word;
+        word-wrap: break-word;
+      }
+
+      .tweet-content a,
+      .user-text a,
+      .bio a {
+        color: #1d9bf0;
+        text-decoration: none;
+        white-space: pre-wrap;
+      }
+
+      .tweet-content a:hover {
+        text-decoration: underline;
+      }
+
+      /* ===== TWEET IMAGE (Twitter real) ===== */
+      .tweet-image {
+        margin-top: 12px;
+
+        max-width: 516px;
+        max-height: auto;
+
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+
+        background: #fff;
+        cursor: pointer;
+      }
+
+      .tweet-image img {
+        max-width: 100%;
+        max-height: 417px;
+
+        width: auto;
+        height: auto;
+
+        object-fit: contain;
+        display: block;
+
+        border: 1px solid #eff3f4;
+        border-radius: 16px;
+        overflow: hidden;
+
+        /* ❌ NO border */
+        /* ❌ NO border-radius */
+      }
+
+      /* ===== MENU ⋮ PERFIL ===== */
+      .profile-options-menu {
+        position: absolute;
+        top: 32px;
+        right: 0;
+
+        display: none;
+        flex-direction: column;
+
+        background: white;
+        border: 1px solid #eff3f4;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+        min-width: 180px;
+        padding: 6px 0;
+        z-index: 100;
+      }
+
+      .profile-options-menu .option {
+        padding: 10px 14px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+
+      .profile-options-menu .option:hover {
+        background: #f5f8fa;
+      }
+
+      .profile-options-menu .delete-option {
+        color: #e0245e;
+      }
+
+      .profile-options-menu img {
+        width: 16px;
+        height: 16px;
+      }
+      /* Defensivo para cualquier texto ingresado por el usuario*/
+      .user-text {
+        white-space: normal !important;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+
+      /* zona clickeable del post */
+      .tweet-clickable {
+        cursor: pointer;
+        padding: 4px 0;
+        border-radius: 8px;
+        transition: background 0.15s ease;
+      }
+
+      .tweet-clickable:hover {
+        background: #f5f8fa;
+      }
+
+      /* ===== TWEET ACTIONS ===== */
+      .tweet-actions {
+        display: flex;
+        gap: 132px;
+        margin-top: 14px;
+        color: #657786;
+        font-size: 14px;
+      }
+
+      .tweet-action {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .tweet-action img {
+        width: 18px;
+        height: 18px;
+        stroke: #657786;
+        fill: white;
+      }
+
+      .tweet-action svg {
+        width: 18px;
+        height: 18px;
+        display: block;
+      }
+
+      .like-action svg {
+        transition: transform 0.15s ease, color 0.15s ease;
+      }
+
+      .like-action.liked svg {
+        transform: scale(1.2);
+      }
+
+      .like-action {
+        color: #657786;
+        cursor: pointer;
+      }
+
+      .like-action.liked {
+        color: #f91880;
+      }
+
+      .like-icon {
+        width: 20px;
+        height: 20px;
+      }
+
+      /* RESPONSIVE */
+
+      @media (max-width: 480px) {
+        .container {
+          margin: 0px;
+          border: none;
+          padding: 0 0px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .sidebar {
+          width: 100%;
+          max-width: 100%;
+        }
+
+        .sidebar-user .displayname,
+        .sidebar-user .username-small {
+          white-space: normal;
+          text-align: center;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .profile-main {
+          padding-top: 16px;
+        }
+        .profile-avatar.big {
+          width: 100px;
+          height: 100px;
+          top: -75px;
+          left: 50%; /* mueve el borde izquierdo al 50% del contenedor */
+          transform: translateX(
+            -50%
+          ); /* desplaza el elemento hacia la izquierda la mitad de su ancho */
+          margin: 0 auto;
+          text-align: center;
+        }
+        .profile-info {
+          padding-top: 54px;
+          text-align: center;
+        }
+
+        .profile-joined {
+          justify-content: center;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .friend-status-top {
+          display: flex; /* Activamos flexbox */
+          justify-content: space-between; /* Uno a la izquierda, otro a la derecha */
+          align-items: center; /* Centrar verticalmente si hace falta */
+          margin-bottom: 40px;
+          margin-top: 40px;
+          top: 3px;
+          right: 50%; /* mueve el borde izquierdo al 50% del contenedor */
+          transform: translateX(
+            -50%
+          ); /* desplaza el elemento hacia la izquierda la mitad de su ancho */
+        }
+
+        .profile-top-actions {
+          position: absolute;
+          top: -14px;
+          right: 12px;
+        }
+      }
+      @media (max-width: 480px) {
+        .tweet-actions {
+          gap: 12px;
+          flex-wrap: wrap;
+        }
+        .tweet-image iframe {
+          width: 100%;
+          height: auto;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .image-overlay {
+          padding: 12px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        body {
+          font-size: 16px;
+        }
+
+        .profile-info h2 {
+          font-size: 32px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="header-left">
+        <img
+          id="headerMoreBtn"
+          src="icons/more.png"
+          alt="menu"
+          class="header-more-btn"
+        />
+        <a href="feed.html" class="header-title">RED SOCIAL</a>
+      </div>
+    </header>
+
+    <!-- Sidebar -->
+    <div id="sidebarBackdrop"></div>
+    <aside id="sidebar" class="sidebar" aria-hidden="true">
+      <div class="sidebar-user">
+        <img
+          id="sidebarAvatar"
+          src="icons/upload.png"
+          alt="me"
+          title="Ver perfil"
+        />
+        <div class="displayname" id="sidebarDisplayName" title="Ver perfil">
+          Usuario
+        </div>
+        <div class="username-small" id="sidebarUsername" title="Ver perfil">
+          @usuario
+        </div>
+      </div>
+      <div class="sidebar-nav">
+        <a href="feed.html"><img src="icons/home.png" alt="" /> Home</a>
+        <a href="requests.html"
+          ><img src="icons/add-friend.png" alt="" /> Solicitudes</a
+        >
+        <a href="chat.html"><img src="icons/email.png" alt="" /> Chat</a>
+        <a href="user.html"><img src="icons/user.png" alt="" /> Profile</a>
+        <a href="#" id="sidebarLogout"
+          ><img src="icons/exit.png" alt="" /> Log out</a
+        >
+      </div>
+    </aside>
+
+    <div class="container">
+      <div id="profile" class="profile"></div>
+      <div id="posts"></div>
+    </div>
+
+    <!-- FRIENDS MODAL -->
+    <div id="friendsBackdrop"></div>
+    <div
+      id="friendsModal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="friendsTitle"
+    >
+      <div class="friends-header" id="friendsTitle">Amigos</div>
+      <div class="friends-search">
+        <input id="friendsSearch" placeholder="Buscar por username" />
+      </div>
+      <div id="friendsList" class="friends-list"></div>
+    </div>
+
+    <!-- Image Lightbox -->
+    <div id="imageOverlay" class="image-overlay">
+      <img id="overlayImg" alt="imagen completa" />
+    </div>
+
+    <script async src="https://platform.twitter.com/widgets.js"></script>
+
+    <script>
+      document.body.classList.add("theme-loading");
+      const API = "http://localhost:8080";
+      const token = localStorage.getItem("accessToken");
+      const myUsername = localStorage.getItem("username");
+      const displayName = localStorage.getItem("displayName");
+      const avatarUrl = localStorage.getItem("avatarUrl");
+      console.log(avatarUrl);
+      if (!token) location.href = "login.html";
+
+      /* Para los botones */
+      document.addEventListener("click", () => {
+        document
+          .querySelectorAll(".options-menu, .profile-options-menu")
+          .forEach((m) => {
+            if (m) m.style.display = "none";
+          });
+      });
+
+      /* ===== CACHE ===== */
+      const cache = new Map();
+      async function loadAvatar(url) {
+        if (!url) return "https://via.placeholder.com/64";
+        if (cache.has(url)) return cache.get(url);
+        try {
+          const r = await fetch(API + url, {
+            headers: { Authorization: "Bearer " + token },
+          });
+          if (!r.ok) return "https://via.placeholder.com/64";
+          const o = URL.createObjectURL(await r.blob());
+          cache.set(url, o);
+          return o;
+        } catch {
+          return "https://via.placeholder.com/64";
+        }
+      }
+      async function loadImg(url) {
+        try {
+          const r = await fetch(API + url, {
+            headers: { Authorization: "Bearer " + token },
+          });
+          if (!r.ok) return null;
+          return URL.createObjectURL(await r.blob());
+        } catch {
+          return null;
+        }
+      }
+      function timeAgo(date) {
+        const d = new Date(date),
+          now = new Date(),
+          diff = (now - d) / 1000;
+        if (diff < 60) return `${Math.floor(diff)}s`;
+        if (diff < 3600) return `${Math.floor(diff / 60)}m`;
+        if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
+        return `${Math.floor(diff / 86400)}d`;
+      }
+
+      function extractTweetUrl(text) {
+        const m = text.match(
+          /(https?:\/\/(?:www\.)?(?:twitter|x)\.com\/\w+\/status\/\d+)/
+        );
+        return m ? m[1] : null;
+      }
+
+      function extractYouTubeId(text) {
+        const m = text.match(
+          /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/
+        );
+        return m ? m[1] : null;
+      }
+
+      function renderUserText(text) {
+        if (!text) return "";
+
+        // 1️⃣ Escapar HTML (SEGURIDAD)
+        let safe = text
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+
+        // 2️⃣ Convertir URLs en links
+        safe = safe.replace(
+          /(https?:\/\/[^\s<]+)/g,
+          '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
+        );
+
+        // 3️⃣ Respetar saltos de línea
+        safe = safe.replace(/\n/g, "<br>");
+
+        return safe;
+      }
+
+      function formatJoined(dateIso) {
+        if (!dateIso) return "";
+        const d = new Date(dateIso);
+        return d.toLocaleDateString("en-US", {
+          month: "long",
+          year: "numeric",
+        });
+      }
+
+      /* ===== SIDEBAR / HEADER ===== */
+      const headerMoreBtn = document.getElementById("headerMoreBtn");
+      const sidebar = document.getElementById("sidebar");
+      const sidebarBackdrop = document.getElementById("sidebarBackdrop");
+      const sidebarAvatar = document.getElementById("sidebarAvatar");
+      const sidebarDisplayName = document.getElementById("sidebarDisplayName");
+      const sidebarUsernameEl = document.getElementById("sidebarUsername");
+      const sidebarLogout = document.getElementById("sidebarLogout");
+
+      function openSidebar() {
+        sidebar.classList.add("open");
+        sidebarBackdrop.style.display = "block";
+        sidebar.setAttribute("aria-hidden", "false");
+      }
+      function closeSidebar() {
+        sidebar.classList.remove("open");
+        sidebarBackdrop.style.display = "none";
+        sidebar.setAttribute("aria-hidden", "true");
+      }
+
+      headerMoreBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        sidebar.classList.contains("open") ? closeSidebar() : openSidebar();
+      });
+      sidebarBackdrop.addEventListener("click", closeSidebar);
+
+      // populate sidebar
+      sidebarDisplayName.innerText = displayName || myUsername;
+      sidebarUsernameEl.innerText = "@" + myUsername;
+      loadAvatar(avatarUrl).then((a) => (sidebarAvatar.src = a));
+
+      // click avatar -> mi perfil
+      sidebarAvatar.addEventListener(
+        "click",
+        () => (location.href = `user.html?username=${myUsername}`)
+      );
+      sidebarDisplayName.addEventListener(
+        "click",
+        () => (location.href = `user.html?username=${myUsername}`)
+      );
+      sidebarUsernameEl.addEventListener(
+        "click",
+        () => (location.href = `user.html?username=${myUsername}`)
+      );
+      sidebarLogout.addEventListener("click", () => {
+        localStorage.clear();
+        location.href = "login.html";
+      });
+
+      /* HEADER SCROLL */
+      const header = document.querySelector("header");
+      window.addEventListener("scroll", () => {
+        window.scrollY > 5
+          ? header.classList.add("scrolled")
+          : header.classList.remove("scrolled");
+      });
+
+      /* ===== PROFILE ===== */
+      const username = new URLSearchParams(location.search).get("username");
+      const isMe = !username || username === myUsername;
+      let profileUserId = null;
+      const profile = document.getElementById("profile");
+
+      /* Friends modal elements and cache */
+      const friendsBackdrop = document.getElementById("friendsBackdrop");
+      const friendsModal = document.getElementById("friendsModal");
+      const friendsListEl = document.getElementById("friendsList");
+      const friendsSearch = document.getElementById("friendsSearch");
+      let friendsCache = []; // store fetched friends list
+
+      function openFriendsModal() {
+        friendsBackdrop.style.display = "block";
+        friendsModal.style.display = "flex";
+        friendsSearch.value = "";
+        friendsSearch.focus();
+      }
+      function closeFriendsModal() {
+        friendsBackdrop.style.display = "none";
+        friendsModal.style.display = "none";
+        friendsListEl.innerHTML = "";
+        friendsCache = [];
+      }
+
+      friendsBackdrop.addEventListener("click", closeFriendsModal);
+
+      /* Render friends into modal */
+      async function renderFriends(list) {
+        friendsListEl.innerHTML = "";
+        if (!list || list.length === 0) {
+          friendsListEl.innerHTML = `<div class="empty">No tiene amigos</div>`;
+          return;
+        }
+        for (const f of list) {
+          const item = document.createElement("div");
+          item.className = "friend-item";
+          const av = await loadAvatar(f.avatarUrl);
+          item.innerHTML = `
+      <img src="${av}" alt="avatar">
+      <div class="friend-info">
+        <div class="username">@${f.username}</div>
+        <div class="displayname">${f.displayName}</div>
+      </div>`;
+          item.onclick = (e) => {
+            e.stopPropagation();
+            location.href = `user.html?username=${f.username}`;
+          };
+
+          friendsListEl.appendChild(item);
+        }
+      }
+
+      /* Search/filter */
+      friendsSearch.addEventListener("input", () => {
+        const q = friendsSearch.value.trim().toLowerCase();
+        if (!q) return renderFriends(friendsCache);
+        renderFriends(
+          friendsCache.filter(
+            (f) =>
+              (f.username || "").toLowerCase().includes(q) ||
+              (f.displayName || "").toLowerCase().includes(q)
+          )
+        );
+      });
+
+      function darkenColor(hex, percent) {
+        const num = parseInt(hex.replace("#", ""), 16);
+        const amt = Math.round(2.55 * percent);
+        const r = Math.max(0, (num >> 16) - amt);
+        const g = Math.max(0, ((num >> 8) & 0x00ff) - amt);
+        const b = Math.max(0, (num & 0x0000ff) - amt);
+
+        return `rgb(${r}, ${g}, ${b})`;
+      }
+
+      async function loadProfile() {
+        const r = await fetch(
+          API +
+            (isMe ? "/api/v1/users/me" : `/api/v1/users/${username}/profile`),
+          { headers: { Authorization: "Bearer " + token } }
+        );
+        const u = await r.json();
+        profileUserId = u.id;
+        const av = await loadAvatar(u.avatarUrl);
+
+        // Construir actions (manteniendo tu lógica original)
+        let topActions = ""; // 👈 todo lo que va arriba a la derecha
+        let menuOptions = "";
+
+        const showMenu = isMe || u.isFriend;
+
+        if (!isMe) {
+          if (u.isFriend) {
+            topActions = `
+                <div class="friend-status-top" style="display:flex; align-items:center; gap:8px">
+                  
+                  <button 
+                    onclick="location.href='chat.html?username=${u.username}'"
+                    style="
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        background: #888;        /* gris claro */
+                        color: white;
+                        border: none;
+                        padding: 8px 16px;       /* más corpulento */
+                        border-radius: 14px;
+                        cursor: pointer;
+                        font-weight: bold;
+                        font-size: 14px;
+                        transition: background 0.2s;
+                    "
+                    onmouseover="this.style.background='#999';"
+                    onmouseout="this.style.background='#888';"
+                >
+                    <img src="icons/message.png" alt="Chat" style="width:18px;height:18px; filter: invert(1);">
+                    Chatear
+                </button>
+                  <span>Son amigos</span>
+                </div>
+              `;
+          } else if (u.sentRequest) {
+            topActions = `<button class="cancel" onclick="cancelRequest()">Cancelar solicitud</button>`;
+          } else if (u.receivedRequest) {
+            topActions = `
+      <button class="add" onclick="acceptRequest()">Aceptar</button>
+      <button class="remove" onclick="rejectRequest()">Rechazar</button>`;
+          } else {
+            topActions = `<button class="add" onclick="addFriend()">Agregar amigo</button>`;
+          }
+        }
+
+        if (isMe) {
+          menuOptions = `
+    <div class="option" onclick="location.href='editar.html'">
+      Editar perfil
+    </div>`;
+        } else if (u.isFriend) {
+          menuOptions = `
+    <div class="option delete-option" onclick="removeFriend()">
+      <img src="icons/delete.png"> Eliminar amigo
+    </div>`;
+        }
+
+        // Include friends clickable only if friendCount > 0 (keeps look & placement)
+        const friendsClickable =
+          u.friendCount > 0
+            ? `<span id="friendsBtn" style="cursor:pointer;text-decoration:underline">${u.friendCount} amigos</span>`
+            : `${u.friendCount} amigos`;
+
+        profile.innerHTML = `
+          <div class="profile-banner"></div>
+
+          <div class="profile-main">
+            <img class="profile-avatar big" src="${av}" />
+
+            <div class="actions profile-top-actions">
+              ${topActions || ""}
+              ${
+                showMenu
+                  ? `<img src="icons/more.png" class="profile-more-btn">`
+                  : ""
+              }
+
+              ${
+                menuOptions
+                  ? `<div class="profile-options-menu">${menuOptions}</div>`
+                  : ""
+              }
+
+            </div>
+
+
+
+            <div class="profile-info">
+              <h2 class="user-text">${u.displayName}</h2>
+              <div class="username user-text">@${u.username}</div>
+
+              <div class="bio user-text">${renderUserText(
+                u.bio || "Sin bio"
+              )}</div>
+
+              
+
+              
+
+              <div class="profile-joined">
+                <img src="icons/calendar.png" alt="joined">
+                <span>Joined ${formatJoined(u.createdAt)}</span>
+              </div>
+              
+
+              <div class="stats">
+                ${
+                  u.friendCount > 0
+                    ? `<span id="friendsBtn" style="cursor:pointer;font-weight:bold">${u.friendCount}</span>`
+                    : u.friendCount
+                } amigos · ${u.postCount} posts
+              </div>
+            </div>
+
+            
+
+          
+          </div>
+        `;
+
+        const banner = profile.querySelector(".profile-banner");
+
+        if (u.bannerColor) {
+          const darker = darkenColor(u.bannerColor, 25);
+
+          banner.style.background = `
+          linear-gradient(
+            135deg,
+            ${u.bannerColor},
+            ${darker}
+          )
+        `;
+          applyUserTheme(u.bannerColor);
+        } else {
+          banner.style.background = "linear-gradient(135deg, #1fe1d2, #3076e0)";
+        }
+
+        // attach friends button if clickable
+        if (u.friendCount > 0) {
+          const btn = document.getElementById("friendsBtn");
+          btn.onclick = async () => {
+            try {
+              const rr = await fetch(
+                `${API}/api/v1/users/${u.username}/friends`,
+                { headers: { Authorization: "Bearer " + token } }
+              );
+              if (!rr.ok) {
+                // show empty if not ok
+                friendsCache = [];
+                renderFriends([]);
+                openFriendsModal();
+                return;
+              }
+              friendsCache = await rr.json();
+              await renderFriends(friendsCache);
+              openFriendsModal();
+            } catch (e) {
+              console.error("Error cargando amigos", e);
+              friendsCache = [];
+              renderFriends([]);
+              openFriendsModal();
+            }
+          };
+        }
+
+        // Configurar menú eliminar amigo (manteniendo tu código original)
+        if (u.isFriend) {
+          const moreBtn = profile.querySelector(".profile-more-btn");
+          const menu = profile.querySelector(".profile-options-menu");
+          if (moreBtn && menu) {
+            moreBtn.onclick = (e) => {
+              e.stopPropagation();
+              menu.style.display =
+                menu.style.display === "flex" ? "none" : "flex";
+            };
+          }
+        }
+      }
+
+      /* ===== friendship actions (kept as-is) ===== */
+      async function rejectRequest() {
+        await fetch(`${API}/api/v1/friends/reject/${profileUserId}`, {
+          method: "POST",
+          headers: { Authorization: "Bearer " + token },
+        });
+        loadProfile();
+      }
+      async function addFriend() {
+        await fetch(`${API}/api/v1/friends/send/${profileUserId}`, {
+          method: "POST",
+          headers: { Authorization: "Bearer " + token },
+        });
+        loadProfile();
+      }
+      async function removeFriend() {
+        await fetch(`${API}/api/v1/friends/remove/${profileUserId}`, {
+          method: "DELETE",
+          headers: { Authorization: "Bearer " + token },
+        });
+        loadProfile();
+      }
+      async function cancelRequest() {
+        await fetch(`${API}/api/v1/friends/cancel/${profileUserId}`, {
+          method: "DELETE",
+          headers: { Authorization: "Bearer " + token },
+        });
+        loadProfile();
+      }
+      async function acceptRequest() {
+        await fetch(`${API}/api/v1/friends/accept/${profileUserId}`, {
+          method: "POST",
+          headers: { Authorization: "Bearer " + token },
+        });
+        loadProfile();
+      }
+
+      /* ===== POSTS ===== */
+      const postsEl = document.getElementById("posts");
+
+      async function loadPosts() {
+        const r = await fetch(
+          API + (isMe ? "/api/v1/posts/me" : `/api/v1/posts/user/${username}`),
+          { headers: { Authorization: "Bearer " + token } }
+        );
+
+        const p = await r.json();
+        postsEl.innerHTML = "";
+
+        if (!p.content?.length) {
+          postsEl.innerHTML = `<div class="empty">No hay posts</div>`;
+          return;
+        }
+
+        for (const x of p.content) {
+          const post = document.createElement("article");
+          post.className = "tweet";
+
+          post.innerHTML = `
+          <div class="tweet-clickable">  
+      <div class="tweet-layout">
+
+        <div class="tweet-avatar">
+          <img alt="avatar">
+        </div>
+
+        <div class="tweet-body">
+
+          <div class="tweet-header">
+            <div class="tweet-user">
+              <span class="display-name">${x.author.displayName}</span>
+              <span class="username">@${x.author.username}</span>
+              <span class="dot">·</span>
+              <span class="post-time" title="${new Date(
+                x.createdAt
+              ).toLocaleString("es-AR", {
+                dateStyle: "short",
+                timeStyle: "short",
+              })}">
+                ${timeAgo(x.createdAt)}
+              </span>
+              ${
+                x.privacy && x.privacy !== "PUBLIC"
+                  ? `
+                  <span class="tweet-privacy-inline">
+                    · ${formatPrivacy(x.privacy)}
+                  </span>
+                `
+                  : ""
+              }
+            </div>
+
+            <img src="icons/more.png" class="more-btn" alt="more">
+            <div class="options-menu"></div>
+          </div>
+
+
+          <div class="tweet-content user-text">
+            ${renderUserText(x.content)}
+          </div>
+
+        </div>
+      </div>
+      </div>
+    `;
+
+          const clickable = post.querySelector(".tweet-clickable");
+
+          clickable.addEventListener("click", () => {
+            location.href = `post.html?id=${x.id}`;
+          });
+
+          /* Privacidad posts */
+          function formatPrivacy(p) {
+            switch (p) {
+              case "FRIENDS":
+                return "👥";
+              case "PRIVATE":
+                return "🔒";
+              default:
+                return "";
+            }
+          }
+
+          /* ===== Avatar ===== */
+          const avatarImg = post.querySelector(".tweet-avatar img");
+          loadAvatar(x.author.avatarUrl).then((a) => (avatarImg.src = a));
+
+          avatarImg.onclick =
+            post.querySelector(".display-name").onclick =
+            post.querySelector(".username").onclick =
+              (e) => {
+                e.stopPropagation();
+                location.href = `user.html?username=${x.author.username}`;
+              };
+
+          // file image (if any)
+          if (x.file) {
+            const fileUrl = await (async () => {
+              const i = await loadImg(x.file.url);
+              return i;
+            })();
+            if (fileUrl) {
+              const wrap = document.createElement("div");
+              wrap.className = "tweet-image";
+
+              const im = document.createElement("img");
+              im.src = fileUrl;
+
+              wrap.appendChild(im);
+
+              wrap.addEventListener("click", (e) => {
+                e.stopPropagation();
+                openImage(fileUrl);
+              });
+
+              post.querySelector(".tweet-body").appendChild(wrap);
+            }
+          }
+
+          const tweetUrlRaw = extractTweetUrl(x.content);
+          const tweetUrl = tweetUrlRaw
+            ? tweetUrlRaw.replace("x.com", "twitter.com")
+            : null;
+          const yt = extractYouTubeId(x.content);
+          if (yt && !x.file) {
+            post.querySelector(".tweet-body").innerHTML += `
+                <div class="tweet-image">
+                  <iframe
+                    width="516"
+                    height="290"
+                    src="https://www.youtube.com/embed/${yt}"
+                    frameborder="0"
+                    allowfullscreen>
+                  </iframe>
+                </div>
+              `;
+          } else {
+            if (tweetUrl && !x.file) {
+              const wrap = document.createElement("div");
+              wrap.className = "tweet-image";
+
+              wrap.innerHTML = `
+                <blockquote class="twitter-tweet">
+                  <a href="${tweetUrl}"></a>
+                </blockquote>
+              `;
+
+              post.querySelector(".tweet-body").appendChild(wrap);
+
+              // asegurar render del embed
+              const render = () => {
+                if (window.twttr && window.twttr.widgets) {
+                  window.twttr.widgets.load(wrap);
+                }
+              };
+
+              if (!window.twttr) {
+                const s = document.createElement("script");
+                s.src = "https://platform.twitter.com/widgets.js";
+                s.async = true;
+                s.onload = render;
+                document.body.appendChild(s);
+              } else {
+                render();
+              }
+            }
+          }
+
+          /* ===== Menu ⋮ ===== */
+          const moreBtn = post.querySelector(".more-btn");
+          const menu = post.querySelector(".options-menu");
+
+          moreBtn.onclick = (e) => {
+            e.stopPropagation();
+            if (!menu) return;
+
+            document
+              .querySelectorAll(".options-menu, .profile-options-menu")
+              .forEach((m) => {
+                if (m !== menu) m.style.display = "none";
+              });
+
+            menu.style.display =
+              menu.style.display === "flex" ? "none" : "flex";
+          };
+
+          document.addEventListener("click", () => {
+            if (menu) menu.style.display = "none";
+          });
+
+          /* ===== Delete (solo autor) ===== */
+          if (x.author.username === myUsername) {
+            const del = document.createElement("div");
+            del.className = "option delete-option";
+            del.innerHTML = `<img src="icons/delete.png"> Eliminar`;
+
+            del.onclick = async (e) => {
+              e.stopPropagation();
+              const res = await fetch(`${API}/api/v1/posts/${x.id}`, {
+                method: "DELETE",
+                headers: { Authorization: "Bearer " + token },
+              });
+              if (res.status === 204) post.remove();
+              else alert("Error al eliminar");
+            };
+
+            if (menu) menu.appendChild(del);
+          }
+          /*Actions*/
+          const actions = document.createElement("div");
+          actions.className = "tweet-actions";
+
+          actions.innerHTML = `
+                        <div class="tweet-action comment-action">
+                          <img src="icons/comment.png">
+                          <span class="comment-count">${x.commentCount}</span>
+                        </div>
+
+                        <div class="tweet-action like-action ${
+                          x.liked ? "liked" : ""
+                        }">
+                          <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M15.7 4C18.87 4 21 6.98 21 9.76C21 15.39 12.16 20 12 20C11.84 20 3 15.39 3 9.76C3 6.98 5.13 4 8.3 4C10.12 4 11.31 4.91 12 5.71C12.69 4.91 13.88 4 15.7 4Z"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"/>
+                          </svg>
+                          <span class="like-count">${x.likeCount}</span>
+                        </div>
+`;
+
+          const commentAction = actions.querySelector(".comment-action");
+          const likeAction = actions.querySelector(".like-action");
+          const likeCountEl = actions.querySelector(".like-count");
+
+          commentAction.addEventListener("click", (e) => {
+            e.stopPropagation();
+            location.href = `post.html?id=${x.id}`;
+          });
+
+          likeAction.addEventListener("click", async (e) => {
+            e.stopPropagation();
+
+            try {
+              const res = await fetch(`${API}/api/v1/posts/${x.id}/like`, {
+                method: "POST",
+                headers: { Authorization: "Bearer " + token },
+              });
+
+              if (!res.ok) return;
+
+              // optimistic update
+              if (likeAction.classList.contains("liked")) {
+                likeAction.classList.remove("liked");
+                x.likeCount--;
+                x.liked = false;
+              } else {
+                likeAction.classList.add("liked");
+                x.likeCount++;
+                x.liked = true;
+              }
+
+              likeCountEl.innerText = x.likeCount;
+            } catch {
+              console.error("Error toggling like");
+            }
+          });
+
+          post.querySelector(".tweet-body").appendChild(actions);
+
+          postsEl.appendChild(post);
+        }
+      }
+
+      /* Start */
+      loadProfile();
+      loadPosts();
+
+      // ===== IMAGE LIGHTBOX =====
+      const imageOverlay = document.getElementById("imageOverlay");
+      const overlayImg = document.getElementById("overlayImg");
+
+      function openImage(src) {
+        overlayImg.src = src;
+        imageOverlay.style.display = "flex";
+      }
+
+      imageOverlay.addEventListener("click", (e) => {
+        e.stopPropagation();
+        imageOverlay.style.display = "none";
+        overlayImg.src = "";
+      });
+
+      /*Color sidebar header banner*/
+      function applyUserTheme(color) {
+        const root = document.documentElement;
+
+        if (color) {
+          root.style.setProperty("--user-color", color);
+          root.style.setProperty("--user-color-dark", darkenColor(color, 25));
+        } else {
+          root.style.setProperty("--user-color", "#1fe1d2");
+          root.style.setProperty("--user-color-dark", "#3076e0");
+        }
+        document.body.classList.remove("theme-loading");
+      }
+
+      async function fetchMyProfile() {
+        const r = await fetch(`${API}/api/v1/users/me`, {
+          headers: { Authorization: "Bearer " + token },
+        });
+
+        if (!r.ok) throw new Error("No se pudo cargar el perfil");
+
+        return r.json();
+      }
+
+      async function initUserTheme() {
+        try {
+          const u = await fetchMyProfile();
+          applyUserTheme(u.bannerColor);
+        } catch (e) {
+          console.warn("Usando tema por defecto", e);
+          applyUserTheme(null);
+        }
+      }
+      function darkenColor(hex, percent) {
+        const num = parseInt(hex.replace("#", ""), 16);
+        const amt = Math.round(2.55 * percent);
+        const r = Math.max(0, (num >> 16) - amt);
+        const g = Math.max(0, ((num >> 8) & 0x00ff) - amt);
+        const b = Math.max(0, (num & 0x0000ff) - amt);
+
+        return `rgb(${r}, ${g}, ${b})`;
+      }
+      initUserTheme();
+    </script>
+  </body>
+</html>
