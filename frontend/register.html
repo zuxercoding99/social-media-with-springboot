@@ -2,6 +2,7 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="icons/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>Registro - Red Social</title>
@@ -11,71 +12,120 @@
         box-sizing: border-box;
       }
 
+      /* =========================
+         THEME VARIABLES
+      ========================== */
+      :root {
+        --bg-card: #ffffff;
+        --text-main: #0f1419;
+        --text-muted: #555;
+        --border: #ccd6dd;
+        --input-bg: #ffffff;
+        --btn-bg: #1da1f2;
+        --btn-bg-hover: #1a91da;
+        --error: #e0245e;
+        --success: #17bf63;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg-card: #0f1419;
+          --text-main: #e7e9ea;
+          --text-muted: #8899a6;
+          --border: #2f3336;
+          --input-bg: #000000;
+          --btn-bg: #1da1f2;
+          --btn-bg-hover: #1a91da;
+          --error: #f9708d;
+          --success: #3ddc84;
+        }
+      }
+
       body {
         margin: 0;
+        min-height: 100vh;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
           Helvetica, Arial, sans-serif;
-        line-height: 1.4;
-        color: #0f1419;
-        background: #f5f8fa;
+        color: var(--text-main);
+      }
 
+      /* =========================
+         BACKGROUND (same as index / login)
+      ========================== */
+      .bg {
         min-height: 100vh;
+        background: linear-gradient(
+          to bottom,
+          #000 0%,
+          #000 65%,
+          #f5c400 65%,
+          #f5c400 100%
+        );
         display: flex;
         align-items: center;
         justify-content: center;
+        padding: 24px;
       }
 
-      /* Defensivo para cualquier texto ingresado por el usuario*/
-      .user-text {
-        white-space: normal !important;
-        overflow-wrap: anywhere;
-        word-break: break-word;
-      }
-
+      /* =========================
+         CARD
+      ========================== */
       .container {
         width: 100%;
-        max-width: 380px;
-        margin: 16px;
+        max-width: 400px;
+        background: var(--bg-card);
+        padding: 26px;
+        border-radius: 14px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        text-align: center;
+      }
 
-        background: white;
-        padding: 24px;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      .logo {
+        width: 90px;
+        margin-bottom: 10px;
+        cursor: pointer;
       }
 
       h2 {
-        text-align: center;
-        margin-bottom: 22px;
+        margin: 6px 0 22px;
+        font-size: 22px;
       }
 
       label {
         font-size: 13px;
-        color: #555;
+        color: var(--text-muted);
         margin-top: 12px;
         display: block;
+        text-align: left;
       }
 
       input,
       button {
         width: 100%;
-        padding: 10px 12px;
+        padding: 11px 12px;
         margin-top: 6px;
-        border-radius: 8px;
-        font-size: 14px;
+        border-radius: 10px;
+        font-size: 15px;
       }
 
       input {
-        border: 1px solid #ccd6dd;
+        background: var(--input-bg);
+        color: var(--text-main);
+        border: 1px solid var(--border);
+      }
+
+      input::placeholder {
+        color: var(--text-muted);
       }
 
       input:focus {
         outline: none;
-        border-color: #1da1f2;
+        border-color: var(--btn-bg);
       }
 
       button {
-        margin-top: 18px;
-        background: #1da1f2;
+        margin-top: 20px;
+        background: var(--btn-bg);
         color: white;
         border: none;
         cursor: pointer;
@@ -83,39 +133,39 @@
       }
 
       button:hover {
-        background: #1a91da;
+        background: var(--btn-bg-hover);
       }
 
       .error {
-        color: #e0245e;
+        color: var(--error);
         margin-top: 12px;
         font-size: 14px;
       }
 
       .success {
-        color: #17bf63;
+        color: var(--success);
         margin-top: 12px;
         font-size: 14px;
       }
 
       .switch {
         margin-top: 22px;
-        text-align: center;
         font-size: 14px;
-        color: #555;
+        color: var(--text-muted);
       }
 
       .switch a {
-        color: #1da1f2;
+        color: var(--btn-bg);
         text-decoration: none;
         font-weight: bold;
       }
 
+      /* =========================
+         MOBILE
+      ========================== */
       @media (max-width: 480px) {
         .container {
-          margin: 40px 16px;
-          padding: 20px;
-          border-radius: 10px;
+          padding: 22px;
         }
 
         h2 {
@@ -124,35 +174,174 @@
 
         input,
         button {
-          font-size: 16px; /* evita zoom automático en iOS */
+          font-size: 16px;
         }
+
+        .logo {
+          width: 70px;
+        }
+      }
+
+      /* Efecto snowflake */
+      .snowflake {
+        color: #fff;
+        font-size: 1em;
+        font-family: Arial, sans-serif;
+        text-shadow: 0 0 5px #000;
+      }
+      .snowflake,
+      .snowflake .inner {
+        animation-iteration-count: infinite;
+        animation-play-state: running;
+      }
+      @keyframes snowflakes-fall {
+        0% {
+          transform: translateY(0);
+        }
+        100% {
+          transform: translateY(110vh);
+        }
+      }
+      @keyframes snowflakes-shake {
+        0%,
+        100% {
+          transform: translateX(0);
+        }
+        50% {
+          transform: translateX(80px);
+        }
+      }
+      .snowflake {
+        position: fixed;
+        top: -10%;
+        z-index: 9999;
+        -webkit-user-select: none;
+        user-select: none;
+        cursor: default;
+        pointer-events: none;
+        animation-name: snowflakes-shake;
+        animation-duration: 3s;
+        animation-timing-function: ease-in-out;
+      }
+      .snowflake .inner {
+        animation-duration: 10s;
+        animation-name: snowflakes-fall;
+        animation-timing-function: linear;
+      }
+      .snowflake:nth-of-type(0) {
+        left: 1%;
+        animation-delay: 0s;
+      }
+      .snowflake:nth-of-type(0) .inner {
+        animation-delay: 0s;
+      }
+      .snowflake:nth-of-type(1) {
+        left: 10%;
+        animation-delay: 1s;
+      }
+      .snowflake:nth-of-type(1) .inner {
+        animation-delay: 1s;
+      }
+      .snowflake:nth-of-type(2) {
+        left: 20%;
+        animation-delay: 0.5s;
+      }
+      .snowflake:nth-of-type(2) .inner {
+        animation-delay: 6s;
+      }
+      .snowflake:nth-of-type(3) {
+        left: 30%;
+        animation-delay: 2s;
+      }
+      .snowflake:nth-of-type(3) .inner {
+        animation-delay: 4s;
+      }
+      .snowflake:nth-of-type(4) {
+        left: 40%;
+        animation-delay: 2s;
+      }
+      .snowflake:nth-of-type(4) .inner {
+        animation-delay: 2s;
+      }
+      .snowflake:nth-of-type(5) {
+        left: 50%;
+        animation-delay: 3s;
+      }
+      .snowflake:nth-of-type(5) .inner {
+        animation-delay: 8s;
+      }
+      .snowflake:nth-of-type(6) {
+        left: 60%;
+        animation-delay: 2s;
+      }
+      .snowflake:nth-of-type(6) .inner {
+        animation-delay: 6s;
+      }
+      .snowflake:nth-of-type(7) {
+        left: 70%;
+        animation-delay: 1s;
+      }
+      .snowflake:nth-of-type(7) .inner {
+        animation-delay: 2.5s;
+      }
+      .snowflake:nth-of-type(8) {
+        left: 80%;
+        animation-delay: 0s;
+      }
+      .snowflake:nth-of-type(8) .inner {
+        animation-delay: 1s;
+      }
+      .snowflake:nth-of-type(9) {
+        left: 90%;
+        animation-delay: 1.5s;
+      }
+      .snowflake:nth-of-type(9) .inner {
+        animation-delay: 3s;
+      }
+      .snowflake:nth-of-type(10) {
+        left: 25%;
+        animation-delay: 0s;
+      }
+      .snowflake:nth-of-type(10) .inner {
+        animation-delay: 2s;
+      }
+      .snowflake:nth-of-type(11) {
+        left: 65%;
+        animation-delay: 2.5s;
+      }
+      .snowflake:nth-of-type(11) .inner {
+        animation-delay: 4s;
       }
     </style>
   </head>
 
   <body>
-    <div class="container">
-      <h2>Crear cuenta</h2>
+    <div class="bg">
+      <div class="container">
+        <img src="icons/lion.png" alt="Logo" class="logo lion" />
 
-      <label for="username">Username</label>
-      <input id="username" placeholder="ej: bob94" />
+        <h2>Crear cuenta</h2>
 
-      <label for="email">Email</label>
-      <input id="email" placeholder="bob@example.com" />
+        <label for="username">Username</label>
+        <input id="username" placeholder="ej: bob94" />
 
-      <label for="password">Password</label>
-      <input id="password" type="password" placeholder="6 a 12 caracteres" />
+        <label for="email">Email</label>
+        <input id="email" placeholder="bob@example.com" />
 
-      <label for="birthDate">Fecha de nacimiento</label>
-      <input id="birthDate" type="date" />
+        <label for="password">Password</label>
+        <input id="password" type="password" placeholder="6 a 12 caracteres" />
 
-      <button onclick="register()">Registrarse</button>
+        <label for="birthDate">Fecha de nacimiento</label>
+        <input id="birthDate" type="date" />
 
-      <div id="msg"></div>
+        <button onclick="register()">Registrarse</button>
 
-      <div class="switch">
-        ¿Ya tenés cuenta?
-        <a href="login.html">Iniciar sesión</a>
+        <div id="msg"></div>
+
+        <div class="switch">
+          ¿Ya tenés cuenta?
+          <a href="login.html">Iniciar sesión</a>
+        </div>
       </div>
     </div>
 
@@ -194,6 +383,25 @@
           msg.innerText = await res.text();
         }
       }
+
+      const lion = document.querySelector(".lion");
+      lion.addEventListener("click", () => {
+        window.location.href = "index.html";
+      });
     </script>
+    <div class="snowflakes" aria-hidden="true">
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+    </div>
   </body>
 </html>

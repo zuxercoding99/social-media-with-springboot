@@ -3,13 +3,65 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="icons/favicon.png" />
     <title>Solicitudes - Red Social</title>
 
     <style>
+      /* -----------------------
+     THEME & COLOR VARIABLES
+     ----------------------- */
       :root {
         --user-color: #1fe1d2;
         --user-color-dark: #3076e0;
+
+        /* LIGHT (keeps current light-mode look) */
+        --bg-main: #ffffff; /* page background */
+        --bg-card: #ffffff; /* cards / containers */
+        --bg-soft: #f5f8fa; /* subtle backgrounds (hover, chat, etc) */
+
+        --text-main: #0f1419; /* primary text */
+        --text-soft: #657786; /* secondary / meta text */
+
+        --border-soft: #eff3f4; /* soft borders */
+        --border: #ccd6dd;
+
+        --hover-soft: #f5f8fa;
+        --link-color: #1d9bf0;
+
+        --danger: #e0245e;
+        --success: #17bf63;
+        --warn: #ffad1f;
+
+        --post-disabled: #aab8c2;
+        --overlay-bg: rgba(255, 255, 255, 0.95);
       }
+
+      /* DARK MODE OVERRIDES (activate with body[data-theme="dark"]) */
+      body[data-theme="dark"] {
+        --bg-main: #0f1419;
+        --bg-card: #1d1f23;
+        --bg-soft: #16181c;
+
+        --text-main: #e7e9ea;
+        --text-soft: #8b98a5;
+
+        --border-soft: #2f3336;
+        --border: #2f3336;
+
+        --hover-soft: #202327;
+        --link-color: #1d9bf0;
+
+        --danger: #f9708d;
+        --success: #3ddc84;
+        --warn: #b37a12;
+
+        --post-disabled: #3a4146;
+        --overlay-bg: rgba(0, 0, 0, 0.85);
+      }
+
+      /* -----------------------
+     GENERAL
+     ----------------------- */
       body.theme-loading header,
       body.theme-loading .sidebar::before {
         opacity: 0;
@@ -22,13 +74,14 @@
       * {
         box-sizing: border-box;
       }
+
       body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
           Helvetica, Arial, sans-serif;
         line-height: 1.4;
-        color: #0f1419;
+        color: var(--text-main);
         margin: 0;
-        background: #fff;
+        background: var(--bg-main);
       }
 
       /* Defensivo para cualquier texto ingresado por el usuario*/
@@ -65,6 +118,7 @@
         height: 18px;
         cursor: pointer;
         filter: invert(1);
+        opacity: 0.95;
       }
 
       #sidebarBackdrop {
@@ -74,27 +128,34 @@
         display: none;
         z-index: 1200;
       }
+      .sidebar-icon {
+        filter: none;
+      }
+      body[data-theme="dark"] .sidebar-icon {
+        filter: invert(1) brightness(0.95);
+      }
       .sidebar {
         position: fixed;
         left: 0;
         top: 0;
         height: 100%;
         width: 220px;
-        background: white;
+        max-width: 80%;
+        background: var(--bg-card);
         box-shadow: 2px 0 12px rgba(0, 0, 0, 0.12);
-        transform: translateX(-100%);
-        transition: 0.22s;
         z-index: 1300;
-        padding: 12px;
+        transform: translateX(-100%);
+        transition: transform 0.22s ease;
         display: flex;
         flex-direction: column;
+        padding: 12px;
+        /* dejar overflow hidden en el contenedor principal para evitar 'double scroll' */
         overflow: hidden;
       }
 
       .sidebar-nav a:hover {
-        background: color-mix(in srgb, var(--user-color), white 85%);
+        background: color-mix(in srgb, var(--user-color), var(--bg-card) 85%);
       }
-
       .sidebar-nav a.active {
         color: var(--user-color);
       }
@@ -113,16 +174,18 @@
         );
         z-index: -1;
       }
-
       .sidebar.open {
         transform: translateX(0);
       }
+
       .sidebar-user {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 14px;
+        gap: 4px;
         padding: 40px 0 24px;
+
+        flex: 0 0 auto;
       }
       .sidebar-user img {
         width: 96px;
@@ -134,26 +197,46 @@
       .sidebar-user .displayname {
         font-size: 20px;
         font-weight: bold;
-
+        color: var(--text-main);
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
       .sidebar-user .username-small {
-        color: #657786;
-
+        color: var(--text-soft);
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
+
+      /* la nav ocupa el resto y puede scrollear */
       .sidebar-nav {
+        flex: 1 1 auto; /* ocupa el resto del alto disponible */
+        overflow-y: auto; /* aquí activamos scroll cuando haga falta */
+        padding-right: 6px; /* para que no choque con scrollbar */
+        margin-top: 12px;
         display: flex;
         flex-direction: column;
         gap: 12px;
       }
+
+      /* suaviza scroll en iOS */
+      .sidebar-nav {
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* opcional: estilos para scrollbar */
+      .sidebar-nav::-webkit-scrollbar {
+        width: 10px;
+      }
+      .sidebar-nav::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.12);
+        border-radius: 10px;
+      }
+
       .sidebar-nav a {
         text-decoration: none;
-        color: #111;
+        color: var(--text-main);
         font-weight: 600;
         padding: 12px 16px;
         border-radius: 12px;
@@ -162,7 +245,7 @@
         align-items: center;
       }
       .sidebar-nav a:hover {
-        background: #f5f8fa;
+        background: var(--hover-soft);
       }
 
       /* LAYOUT */
@@ -171,9 +254,7 @@
         max-width: 618px;
         margin: 0 auto;
         padding: 0;
-
-        /* Twitter-like */
-        background: white;
+        background: var(--bg-card);
       }
       .section {
         margin-bottom: 30px;
@@ -181,17 +262,19 @@
       .section h2 {
         font-size: 18px;
         margin-bottom: 12px;
+        color: var(--text-main);
       }
 
       /* request card (discord-like) */
       .request {
-        background: white;
+        background: var(--bg-card);
         border-radius: 12px;
         padding: 12px;
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 10px;
+        border: 1px solid var(--border-soft);
       }
       .req-left {
         display: flex;
@@ -206,62 +289,63 @@
       }
       .req-name {
         font-weight: 700;
+        color: var(--text-main);
       }
       .req-user {
         font-size: 13px;
-        color: #657786;
+        color: var(--text-soft);
       }
 
       .actions {
         display: flex;
         gap: 8px;
       }
+
       button {
         border: none;
         border-radius: 20px;
         padding: 6px 12px;
         font-weight: bold;
         cursor: pointer;
+        background: transparent;
+        color: var(--text-main);
       }
+
       .accept {
-        background: #17bf63;
+        background: var(--success);
         color: white;
       }
       .reject {
-        background: #e0245e;
+        background: var(--danger);
         color: white;
       }
       .block {
-        background: #ffad1f;
+        background: var(--warn);
         color: #111;
       }
       .cancel {
-        background: #657786;
+        background: var(--text-soft);
         color: white;
       }
 
       .empty {
         text-align: center;
-        color: #657786;
+        color: var(--text-soft);
         padding: 20px;
       }
 
       /* RESPONSIVE */
-
       @media (max-width: 480px) {
         .container {
-          margin: 0px;
+          margin: 0;
           border: none;
           padding: 0 0px;
         }
-      }
 
-      @media (max-width: 480px) {
         .sidebar {
           width: 100%;
           max-width: 100%;
         }
-
         .sidebar-user .displayname,
         .sidebar-user .username-small {
           white-space: normal;
@@ -277,10 +361,8 @@
           width: 100px;
           height: 100px;
           top: -75px;
-          left: 50%; /* mueve el borde izquierdo al 50% del contenedor */
-          transform: translateX(
-            -50%
-          ); /* desplaza el elemento hacia la izquierda la mitad de su ancho */
+          left: 50%;
+          transform: translateX(-50%);
           margin: 0 auto;
           text-align: center;
         }
@@ -318,12 +400,12 @@
         }
       }
 
+      /* Duplicate safe fallback: ensure sidebar responsive block exists */
       @media (max-width: 480px) {
         .sidebar {
           width: 100%;
           max-width: 100%;
         }
-
         .sidebar-user .displayname,
         .sidebar-user .username-small {
           white-space: normal;
@@ -351,14 +433,25 @@
         <div class="username-small" id="sidebarUsername"></div>
       </div>
       <div class="sidebar-nav">
-        <a href="feed.html"><img src="icons/home.png" alt="" /> Home</a>
-        <a href="requests.html"
-          ><img src="icons/add-friend.png" alt="" /> Solicitudes</a
+        <a href="feed.html"
+          ><img src="icons/home.png" class="sidebar-icon" alt="" /> Home</a
         >
-        <a href="chat.html"><img src="icons/email.png" alt="" /> Chat</a>
-        <a href="user.html"><img src="icons/user.png" alt="" /> Profile</a>
+        <a href="requests.html"
+          ><img src="icons/add-friend.png" class="sidebar-icon" alt="" />
+          Solicitudes</a
+        >
+        <a href="chat.html"
+          ><img src="icons/email.png" class="sidebar-icon" alt="" /> Chat</a
+        >
+        <a href="user.html"
+          ><img src="icons/user.png" class="sidebar-icon" alt="" /> Profile</a
+        >
+        <a href="options.html" id="sidebarOptions">
+          <img src="icons/settings.png" alt="Opciones" class="sidebar-icon" />
+          Opciones
+        </a>
         <a href="#" id="sidebarLogout"
-          ><img src="icons/exit.png" alt="" /> Log out</a
+          ><img src="icons/exit.png" class="sidebar-icon" alt="" /> Log out</a
         >
       </div>
     </aside>
@@ -376,6 +469,7 @@
     </div>
 
     <script>
+      document.body.dataset.theme = localStorage.getItem("mode") || "light";
       document.body.classList.add("theme-loading");
       const API = "http://localhost:8080";
       const token = localStorage.getItem("accessToken");

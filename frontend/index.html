@@ -2,41 +2,13 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="icons/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-    <title>Login - Red Social</title>
+    <title>Red Social</title>
+    <link rel="icon" type="image/png" href="icons/favicon.png" />
 
     <style>
       * {
         box-sizing: border-box;
-      }
-
-      /* =========================
-         THEME VARIABLES
-      ========================== */
-      :root {
-        --bg-card: #ffffff;
-        --text-main: #0f1419;
-        --text-muted: #555;
-        --border: #ccd6dd;
-        --input-bg: #ffffff;
-        --btn-bg: #1da1f2;
-        --btn-bg-hover: #1a91da;
-        --error: #e0245e;
-      }
-
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --bg-card: #0f1419;
-          --text-main: #e7e9ea;
-          --text-muted: #8899a6;
-          --border: #2f3336;
-          --input-bg: #000000;
-          --btn-bg: #1da1f2;
-          --btn-bg-hover: #1a91da;
-          --error: #f9708d;
-        }
       }
 
       body {
@@ -44,12 +16,10 @@
         min-height: 100vh;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
           Helvetica, Arial, sans-serif;
-        color: var(--text-main);
+        color: #fff;
       }
 
-      /* =========================
-         BACKGROUND (same as index)
-      ========================== */
+      /* ---------- BACKGROUND ---------- */
       .bg {
         min-height: 100vh;
         background: linear-gradient(
@@ -65,113 +35,110 @@
         padding: 24px;
       }
 
-      /* =========================
-         CARD
-      ========================== */
+      /* ---------- LAYOUT ---------- */
       .container {
         width: 100%;
-        max-width: 380px;
-        background: var(--bg-card);
-        padding: 26px;
-        border-radius: 14px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-        text-align: center;
+        max-width: 1100px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 40px;
       }
 
-      .logo {
-        width: 90px;
-        height: auto;
-        margin-bottom: 12px;
-        cursor: pointer;
+      .left {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
       }
 
-      h2 {
-        margin: 8px 0 22px;
-        font-size: 22px;
-      }
-
-      label {
-        font-size: 13px;
-        color: var(--text-muted);
-        margin-top: 12px;
-        display: block;
-        text-align: left;
-      }
-
-      input,
-      button {
+      .left img {
         width: 100%;
-        padding: 11px 12px;
-        margin-top: 6px;
-        border-radius: 10px;
-        font-size: 15px;
+        max-width: 420px;
+        height: auto;
       }
 
-      input {
-        background: var(--input-bg);
-        color: var(--text-main);
-        border: 1px solid var(--border);
+      .left h1 {
+        font-size: 69px;
+        text-shadow: -1px -1px 0 #616161, 1px -1px 0 #616161, -1px 1px 0 #616161,
+          1px 1px 0 #616161;
+        line-height: 1.4;
+        padding-bottom: 20px;
+        margin: 0;
+        color: #fff;
       }
 
-      input::placeholder {
-        color: var(--text-muted);
+      .right {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        max-width: 320px;
       }
 
-      input:focus {
-        outline: none;
-        border-color: var(--btn-bg);
-      }
-
-      button {
-        margin-top: 18px;
-        background: var(--btn-bg);
-        color: white;
-        border: none;
+      /* ---------- BUTTONS ---------- */
+      .btn {
+        padding: 14px;
+        border-radius: 999px;
+        font-size: 16px;
+        font-weight: bold;
         cursor: pointer;
-        font-weight: bold;
-      }
-
-      button:hover {
-        background: var(--btn-bg-hover);
-      }
-
-      .error {
-        color: var(--error);
-        margin-top: 12px;
-        font-size: 14px;
-      }
-
-      .switch {
-        margin-top: 22px;
-        font-size: 14px;
-        color: var(--text-muted);
-      }
-
-      .switch a {
-        color: var(--btn-bg);
+        border: none;
+        text-align: center;
         text-decoration: none;
-        font-weight: bold;
       }
 
-      /* =========================
-         MOBILE
-      ========================== */
-      @media (max-width: 480px) {
+      .btn-register {
+        background: #1da1f2;
+        color: white;
+      }
+
+      .btn-register:hover {
+        background: #1a91da;
+      }
+
+      .btn-login {
+        background: white;
+        color: #0f1419;
+        border: 1px solid #ccd6dd;
+      }
+
+      .btn-login:hover {
+        background: #f5f8fa;
+      }
+
+      /* ---------- RESPONSIVE ---------- */
+      @media (max-width: 768px) {
         .container {
-          padding: 22px;
+          flex-direction: column;
+          text-align: center;
         }
 
-        h2 {
-          font-size: 20px;
+        .left {
+          align-items: center;
         }
 
-        input,
-        button {
-          font-size: 16px; /* evita zoom iOS */
+        .left img {
+          max-width: 240px;
         }
 
-        .logo {
-          width: 70px;
+        .left h1 {
+          font-size: 28px;
+        }
+
+        .right {
+          width: 100%;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .left h1 {
+          font-size: 24px;
+        }
+
+        .btn {
+          font-size: 17px;
         }
       }
 
@@ -311,87 +278,25 @@
   <body>
     <div class="bg">
       <div class="container">
-        <img src="icons/lion.png" alt="Logo" class="logo lion" />
+        <!-- LEFT -->
+        <div class="left">
+          <img src="icons/lion.png" alt="León" />
+          <h1>Comparte tus experiencias con el mundo</h1>
+        </div>
 
-        <h2>Iniciar sesión</h2>
-
-        <label for="email">Email</label>
-        <input id="email" placeholder="bob@example.com" />
-
-        <label for="password">Password</label>
-        <input id="password" type="password" placeholder="Tu contraseña" />
-
-        <button onclick="login()">Entrar</button>
-
-        <div id="msg" class="error"></div>
-
-        <div class="switch">
-          ¿No tenés cuenta?
-          <a href="register.html">Crear una</a>
+        <!-- RIGHT -->
+        <div class="right">
+          <a href="register.html" class="btn btn-register"> Crear cuenta </a>
+          <a href="login.html" class="btn btn-login"> Iniciar sesión </a>
         </div>
       </div>
     </div>
 
     <script>
-      const API_BASE_URL = "http://localhost:8080";
-
+      // 🔐 Si ya está logueado → feed
       if (localStorage.getItem("accessToken")) {
         window.location.href = "feed.html";
       }
-
-      async function login() {
-        const msg = document.getElementById("msg");
-        msg.innerText = "";
-
-        try {
-          const res = await fetch(API_BASE_URL + "/api/v1/auth/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              email: email.value.trim(),
-              password: password.value,
-            }),
-          });
-
-          if (!res.ok) {
-            msg.innerText = "Credenciales inválidas";
-            return;
-          }
-
-          const authData = await res.json();
-          localStorage.setItem("accessToken", authData.accessToken);
-
-          const profileRes = await fetch(API_BASE_URL + "/api/v1/users/me", {
-            headers: {
-              Authorization: "Bearer " + authData.accessToken,
-            },
-          });
-
-          if (!profileRes.ok) {
-            msg.innerText = "Error al cargar el perfil";
-            return;
-          }
-
-          const profile = await profileRes.json();
-
-          localStorage.setItem("userId", profile.id);
-          localStorage.setItem("username", profile.username);
-          localStorage.setItem("displayName", profile.displayName);
-          localStorage.setItem("avatarUrl", profile.avatarUrl);
-          localStorage.setItem("mode", profile.themeMode.toLowerCase());
-
-          window.location.href = "feed.html";
-        } catch (e) {
-          msg.innerText = "Error de conexión con el servidor";
-        }
-      }
-
-      /*Click to index*/
-      let lion = document.querySelector(".lion");
-      lion.addEventListener(
-        "click",
-        () => (window.location.href = "index.html")
-      );
     </script>
     <div class="snowflakes" aria-hidden="true">
       <div class="snowflake"><div class="inner">❄</div></div>

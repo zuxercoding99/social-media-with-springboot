@@ -2,14 +2,73 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="icons/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Post - Red Social</title>
     <style>
+      /* -----------------------
+     THEME & COLOR VARIABLES
+     ----------------------- */
       :root {
         --user-color: #1fe1d2;
         --user-color-dark: #3076e0;
+
+        /* LIGHT (values equal to current light-mode look) */
+        --bg-main: #ffffff; /* page background */
+        --bg-soft: #f5f8fa; /* subtle backgrounds (chat, hover, etc) */
+        --bg-card: #ffffff; /* cards / containers / tweets */
+
+        --text-main: #0f1419; /* primary text */
+        --text-soft: #657786; /* secondary / meta text */
+        --muted: #8899a6;
+
+        --border-soft: #eff3f4; /* soft borders */
+        --border: #ccd6dd;
+
+        --hover-soft: #f5f8fa; /* hover bg in light mode */
+
+        --overlay-bg: rgba(255, 255, 255, 0.95); /* image overlay (light) */
+
+        --bubble-bg: #e6e8eb; /* public chat bubble (light) */
+
+        --link-color: #1d9bf0;
+
+        --danger: #e0245e;
+        --success: #17bf63;
+
+        --post-disabled: #aab8c2;
       }
 
+      /* DARK MODE OVERRIDES (activate with body[data-theme="dark"]) */
+      body[data-theme="dark"] {
+        --bg-main: #0f1419;
+        --bg-soft: #16181c;
+        --bg-card: #1d1f23;
+
+        --text-main: #e7e9ea;
+        --text-soft: #8b98a5;
+        --muted: #8b98a5;
+
+        --border-soft: #2f3336;
+        --border: #2f3336;
+
+        --hover-soft: #202327;
+
+        --overlay-bg: rgba(0, 0, 0, 0.85);
+
+        --bubble-bg: #252a2d;
+
+        --link-color: #1d9bf0;
+
+        --danger: #f9708d;
+        --success: #3ddc84;
+
+        --post-disabled: #3a4146;
+      }
+
+      /* -----------------------
+     GENERAL
+     ----------------------- */
       body.theme-loading header,
       body.theme-loading .sidebar::before {
         opacity: 0;
@@ -18,13 +77,14 @@
       * {
         box-sizing: border-box;
       }
+
       body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
           Helvetica, Arial, sans-serif;
         line-height: 1.4;
-        color: #0f1419;
+        color: var(--text-main);
         margin: 0;
-        background: #fff;
+        background: var(--bg-main);
       }
 
       /* HEADER */
@@ -73,7 +133,23 @@
         transition: 0.12s;
       }
 
+      /* invertir colores en dark mode */
+      .no-filter {
+        filter: none;
+      }
+
+      body[data-theme="dark"] .filter-dark-mode {
+        filter: invert(1) brightness(0.95);
+      }
+
       /* SIDEBAR */
+      .sidebar-icon {
+        filter: none;
+      }
+      body[data-theme="dark"] .sidebar-icon {
+        filter: invert(1) brightness(0.95);
+      }
+
       #sidebarBackdrop {
         position: fixed;
         left: 0;
@@ -84,6 +160,7 @@
         display: none;
         z-index: 1200;
       }
+
       .sidebar {
         position: fixed;
         left: 0;
@@ -91,7 +168,7 @@
         height: 100%;
         width: 220px;
         max-width: 80%;
-        background: white;
+        background: var(--bg-card);
         box-shadow: 2px 0 12px rgba(0, 0, 0, 0.12);
         z-index: 1300;
         transform: translateX(-100%);
@@ -99,11 +176,12 @@
         display: flex;
         flex-direction: column;
         padding: 12px;
+        /* dejar overflow hidden en el contenedor principal para evitar 'double scroll' */
         overflow: hidden;
       }
 
       .sidebar-nav a:hover {
-        background: color-mix(in srgb, var(--user-color), white 85%);
+        background: color-mix(in srgb, var(--user-color), var(--bg-card) 85%);
       }
 
       .sidebar-nav a.active {
@@ -132,9 +210,11 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 14px;
+        gap: 4px;
         padding-top: 40px;
         padding-bottom: 24px;
+
+        flex: 0 0 auto; /* no se encoge ni crece */
       }
       .sidebar-user img {
         width: 96px;
@@ -145,7 +225,7 @@
       }
       .sidebar-user .displayname {
         font-weight: bold;
-        color: #000;
+        color: var(--text-main);
         font-size: 20px;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -153,22 +233,40 @@
       }
       .sidebar-user .username-small {
         font-size: 16px;
-        color: #657786;
+        color: var(--text-soft);
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
+      /* la nav ocupa el resto y puede scrollear */
       .sidebar-nav {
+        flex: 1 1 auto; /* ocupa el resto del alto disponible */
+        overflow-y: auto; /* aquí activamos scroll cuando haga falta */
+        padding-right: 6px; /* para que no choque con scrollbar */
+        margin-top: 12px;
         display: flex;
         flex-direction: column;
         gap: 12px;
-        margin-top: 24px;
+      }
+
+      /* suaviza scroll en iOS */
+      .sidebar-nav {
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* opcional: estilos para scrollbar */
+      .sidebar-nav::-webkit-scrollbar {
+        width: 10px;
+      }
+      .sidebar-nav::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.12);
+        border-radius: 10px;
       }
       .sidebar-nav a {
         display: flex;
         align-items: center;
         gap: 12px;
-        color: #111;
+        color: var(--text-main);
         text-decoration: none;
         padding: 12px 16px;
         border-radius: 12px;
@@ -181,7 +279,7 @@
         object-fit: cover;
       }
       .sidebar-nav a:hover {
-        background: #f5f8fa;
+        background: var(--hover-soft);
       }
 
       /* LAYOUT */
@@ -190,17 +288,17 @@
         max-width: 618px;
         margin: 12px auto;
         padding: 0;
-        background: white;
-        border-left: 1px solid #eff3f4;
-        border-right: 1px solid #eff3f4;
+        background: var(--bg-card);
+        border-left: 1px solid var(--border-soft);
+        border-right: 1px solid var(--border-soft);
       }
 
       /* TWEET (unificado) */
       .tweet {
         margin: 0 auto;
         padding: 12px 16px 0;
-        background: white;
-        border-top: 1px solid #eff3f4;
+        background: var(--bg-card);
+        border-top: 1px solid var(--border-soft);
         border-radius: 0;
       }
       .tweet-layout {
@@ -241,22 +339,22 @@
       }
       .display-name {
         font-weight: bold;
-        color: #000;
+        color: var(--text-main);
         cursor: pointer;
       }
       .username {
         font-size: 15px;
-        color: #657786;
+        color: var(--text-soft);
         cursor: pointer;
       }
       .post-time {
         font-size: 15px;
-        color: #657786;
+        color: var(--text-soft);
         white-space: nowrap;
       }
       .tweet-privacy-inline {
         font-size: 13px;
-        color: rgb(83, 100, 113);
+        color: var(--text-soft);
         white-space: nowrap;
         opacity: 0.85;
         margin-left: 6px;
@@ -266,6 +364,7 @@
         line-height: 1.45;
         word-wrap: break-word;
         white-space: pre-wrap;
+        color: var(--text-main);
       }
       .tweet-image {
         margin-top: 12px;
@@ -276,12 +375,12 @@
         display: flex;
         align-items: center;
         justify-content: flex-start;
-        background: #fff;
+        background: var(--bg-card);
       }
       .tweet-image img {
         max-width: 100%;
         max-height: 500px;
-        border: 1px solid #eff3f4;
+        border: 1px solid var(--border-soft);
         width: auto;
         height: auto;
         object-fit: contain;
@@ -304,8 +403,8 @@
         position: absolute;
         top: 28px;
         right: 0;
-        background: white;
-        border: 1px solid #eff3f4;
+        background: var(--bg-card);
+        border: 1px solid var(--border-soft);
         border-radius: 12px;
         box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
         display: none;
@@ -323,15 +422,15 @@
         font-size: 14px;
       }
       .options-menu .option:hover {
-        background: #f5f8fa;
+        background: var(--hover-soft);
       }
       .options-menu .delete-option {
-        color: #e0245e;
+        color: var(--danger);
       }
 
       .empty {
         text-align: center;
-        color: #657786;
+        color: var(--text-soft);
         margin: 30px 0;
       }
 
@@ -339,18 +438,19 @@
       .comments {
         margin-top: 12px;
         padding: 12px;
-        background: white;
-        border-top: 1px solid #eff3f4;
+        background: var(--bg-card);
+        border-top: 1px solid var(--border-soft);
       }
       .comments .composer {
         padding: 8px 0;
         border-bottom: none;
+        background: transparent;
       }
       .comment-item {
         display: flex;
         gap: 10px;
         padding: 12px 0;
-        border-bottom: 1px solid #f2f4f6;
+        border-bottom: 1px solid var(--hover-soft);
         align-items: flex-start;
       }
       .comment-avatar img {
@@ -363,32 +463,36 @@
 
       .comment-body .username {
         cursor: pointer;
+        color: var(--text-main);
       }
 
       .comment-displayname {
         cursor: pointer;
+        color: var(--text-main);
       }
 
       .comment-body {
         flex: 1;
+        color: var(--text-main);
       }
       .comment-meta {
         display: flex;
         gap: 8px;
         align-items: center;
         font-size: 14px;
-        color: #657786;
+        color: var(--text-soft);
       }
       .comment-content {
         margin-top: 6px;
         font-size: 15px;
         line-height: 1.4;
+        color: var(--text-main);
       }
       .comment-delete-btn {
         background: transparent;
         border: none;
         cursor: pointer;
-        color: #e0245e;
+        color: var(--danger);
         font-weight: bold;
         padding: 6px;
       }
@@ -396,13 +500,15 @@
       /* COMMENT INPUT */
       .comment-input {
         width: 100%;
-        border: 1px solid #eff3f4;
+        border: 1px solid var(--border-soft);
         border-radius: 10px;
         padding: 8px 10px;
         min-height: 44px;
         resize: none;
         outline: none;
         font-size: 15px;
+        background: var(--bg-card);
+        color: var(--text-main);
       }
       .comment-row {
         display: flex;
@@ -412,7 +518,7 @@
         justify-content: space-between;
       }
       .comment-btn {
-        background: #1da1f2;
+        background: var(--user-color);
         color: white;
         border: none;
         padding: 8px 12px;
@@ -421,7 +527,7 @@
         font-weight: bold;
       }
       .comment-btn:disabled {
-        background: #aab8c2;
+        background: var(--post-disabled);
         cursor: default;
       }
 
@@ -429,7 +535,7 @@
       .image-overlay {
         position: fixed;
         inset: 0;
-        background: rgba(255, 255, 255, 0.95);
+        background: var(--overlay-bg);
         display: none;
         align-items: center;
         justify-content: center;
@@ -466,16 +572,16 @@
       .notfound p {
         margin-top: 12px;
         font-size: 18px;
-        color: #657786;
+        color: var(--text-soft);
       }
 
       #charCount {
         font-size: 13px;
-        color: #888;
+        color: var(--muted);
       }
 
       #charCount.limit {
-        color: #e0245e; /* rojo estilo Twitter */
+        color: var(--danger); /* rojo estilo Twitter */
         font-weight: 600;
       }
 
@@ -496,7 +602,7 @@
         display: flex;
         gap: 132px;
         margin-top: 14px;
-        color: #657786;
+        color: var(--text-soft);
         font-size: 14px;
       }
 
@@ -511,8 +617,8 @@
       .tweet-action img {
         width: 18px;
         height: 18px;
-        stroke: #657786;
-        fill: white;
+        stroke: var(--text-soft);
+        fill: var(--bg-card);
       }
 
       .tweet-action svg {
@@ -530,7 +636,7 @@
       }
 
       .like-action {
-        color: #657786;
+        color: var(--text-soft);
         cursor: pointer;
       }
 
@@ -557,7 +663,6 @@
       }
 
       /* RESPONSIVE */
-
       @media (max-width: 480px) {
         .container {
           margin: 0px;
@@ -664,6 +769,137 @@
           font-size: 16px;
         }
       }
+
+      /* Efecto snowflake */
+      .snowflake {
+        color: #fff;
+        font-size: 1em;
+        font-family: Arial, sans-serif;
+        text-shadow: 0 0 5px #000;
+      }
+      .snowflake,
+      .snowflake .inner {
+        animation-iteration-count: infinite;
+        animation-play-state: running;
+      }
+      @keyframes snowflakes-fall {
+        0% {
+          transform: translateY(0);
+        }
+        100% {
+          transform: translateY(110vh);
+        }
+      }
+      @keyframes snowflakes-shake {
+        0%,
+        100% {
+          transform: translateX(0);
+        }
+        50% {
+          transform: translateX(80px);
+        }
+      }
+      .snowflake {
+        position: fixed;
+        top: -10%;
+        z-index: 9999;
+        -webkit-user-select: none;
+        user-select: none;
+        cursor: default;
+        pointer-events: none;
+        animation-name: snowflakes-shake;
+        animation-duration: 3s;
+        animation-timing-function: ease-in-out;
+      }
+      .snowflake .inner {
+        animation-duration: 10s;
+        animation-name: snowflakes-fall;
+        animation-timing-function: linear;
+      }
+      .snowflake:nth-of-type(0) {
+        left: 1%;
+        animation-delay: 0s;
+      }
+      .snowflake:nth-of-type(0) .inner {
+        animation-delay: 0s;
+      }
+      .snowflake:nth-of-type(1) {
+        left: 10%;
+        animation-delay: 1s;
+      }
+      .snowflake:nth-of-type(1) .inner {
+        animation-delay: 1s;
+      }
+      .snowflake:nth-of-type(2) {
+        left: 20%;
+        animation-delay: 0.5s;
+      }
+      .snowflake:nth-of-type(2) .inner {
+        animation-delay: 6s;
+      }
+      .snowflake:nth-of-type(3) {
+        left: 30%;
+        animation-delay: 2s;
+      }
+      .snowflake:nth-of-type(3) .inner {
+        animation-delay: 4s;
+      }
+      .snowflake:nth-of-type(4) {
+        left: 40%;
+        animation-delay: 2s;
+      }
+      .snowflake:nth-of-type(4) .inner {
+        animation-delay: 2s;
+      }
+      .snowflake:nth-of-type(5) {
+        left: 50%;
+        animation-delay: 3s;
+      }
+      .snowflake:nth-of-type(5) .inner {
+        animation-delay: 8s;
+      }
+      .snowflake:nth-of-type(6) {
+        left: 60%;
+        animation-delay: 2s;
+      }
+      .snowflake:nth-of-type(6) .inner {
+        animation-delay: 6s;
+      }
+      .snowflake:nth-of-type(7) {
+        left: 70%;
+        animation-delay: 1s;
+      }
+      .snowflake:nth-of-type(7) .inner {
+        animation-delay: 2.5s;
+      }
+      .snowflake:nth-of-type(8) {
+        left: 80%;
+        animation-delay: 0s;
+      }
+      .snowflake:nth-of-type(8) .inner {
+        animation-delay: 1s;
+      }
+      .snowflake:nth-of-type(9) {
+        left: 90%;
+        animation-delay: 1.5s;
+      }
+      .snowflake:nth-of-type(9) .inner {
+        animation-delay: 3s;
+      }
+      .snowflake:nth-of-type(10) {
+        left: 25%;
+        animation-delay: 0s;
+      }
+      .snowflake:nth-of-type(10) .inner {
+        animation-delay: 2s;
+      }
+      .snowflake:nth-of-type(11) {
+        left: 65%;
+        animation-delay: 2.5s;
+      }
+      .snowflake:nth-of-type(11) .inner {
+        animation-delay: 4s;
+      }
     </style>
   </head>
   <body>
@@ -697,14 +933,25 @@
       </div>
 
       <div class="sidebar-nav">
-        <a href="feed.html"><img src="icons/home.png" alt="" /> Home</a>
-        <a href="requests.html"
-          ><img src="icons/add-friend.png" alt="" /> Solicitudes</a
+        <a href="feed.html"
+          ><img src="icons/home.png" class="sidebar-icon" alt="" /> Home</a
         >
-        <a href="chat.html"><img src="icons/email.png" alt="" /> Chat</a>
-        <a href="user.html"><img src="icons/user.png" alt="" /> Profile</a>
+        <a href="requests.html"
+          ><img src="icons/add-friend.png" class="sidebar-icon" alt="" />
+          Solicitudes</a
+        >
+        <a href="chat.html"
+          ><img src="icons/email.png" class="sidebar-icon" alt="" /> Chat</a
+        >
+        <a href="user.html"
+          ><img src="icons/user.png" class="sidebar-icon" alt="" /> Profile</a
+        >
+        <a href="options.html" id="sidebarOptions">
+          <img src="icons/settings.png" alt="Opciones" class="sidebar-icon" />
+          Opciones
+        </a>
         <a href="#" id="sidebarLogout"
-          ><img src="icons/exit.png" alt="" /> Log out</a
+          ><img src="icons/exit.png" class="sidebar-icon" alt="" /> Log out</a
         >
       </div>
     </aside>
@@ -722,7 +969,9 @@
     </div>
 
     <script>
+      document.body.dataset.theme = localStorage.getItem("mode") || "light";
       document.body.classList.add("theme-loading");
+
       const API = "http://localhost:8080";
       const token = localStorage.getItem("accessToken");
       const myUsername = localStorage.getItem("username");
@@ -982,7 +1231,7 @@
         actions.className = "tweet-actions";
         actions.innerHTML = `
     <div class="tweet-action comment-action">
-      <img src="icons/comment.png">
+      <img src="icons/comment.png" class="no-filter filter-dark-mode">
       <span class="comment-count">${x.commentCount}</span>
     </div>
     <div class="tweet-action like-action ${x.liked ? "liked" : ""}">
@@ -1053,9 +1302,53 @@
       <span class="dot">·</span>
       <span class="post-time">${timeAgo(x.createdAt)}</span>
     </div>
-    <img src="icons/more.png" class="more-btn" alt="more">
+    <img src="icons/more.png" class="more-btn no-filter filter-dark-mode" alt="more" >
     <div class="options-menu"></div>
   `;
+
+        // ===== MORE MENU (⋮) =====
+        const moreBtn = header.querySelector(".more-btn");
+        const menu = header.querySelector(".options-menu");
+
+        // abrir / cerrar menú
+        moreBtn.onclick = (e) => {
+          e.stopPropagation();
+
+          document.querySelectorAll(".options-menu").forEach((m) => {
+            if (m !== menu) m.style.display = "none";
+          });
+
+          menu.style.display = menu.style.display === "flex" ? "none" : "flex";
+        };
+
+        // SOLO si soy el dueño del post
+        if (x.author.username === myUsername) {
+          const del = document.createElement("div");
+          del.className = "option delete-option";
+          del.innerHTML = `<img src="icons/delete.png"> Eliminar`;
+
+          del.onclick = async (e) => {
+            e.stopPropagation();
+
+            const res = await fetch(`${API}/api/v1/posts/${x.id}`, {
+              method: "DELETE",
+              headers: { Authorization: "Bearer " + token },
+            });
+
+            if (res.status === 204) {
+              // post eliminado → mostrar el MISMO 404 que ya usás
+              show404();
+            } else if (res.status === 403) {
+              alert("No tenés permiso para eliminar este post");
+            } else if (res.status === 404) {
+              show404();
+            } else {
+              alert("Error al eliminar el post");
+            }
+          };
+
+          menu.appendChild(del);
+        }
 
         /*eventos user profile*/
         const displayNameEl = header.querySelector(".display-name");
@@ -1394,5 +1687,19 @@
       }
       initUserTheme();
     </script>
+    <div class="snowflakes" aria-hidden="true">
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+    </div>
   </body>
 </html>

@@ -3,14 +3,74 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <title>Feed - Red Social</title>
+    <link rel="shortcut icon" href="icons/favicon.png" type="image/png" />
 
     <style>
+      /* -----------------------
+     THEME & COLOR VARIABLES
+     ----------------------- */
       :root {
         --user-color: #1fe1d2;
         --user-color-dark: #3076e0;
+
+        /* LIGHT = valores actuales (NO cambian visualmente) */
+        --bg-main: #ffffff; /* body background */
+        --bg-soft: #f5f8fa; /* subtle backgrounds (chat, hover, etc) */
+        --bg-card: #ffffff; /* card / container / tweet background */
+
+        --text-main: #0f1419; /* main text color */
+        --text-soft: #657786; /* secondary text / meta */
+        --muted: #8899a6;
+
+        --border-soft: #eff3f4; /* light borders */
+        --border: #ccd6dd; /* inputs etc */
+
+        --hover-soft: #f5f8fa; /* hover bg in light mode */
+
+        --overlay-bg: rgba(255, 255, 255, 0.95); /* image overlay (light) */
+
+        --bubble-bg: #e6e8eb; /* public chat bubble (light) */
+
+        --link-color: #1d9bf0;
+
+        --danger: #e0245e;
+        --success: #17bf63;
+
+        --post-disabled: #aab8c2;
       }
 
+      /* DARK MODE OVERRIDES (activated with body[data-theme="dark"]) */
+      body[data-theme="dark"] {
+        --bg-main: #0f1419;
+        --bg-soft: #16181c;
+        --bg-card: #1d1f23;
+
+        --text-main: #e7e9ea;
+        --text-soft: #8b98a5;
+        --muted: #8b98a5;
+
+        --border-soft: #2f3336;
+        --border: #2f3336;
+
+        --hover-soft: #202327;
+
+        --overlay-bg: rgba(0, 0, 0, 0.85);
+
+        --bubble-bg: #252a2d;
+
+        --link-color: #1d9bf0;
+
+        --danger: #f9708d;
+        --success: #3ddc84;
+
+        --post-disabled: #3a4146;
+      }
+
+      /* -----------------------
+     GENERAL
+     ----------------------- */
       body.theme-loading header,
       body.theme-loading .sidebar::before {
         opacity: 0;
@@ -23,13 +83,14 @@
       * {
         box-sizing: border-box;
       }
+
       body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
           Helvetica, Arial, sans-serif;
         line-height: 1.4;
-        color: #0f1419;
+        color: var(--text-main);
         margin: 0;
-        background: #fff;
+        background: var(--bg-main);
       }
 
       /* HEADER */
@@ -98,7 +159,7 @@
         height: 100%;
         width: 220px;
         max-width: 80%;
-        background: white;
+        background: var(--bg-card);
         box-shadow: 2px 0 12px rgba(0, 0, 0, 0.12);
         z-index: 1300;
         transform: translateX(-100%);
@@ -106,11 +167,12 @@
         display: flex;
         flex-direction: column;
         padding: 12px;
+        /* dejar overflow hidden en el contenedor principal para evitar 'double scroll' */
         overflow: hidden;
       }
 
       .sidebar-nav a:hover {
-        background: color-mix(in srgb, var(--user-color), white 85%);
+        background: color-mix(in srgb, var(--user-color), var(--bg-card) 85%);
       }
 
       .sidebar-nav a.active {
@@ -139,9 +201,11 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 14px;
+        gap: 4px;
         padding-top: 40px;
         padding-bottom: 24px;
+
+        flex: 0 0 auto;
       }
       .sidebar-user img {
         width: 96px;
@@ -153,7 +217,7 @@
       .sidebar-user .displayname {
         font-weight: bold;
         font-size: 20px;
-        color: #000;
+        color: var(--text-main);
 
         max-width: 100%;
         text-align: center;
@@ -164,23 +228,47 @@
       }
       .sidebar-user .username-small {
         font-size: 16px;
-        color: #657786;
+        color: var(--text-soft);
 
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
       .sidebar-nav {
+        flex: 1 1 auto; /* ocupa el resto del alto disponible */
+        overflow-y: auto; /* aquí activamos scroll cuando haga falta */
+        padding-right: 6px; /* para que no choque con scrollbar */
+        margin-top: 12px;
         display: flex;
         flex-direction: column;
         gap: 12px;
-        margin-top: 24px;
       }
+      /* suaviza scroll en iOS */
+      .sidebar-nav {
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* opcional: estilos para scrollbar */
+      .sidebar-nav::-webkit-scrollbar {
+        width: 10px;
+      }
+      .sidebar-nav::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.12);
+        border-radius: 10px;
+      }
+
+      .sidebar-icon {
+        filter: none;
+      }
+      body[data-theme="dark"] .sidebar-icon {
+        filter: invert(1) brightness(0.95);
+      }
+
       .sidebar-nav a {
         display: flex;
         align-items: center;
         gap: 12px;
-        color: #111;
+        color: var(--text-main);
         text-decoration: none;
         padding: 12px 16px;
         border-radius: 12px;
@@ -191,9 +279,10 @@
         width: 24px;
         height: 24px;
         object-fit: cover;
+        filter: none;
       }
       .sidebar-nav a:hover {
-        background: #f5f8fa;
+        background: var(--hover-soft);
       }
 
       /* LAYOUT */
@@ -202,17 +291,25 @@
         max-width: 618px;
         margin: 12px auto;
         padding: 0;
-        background: white;
-        border-left: 1px solid #eff3f4;
-        border-right: 1px solid #eff3f4;
+        background: var(--bg-card);
+        border-left: 1px solid var(--border-soft);
+        border-right: 1px solid var(--border-soft);
+      }
+
+      /* invertir colores en dark mode */
+      .no-filter {
+        filter: none;
+      }
+
+      body[data-theme="dark"] .filter-dark-mode {
+        filter: invert(1) brightness(0.95);
       }
 
       /* COMPOSER */
       .composer {
-        background: white;
+        background: var(--bg-card);
         padding: 15px;
-        /* como en user.html: sin sombra exagerada */
-        border-bottom: 1px solid #eff3f4;
+        border-bottom: 1px solid var(--border-soft);
         display: flex;
         gap: 12px;
       }
@@ -232,11 +329,11 @@
       .privacy-select {
         width: 100px;
         height: 24px;
-        border: 1px solid #1da1f2;
+        border: 1px solid var(--user-color);
         border-radius: 6px;
-        color: #1da1f2;
+        color: var(--user-color);
         font-weight: bold;
-        background: white;
+        background: var(--bg-card);
         padding: 2px 6px;
       }
 
@@ -248,6 +345,8 @@
         min-height: 50px;
         margin-top: 4px;
         outline: none;
+        color: var(--text-main);
+        background: transparent;
       }
 
       .composer-footer {
@@ -255,7 +354,7 @@
         justify-content: space-between;
         align-items: center;
 
-        border-top: 1px solid #eff3f4;
+        border-top: 1px solid var(--border-soft);
         padding-top: 8px;
         margin-top: 8px;
       }
@@ -273,7 +372,7 @@
 
       .counter {
         font-size: 13px;
-        color: #657786;
+        color: var(--text-soft);
       }
 
       .file-label img {
@@ -287,7 +386,7 @@
       .post-btn {
         width: 72px;
         height: 36px;
-        background: #1da1f2;
+        background: var(--user-color);
         color: white;
         border: none;
         border-radius: 20px;
@@ -295,7 +394,7 @@
         font-weight: bold;
       }
       .post-btn:disabled {
-        background: #aab8c2;
+        background: var(--post-disabled);
         cursor: default;
       }
 
@@ -305,6 +404,7 @@
         position: relative;
         border-radius: 12px;
         overflow: hidden;
+        background: var(--bg-card);
       }
       .preview-container img {
         width: 100%;
@@ -325,8 +425,8 @@
       .tweet {
         margin: 0 auto;
         padding: 12px 16px 0;
-        background: white;
-        border-top: 1px solid #eff3f4;
+        background: var(--bg-card);
+        border-top: 1px solid var(--border-soft);
         border-radius: 0;
       }
       .tweet-layout {
@@ -395,17 +495,17 @@
 
       .display-name {
         font-weight: bold;
-        color: #000;
+        color: var(--text-main);
         cursor: pointer;
       }
       .username {
         font-size: 15px;
-        color: #657786;
+        color: var(--text-soft);
         cursor: pointer;
       }
       .post-time {
         font-size: 15px;
-        color: #657786;
+        color: var(--text-soft);
 
         white-space: nowrap;
       }
@@ -421,12 +521,13 @@
         line-height: 1.45;
         word-wrap: break-word;
         white-space: pre-wrap;
+        color: var(--text-main);
       }
 
       .tweet-content a,
       .user-text a,
       .bio a {
-        color: #1d9bf0;
+        color: var(--link-color);
         text-decoration: none;
       }
 
@@ -447,13 +548,13 @@
         align-items: center;
         justify-content: flex-start;
 
-        background: #fff;
+        background: var(--bg-card);
       }
 
       .tweet-image img {
         max-width: 100%;
         max-height: 500px;
-        border: 1px solid #eff3f4;
+        border: 1px solid var(--border-soft);
 
         width: auto;
         height: auto;
@@ -480,8 +581,8 @@
         position: absolute;
         top: 28px;
         right: 0;
-        background: white;
-        border: 1px solid #eff3f4;
+        background: var(--bg-card);
+        border: 1px solid var(--border-soft);
         border-radius: 12px;
         box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
         display: none;
@@ -499,15 +600,15 @@
         font-size: 14px;
       }
       .options-menu .option:hover {
-        background: #f5f8fa;
+        background: var(--hover-soft);
       }
       .options-menu .delete-option {
-        color: #e0245e;
+        color: var(--danger);
       }
 
       .empty {
         text-align: center;
-        color: #657786;
+        color: var(--text-soft);
         margin: 30px 0;
       }
 
@@ -515,7 +616,7 @@
       .image-overlay {
         position: fixed;
         inset: 0;
-        background: rgba(255, 255, 255, 0.95);
+        background: var(--overlay-bg);
         display: none;
         align-items: center;
         justify-content: center;
@@ -549,7 +650,7 @@
       }
 
       .tweet-clickable:hover {
-        background: #f5f8fa;
+        background: var(--hover-soft);
       }
 
       /* ===== TWEET ACTIONS ===== */
@@ -557,7 +658,7 @@
         display: flex;
         gap: 132px;
         margin-top: 14px;
-        color: #657786;
+        color: var(--text-soft);
         font-size: 14px;
       }
 
@@ -572,8 +673,8 @@
       .tweet-action img {
         width: 18px;
         height: 18px;
-        stroke: #657786;
-        fill: white;
+        stroke: var(--text-soft);
+        fill: var(--bg-card);
       }
 
       .tweet-action svg {
@@ -591,7 +692,7 @@
       }
 
       .like-action {
-        color: #657786;
+        color: var(--text-soft);
         cursor: pointer;
       }
 
@@ -657,6 +758,335 @@
           }
         }
       }
+
+      /* ================= PUBLIC CHAT FLOAT ================= */
+
+      .public-chat {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 2500;
+        font-family: inherit;
+      }
+
+      /* ---------- TOGGLE CIRCULAR ---------- */
+      .chat-toggle {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: linear-gradient(
+          135deg,
+          var(--user-color),
+          var(--user-color-dark)
+        );
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+      }
+
+      .chat-toggle img {
+        width: 26px;
+        height: 26px;
+        filter: invert(1);
+      }
+
+      /* ---------- WINDOW ---------- */
+      .chat-window {
+        width: 320px;
+        height: 420px;
+        background: var(--bg-card);
+        border-radius: 18px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      /* ---------- HEADER ---------- */
+      .chat-header {
+        padding: 12px;
+        text-align: center;
+        font-weight: bold;
+        color: white;
+        background: linear-gradient(
+          135deg,
+          var(--user-color),
+          var(--user-color-dark)
+        );
+        cursor: pointer;
+      }
+
+      /* ---------- MESSAGES ---------- */
+      .chat-messages {
+        flex: 1;
+        padding: 12px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        background: var(--bg-soft);
+      }
+
+      .chat-message {
+        background: var(--bg-card);
+        padding: 8px 10px;
+        border-radius: 12px;
+        font-size: 14px;
+        color: var(--text-main);
+      }
+
+      .chat-message .user {
+        font-weight: bold;
+        font-size: 13px;
+        margin-bottom: 2px;
+      }
+
+      /* ---------- INPUT ---------- */
+      .chat-input {
+        display: flex;
+        gap: 8px;
+        padding: 10px;
+        border-top: 1px solid var(--border-soft);
+      }
+
+      .chat-input input {
+        flex: 1;
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 6px 12px;
+        outline: none;
+        background: var(--bg-card);
+        color: var(--text-main);
+      }
+
+      .chat-input button {
+        background: var(--user-color);
+        border: none;
+        color: white;
+        border-radius: 20px;
+        padding: 6px 14px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      /* ---------- STATES ---------- */
+      .public-chat.collapsed .chat-window {
+        display: none;
+      }
+
+      .public-chat:not(.collapsed) .chat-toggle {
+        display: none;
+      }
+
+      /* ---------- MOBILE ---------- */
+      @media (max-width: 480px) {
+        .chat-window {
+          width: calc(100vw - 24px);
+          height: 60vh;
+        }
+      }
+
+      /* ===== PUBLIC CHAT - REUSE CHAT MESSAGE STYLES ===== */
+
+      .message-row {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        max-width: 100%;
+      }
+
+      .message-row.me {
+        flex-direction: row-reverse;
+      }
+
+      .message-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
+      }
+
+      .message-bubble-wrap {
+        max-width: 100%;
+        width: 100%;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .message-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .message-author {
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        color: var(--text-main);
+      }
+
+      .message-time {
+        font-size: 12px;
+        color: #6b7280;
+      }
+
+      .message-bubble {
+        background: var(--bubble-bg);
+        padding: 10px 12x;
+        width: 100%;
+        border-radius: 16px;
+        font-size: 16px;
+        line-height: 1.45;
+        word-wrap: break-word;
+        white-space: pre-wrap;
+        color: var(--text-main);
+      }
+
+      .message-row.me .message-bubble {
+        background: #1e9cf1;
+        color: white;
+      }
+
+      .chat-username:hover {
+        text-decoration: underline;
+      }
+
+      /* Efecto snowflake */
+      .snowflake {
+        color: #fff;
+        font-size: 1em;
+        font-family: Arial, sans-serif;
+        text-shadow: 0 0 5px #000;
+      }
+      .snowflake,
+      .snowflake .inner {
+        animation-iteration-count: infinite;
+        animation-play-state: running;
+      }
+      @keyframes snowflakes-fall {
+        0% {
+          transform: translateY(0);
+        }
+        100% {
+          transform: translateY(110vh);
+        }
+      }
+      @keyframes snowflakes-shake {
+        0%,
+        100% {
+          transform: translateX(0);
+        }
+        50% {
+          transform: translateX(80px);
+        }
+      }
+      .snowflake {
+        position: fixed;
+        top: -10%;
+        z-index: 9999;
+        -webkit-user-select: none;
+        user-select: none;
+        cursor: default;
+        pointer-events: none;
+        animation-name: snowflakes-shake;
+        animation-duration: 3s;
+        animation-timing-function: ease-in-out;
+      }
+      .snowflake .inner {
+        animation-duration: 10s;
+        animation-name: snowflakes-fall;
+        animation-timing-function: linear;
+      }
+      .snowflake:nth-of-type(0) {
+        left: 1%;
+        animation-delay: 0s;
+      }
+      .snowflake:nth-of-type(0) .inner {
+        animation-delay: 0s;
+      }
+      .snowflake:nth-of-type(1) {
+        left: 10%;
+        animation-delay: 1s;
+      }
+      .snowflake:nth-of-type(1) .inner {
+        animation-delay: 1s;
+      }
+      .snowflake:nth-of-type(2) {
+        left: 20%;
+        animation-delay: 0.5s;
+      }
+      .snowflake:nth-of-type(2) .inner {
+        animation-delay: 6s;
+      }
+      .snowflake:nth-of-type(3) {
+        left: 30%;
+        animation-delay: 2s;
+      }
+      .snowflake:nth-of-type(3) .inner {
+        animation-delay: 4s;
+      }
+      .snowflake:nth-of-type(4) {
+        left: 40%;
+        animation-delay: 2s;
+      }
+      .snowflake:nth-of-type(4) .inner {
+        animation-delay: 2s;
+      }
+      .snowflake:nth-of-type(5) {
+        left: 50%;
+        animation-delay: 3s;
+      }
+      .snowflake:nth-of-type(5) .inner {
+        animation-delay: 8s;
+      }
+      .snowflake:nth-of-type(6) {
+        left: 60%;
+        animation-delay: 2s;
+      }
+      .snowflake:nth-of-type(6) .inner {
+        animation-delay: 6s;
+      }
+      .snowflake:nth-of-type(7) {
+        left: 70%;
+        animation-delay: 1s;
+      }
+      .snowflake:nth-of-type(7) .inner {
+        animation-delay: 2.5s;
+      }
+      .snowflake:nth-of-type(8) {
+        left: 80%;
+        animation-delay: 0s;
+      }
+      .snowflake:nth-of-type(8) .inner {
+        animation-delay: 1s;
+      }
+      .snowflake:nth-of-type(9) {
+        left: 90%;
+        animation-delay: 1.5s;
+      }
+      .snowflake:nth-of-type(9) .inner {
+        animation-delay: 3s;
+      }
+      .snowflake:nth-of-type(10) {
+        left: 25%;
+        animation-delay: 0s;
+      }
+      .snowflake:nth-of-type(10) .inner {
+        animation-delay: 2s;
+      }
+      .snowflake:nth-of-type(11) {
+        left: 65%;
+        animation-delay: 2.5s;
+      }
+      .snowflake:nth-of-type(11) .inner {
+        animation-delay: 4s;
+      }
     </style>
   </head>
   <body>
@@ -690,14 +1120,25 @@
       </div>
 
       <div class="sidebar-nav">
-        <a href="feed.html"><img src="icons/home.png" alt="" /> Home</a>
-        <a href="requests.html"
-          ><img src="icons/add-friend.png" alt="" /> Solicitudes</a
+        <a href="feed.html"
+          ><img src="icons/home.png" class="sidebar-icon" alt="" /> Home</a
         >
-        <a href="chat.html"><img src="icons/email.png" alt="" /> Chat</a>
-        <a href="user.html"><img src="icons/user.png" alt="" /> Profile</a>
+        <a href="requests.html"
+          ><img src="icons/add-friend.png" class="sidebar-icon" alt="" />
+          Solicitudes</a
+        >
+        <a href="chat.html"
+          ><img src="icons/email.png" class="sidebar-icon" alt="" /> Chat</a
+        >
+        <a href="user.html"
+          ><img src="icons/user.png" class="sidebar-icon" alt="" /> Profile</a
+        >
+        <a href="options.html" id="sidebarOptions">
+          <img src="icons/settings.png" alt="Opciones" class="sidebar-icon" />
+          Opciones
+        </a>
         <a href="#" id="sidebarLogout"
-          ><img src="icons/exit.png" alt="" /> Log out</a
+          ><img src="icons/exit.png" class="sidebar-icon" alt="" /> Log out</a
         >
       </div>
     </aside>
@@ -729,7 +1170,10 @@
           <div class="composer-footer">
             <div class="footer-left">
               <label for="file" class="file-label" title="Subir imagen"
-                ><img src="icons/upload.png" alt="upload"
+                ><img
+                  src="icons/upload.png"
+                  class="no-filter filter-dark-mode"
+                  alt="upload"
               /></label>
               <input
                 type="file"
@@ -762,7 +1206,36 @@
       <img id="overlayImg" alt="imagen completa" />
     </div>
 
+    <!-- ================= PUBLIC CHAT FLOAT ================= -->
+    <div id="publicChat" class="public-chat collapsed">
+      <!-- botón circular -->
+      <div id="chatToggle" class="chat-toggle">
+        <img src="icons/message.png" alt="Chat público" />
+      </div>
+
+      <!-- ventana chat -->
+      <div class="chat-window">
+        <div class="chat-header" id="chatHeader">Chat Público</div>
+
+        <div class="chat-messages" id="chatMessages"></div>
+
+        <div class="chat-input">
+          <input
+            type="text"
+            id="chatInput"
+            placeholder="Escribí un mensaje..."
+            maxlength="300"
+          />
+          <button id="chatSend">Enviar</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
     <script>
+      document.body.dataset.theme = localStorage.getItem("mode") || "light";
       document.body.classList.add("theme-loading");
 
       const API = "http://localhost:8080";
@@ -1041,7 +1514,7 @@
                           ${privacyHtml}
                         </div>
 
-                        <img src="icons/more.png" class="more-btn" alt="more">
+                        <img src="icons/more.png"  class="more-btn no-filter filter-dark-mode" alt="more">
                         <div class="options-menu"></div>
                       </div>
 
@@ -1186,7 +1659,7 @@
 
             actions.innerHTML = `
                         <div class="tweet-action comment-action">
-                          <img src="icons/comment.png">
+                          <img src="icons/comment.png" class="no-filter filter-dark-mode">
                           <span class="comment-count">${x.commentCount}</span>
                         </div>
 
@@ -1316,7 +1789,147 @@
 
         return `rgb(${r}, ${g}, ${b})`;
       }
+
+      /* ================= PUBLIC CHAT LOGIC ================= */
+
+      const chat = document.getElementById("publicChat");
+      const chatToggle = document.getElementById("chatToggle");
+      const chatHeader = document.getElementById("chatHeader");
+      const chatMessages = document.getElementById("chatMessages");
+      const chatInput = document.getElementById("chatInput");
+      const chatSend = document.getElementById("chatSend");
+
+      /* ---------- WEBSOCKET PUBLIC CHAT ---------- */
+
+      let stompClient = null;
+
+      function connectPublicChat() {
+        const socket = new SockJS(
+          API + "/ws?token=" + encodeURIComponent(token)
+        );
+
+        stompClient = Stomp.over(socket);
+
+        // opcional: silenciar logs
+        stompClient.debug = null;
+
+        stompClient.connect(
+          {},
+          () => {
+            stompClient.subscribe("/topic/public", (msg) => {
+              const message = JSON.parse(msg.body);
+              renderPublicMessage(message);
+            });
+          },
+          (err) => console.error("Error WS público", err)
+        );
+      }
+
+      /* toggle */
+      chatToggle.onclick = () => {
+        chat.classList.remove("collapsed");
+      };
+      chatHeader.onclick = () => chat.classList.add("collapsed");
+
+      /* render message */
+      function renderPublicMessage(m) {
+        const isMe = m.senderUsername === username;
+
+        const row = document.createElement("div");
+        row.className = "message-row" + (isMe ? " me" : "");
+
+        const time = m.sentAt
+          ? new Date(m.sentAt).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : "";
+
+        row.innerHTML = `
+    <img
+      class="message-avatar"
+      id="avatarChat"
+      alt="avatar"
+    />
+
+    <div class="message-bubble-wrap">
+      <div class="message-header">
+        <div class="message-author chat-username"
+             data-username="${m.senderUsername}">
+          ${m.senderDisplayName || m.senderUsername}
+        </div>
+        <div class="message-time">${time}</div>
+      </div>
+
+      <div class="message-bubble">
+        ${renderUserText(m.content)}
+      </div>
+    </div>
+  `;
+
+        const avatarChat = row.querySelector(".message-avatar");
+
+        if (m.senderAvatarUrl) {
+          loadAvatar(m.senderAvatarUrl).then((a) => {
+            avatarChat.src = a;
+          });
+        } else {
+          avatarChat.src = "https://via.placeholder.com/64";
+        }
+        // click al perfil
+        row.querySelector(".chat-username").addEventListener("click", () => {
+          location.href = `user.html?username=${m.senderUsername}`;
+        });
+
+        chatMessages.appendChild(row);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+
+      /* send message */
+      async function sendPublicMessage() {
+        const text = chatInput.value.trim();
+        if (!text) return;
+
+        chatInput.value = "";
+
+        try {
+          const r = await fetch(`${API}/api/v1/public-chat/messages`, {
+            method: "POST",
+            headers: {
+              Authorization: "Bearer " + token,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ content: text }),
+          });
+
+          if (!r.ok) return;
+        } catch (e) {
+          console.error("Error enviando mensaje público", e);
+        }
+      }
+
+      chatSend.onclick = sendPublicMessage;
+      chatInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") sendPublicMessage();
+      });
+
       initUserTheme();
+      connectPublicChat();
     </script>
+
+    <div class="snowflakes" aria-hidden="true">
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+    </div>
   </body>
 </html>

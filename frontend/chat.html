@@ -2,15 +2,56 @@
 <html lang="es">
   <head>
     <meta charset="utf-8" />
+    <link rel="icon" type="image/png" href="icons/favicon.png" />
     <title>Chat - Red Social</title>
 
     <meta name="viewport" content="width=device-width,initial-scale=1.0" />
     <style>
+      /* -----------------------
+     THEME & COLOR VARIABLES
+     ----------------------- */
       :root {
         --user-color: #1fe1d2;
         --user-color-dark: #3076e0;
+
+        /* LIGHT (keeps current light look) */
+        --bg-main: #ffffff; /* page background */
+        --bg-card: #ffffff; /* panels, cards */
+        --bg-soft: #f5f8fa; /* subtle backgrounds / hovers */
+        --text-main: #0f1419; /* primary text */
+        --text-soft: #657786; /* secondary / meta text */
+        --border-soft: #e6e9ec; /* light borders */
+        --border: #ccd6dd;
+        --hover-soft: #f5f8fa;
+        --link-color: #1d9bf0;
+        --danger: #e0245e;
+        --post-disabled: #aab8c2;
+        --overlay-bg: rgba(255, 255, 255, 0.95);
+        --bubble-me: #1e9cf1;
+        --bubble-other: #f0f4f5;
       }
 
+      /* DARK MODE OVERRIDES (activate with body[data-theme="dark"]) */
+      body[data-theme="dark"] {
+        --bg-main: #0f1419;
+        --bg-card: #1d1f23;
+        --bg-soft: #16181c;
+        --text-main: #e7e9ea;
+        --text-soft: #8b98a5;
+        --border-soft: #2f3336;
+        --border: #2f3336;
+        --hover-soft: #202327;
+        --link-color: #1d9bf0;
+        --danger: #f9708d;
+        --post-disabled: #3a4146;
+        --overlay-bg: rgba(0, 0, 0, 0.85);
+        --bubble-me: #2b84d6;
+        --bubble-other: #252a2d;
+      }
+
+      /* -----------------------
+     GENERAL
+     ----------------------- */
       body.theme-loading header,
       body.theme-loading .sidebar::before {
         opacity: 0;
@@ -19,16 +60,18 @@
       * {
         box-sizing: border-box;
       }
+
       html,
       body {
         height: 100%;
       }
+
       body {
         margin: 0;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
           Helvetica, Arial, sans-serif;
-        color: #0f1419;
-        background: #fff;
+        color: var(--text-main);
+        background: var(--bg-main);
       }
 
       /* HEADER */
@@ -66,7 +109,7 @@
         font-weight: bold;
       }
 
-      /* LAYOUT */
+      /* APP LAYOUT */
       .app {
         display: flex;
         gap: 12px;
@@ -84,6 +127,15 @@
         display: none;
         z-index: 1200;
       }
+
+      .sidebar-icon {
+        filter: none;
+      }
+      body[data-theme="dark"] .sidebar-icon {
+        filter: invert(1) brightness(0.95);
+      }
+
+      /* SIDEBAR - layout seguro para scroll */
       .sidebar {
         position: fixed;
         left: 0;
@@ -91,7 +143,7 @@
         height: 100%;
         width: 220px;
         max-width: 80%;
-        background: white;
+        background: var(--bg-card);
         box-shadow: 2px 0 12px rgba(0, 0, 0, 0.12);
         z-index: 1300;
         transform: translateX(-100%);
@@ -99,14 +151,10 @@
         display: flex;
         flex-direction: column;
         padding: 12px;
+        /* dejar overflow hidden en el contenedor principal para evitar 'double scroll' */
         overflow: hidden;
       }
-      .sidebar-nav a:hover {
-        background: color-mix(in srgb, var(--user-color), white 85%);
-      }
-      .sidebar-nav a.active {
-        color: var(--user-color);
-      }
+
       .sidebar::before {
         content: "";
         position: absolute;
@@ -124,11 +172,13 @@
       .sidebar.open {
         transform: translateX(0);
       }
+
       .sidebar-user {
         display: flex;
+        flex: 0 0 auto;
         flex-direction: column;
         align-items: center;
-        gap: 14px;
+        gap: 5px;
         padding-top: 40px;
         padding-bottom: 24px;
       }
@@ -142,29 +192,48 @@
       .displayname {
         font-weight: bold;
         font-size: 20px;
-        color: #000;
+        color: var(--text-main);
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
       .username-small {
         font-size: 16px;
-        color: #657786;
+        color: var(--text-soft);
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
+
       .sidebar-nav {
+        flex: 1 1 auto; /* ocupa el resto del alto disponible */
+        overflow-y: auto; /* aquí activamos scroll cuando haga falta */
+        padding-right: 6px; /* para que no choque con scrollbar */
+        margin-top: 12px;
         display: flex;
         flex-direction: column;
         gap: 12px;
-        margin-top: 24px;
       }
+
+      /* suaviza scroll en iOS */
+      .sidebar-nav {
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* opcional: estilos para scrollbar */
+      .sidebar-nav::-webkit-scrollbar {
+        width: 10px;
+      }
+      .sidebar-nav::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.12);
+        border-radius: 10px;
+      }
+
       .sidebar-nav a {
         display: flex;
         align-items: center;
         gap: 12px;
-        color: #111;
+        color: var(--text-main);
         text-decoration: none;
         padding: 12px 16px;
         border-radius: 12px;
@@ -172,51 +241,54 @@
         font-size: 16px;
       }
       .sidebar-nav a:hover {
-        background: #f5f8fa;
+        background: var(--hover-soft);
+      }
+      .sidebar-nav a.active {
+        color: var(--user-color);
       }
 
-      /* MAIN AREA */
+      /* MAIN PANEL */
       .chat-wrap {
         width: 100%;
-        margin-left: 0; /* sidebar is fixed */
+        margin-left: 0; /* sidebar fixed */
         display: flex;
         gap: 12px;
         align-items: stretch;
       }
 
-      /* PANEL */
       .panel {
-        background: white;
-        border-left: 1px solid #e6e9ec;
-        border-right: 1px solid #e6e9ec;
+        background: var(--bg-card);
+        border-left: 1px solid var(--border-soft);
+        border-right: 1px solid var(--border-soft);
         width: 100%;
-        max-width: none;
-        height: calc(100vh - 72px); /* header */
+        height: calc(100vh - 72px);
         min-height: 0;
         display: flex;
       }
 
-      /* CHAT LIST */
+      /* CHAT LIST (LEFT) */
       .chats-col {
         width: 320px;
-        border-right: 1px solid #e6e9ec;
+        border-right: 1px solid var(--border-soft);
         display: flex;
         flex-direction: column;
         overflow: hidden;
-        background: #fff;
+        background: var(--bg-card);
       }
       .chats-header {
         padding: 12px;
         font-weight: bold;
-        border-bottom: 1px solid #e6e9ec;
+        border-bottom: 1px solid var(--border-soft);
         display: flex;
         align-items: center;
         gap: 8px;
+        color: var(--text-main);
       }
       .chats-scroll {
         overflow-y: auto;
         padding: 8px;
       }
+
       .chat-item {
         display: flex;
         gap: 12px;
@@ -226,7 +298,7 @@
         border-radius: 12px;
       }
       .chat-item:hover {
-        background: #f5f8fa;
+        background: var(--hover-soft);
       }
       .chat-avatar {
         width: 48px;
@@ -241,14 +313,14 @@
       }
       .chat-name {
         font-weight: bold;
-        color: #000;
+        color: var(--text-main);
         font-size: 15px;
         display: flex;
         align-items: center;
         gap: 8px;
       }
       .chat-last {
-        color: #657786;
+        color: var(--text-soft);
         font-size: 14px;
         margin-top: 6px;
         overflow: hidden;
@@ -257,12 +329,12 @@
       }
       .chat-meta {
         font-size: 12px;
-        color: #657786;
+        color: var(--text-soft);
         margin-left: auto;
         white-space: nowrap;
       }
       .unread-badge {
-        background: #1da1f2;
+        background: var(--user-color);
         color: white;
         padding: 2px 8px;
         border-radius: 14px;
@@ -271,12 +343,12 @@
         margin-left: 8px;
       }
 
-      /* CHAT VIEW */
+      /* CHAT VIEW (RIGHT) */
       .view-col {
         flex: 1;
         display: flex;
         flex-direction: column;
-        background: #fff;
+        background: var(--bg-card);
         min-width: 0;
         min-height: 0;
       }
@@ -285,8 +357,8 @@
         display: flex;
         align-items: center;
         gap: 12px;
-        background: white;
-        border-bottom: 1px solid #e6e9ec;
+        background: var(--bg-card);
+        border-bottom: 1px solid var(--border-soft);
       }
       .view-avatar {
         width: 48px;
@@ -300,9 +372,10 @@
         display: flex;
         flex-direction: column;
         min-width: 0;
+        color: var(--text-main);
       }
       .view-title .sub {
-        color: #657786;
+        color: var(--text-soft);
         font-size: 13px;
       }
 
@@ -314,9 +387,10 @@
         display: flex;
         flex-direction: column;
         gap: 12px;
-        background: #fff;
+        background: var(--bg-card);
         min-height: 0;
       }
+
       .message-row {
         display: flex;
         gap: 12px;
@@ -347,31 +421,32 @@
       }
       .message-author {
         font-weight: 600;
-        color: #0f1419;
+        color: var(--text-main);
         font-size: 14px;
       }
       .message-time {
-        color: #657786;
+        color: var(--text-soft);
         font-size: 12px;
       }
       .message-bubble {
-        background: #f0f4f5;
+        background: var(--bubble-other);
         padding: 10px 12px;
         border-radius: 16px;
         box-shadow: none;
         word-wrap: break-word;
         white-space: pre-wrap;
+        color: var(--text-main);
       }
       .message-row.me .message-bubble {
-        background: #1e9cf1;
+        background: var(--bubble-me);
         color: white;
       }
 
-      /* INPUT */
+      /* INPUT / COMPOSER */
       .composer {
         padding: 10px;
-        background: white;
-        border-top: 1px solid #e6e9ec;
+        background: var(--bg-card);
+        border-top: 1px solid var(--border-soft);
         display: flex;
         gap: 8px;
         align-items: flex-end;
@@ -388,12 +463,14 @@
         resize: none;
         padding: 10px;
         border-radius: 10px;
-        border: 1px solid #e6e9ec;
+        border: 1px solid var(--border-soft);
         outline: none;
         font-size: 15px;
+        background: var(--bg-card);
+        color: var(--text-main);
       }
       .composer button {
-        background: #1da1f2;
+        background: var(--user-color);
         color: white;
         border: none;
         padding: 10px 14px;
@@ -402,7 +479,7 @@
         cursor: pointer;
       }
       .composer button:disabled {
-        background: #aab8c2;
+        background: var(--post-disabled);
         cursor: default;
       }
 
@@ -414,6 +491,12 @@
         border: none;
         cursor: pointer;
         display: none;
+
+        filter: none;
+      }
+
+      body[data-theme="dark"] #openChatsBtn {
+        filter: invert(1) brightness(0.95);
       }
 
       /* SMALL SCREENS */
@@ -428,7 +511,7 @@
           height: 100%;
           width: 320px;
           max-width: 85%;
-          background: white;
+          background: var(--bg-card);
           z-index: 1400;
           transform: translateX(-100%);
           transition: transform 0.25s ease;
@@ -451,6 +534,9 @@
           transform: translateX(0);
           z-index: 1400;
         }
+        #openChatsBtn {
+          display: inline-block;
+        }
       }
 
       @media (max-width: 480px) {
@@ -458,7 +544,6 @@
           width: 100%;
           max-width: 100%;
         }
-
         .sidebar-user .displayname,
         .sidebar-user .username-small {
           white-space: normal;
@@ -483,7 +568,7 @@
           position: sticky;
           top: 0;
           z-index: 200;
-          background: white;
+          background: var(--bg-card);
           box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
         }
         .messages {
@@ -491,13 +576,144 @@
           overflow-y: auto;
           -webkit-overflow-scrolling: touch;
           min-height: 0;
-          padding-bottom: 80px; /* ⚡ deja espacio para que la composer no lo tape */
+          padding-bottom: 80px; /* leave space so composer doesn't cover last message */
         }
         html,
         body {
           overflow-x: hidden;
           overflow-y: hidden;
         }
+      }
+
+      /* Efecto snowflake */
+      .snowflake {
+        color: #fff;
+        font-size: 1em;
+        font-family: Arial, sans-serif;
+        text-shadow: 0 0 5px #000;
+      }
+      .snowflake,
+      .snowflake .inner {
+        animation-iteration-count: infinite;
+        animation-play-state: running;
+      }
+      @keyframes snowflakes-fall {
+        0% {
+          transform: translateY(0);
+        }
+        100% {
+          transform: translateY(110vh);
+        }
+      }
+      @keyframes snowflakes-shake {
+        0%,
+        100% {
+          transform: translateX(0);
+        }
+        50% {
+          transform: translateX(80px);
+        }
+      }
+      .snowflake {
+        position: fixed;
+        top: -10%;
+        z-index: 9999;
+        -webkit-user-select: none;
+        user-select: none;
+        cursor: default;
+        pointer-events: none;
+        animation-name: snowflakes-shake;
+        animation-duration: 3s;
+        animation-timing-function: ease-in-out;
+      }
+      .snowflake .inner {
+        animation-duration: 10s;
+        animation-name: snowflakes-fall;
+        animation-timing-function: linear;
+      }
+      .snowflake:nth-of-type(0) {
+        left: 1%;
+        animation-delay: 0s;
+      }
+      .snowflake:nth-of-type(0) .inner {
+        animation-delay: 0s;
+      }
+      .snowflake:nth-of-type(1) {
+        left: 10%;
+        animation-delay: 1s;
+      }
+      .snowflake:nth-of-type(1) .inner {
+        animation-delay: 1s;
+      }
+      .snowflake:nth-of-type(2) {
+        left: 20%;
+        animation-delay: 0.5s;
+      }
+      .snowflake:nth-of-type(2) .inner {
+        animation-delay: 6s;
+      }
+      .snowflake:nth-of-type(3) {
+        left: 30%;
+        animation-delay: 2s;
+      }
+      .snowflake:nth-of-type(3) .inner {
+        animation-delay: 4s;
+      }
+      .snowflake:nth-of-type(4) {
+        left: 40%;
+        animation-delay: 2s;
+      }
+      .snowflake:nth-of-type(4) .inner {
+        animation-delay: 2s;
+      }
+      .snowflake:nth-of-type(5) {
+        left: 50%;
+        animation-delay: 3s;
+      }
+      .snowflake:nth-of-type(5) .inner {
+        animation-delay: 8s;
+      }
+      .snowflake:nth-of-type(6) {
+        left: 60%;
+        animation-delay: 2s;
+      }
+      .snowflake:nth-of-type(6) .inner {
+        animation-delay: 6s;
+      }
+      .snowflake:nth-of-type(7) {
+        left: 70%;
+        animation-delay: 1s;
+      }
+      .snowflake:nth-of-type(7) .inner {
+        animation-delay: 2.5s;
+      }
+      .snowflake:nth-of-type(8) {
+        left: 80%;
+        animation-delay: 0s;
+      }
+      .snowflake:nth-of-type(8) .inner {
+        animation-delay: 1s;
+      }
+      .snowflake:nth-of-type(9) {
+        left: 90%;
+        animation-delay: 1.5s;
+      }
+      .snowflake:nth-of-type(9) .inner {
+        animation-delay: 3s;
+      }
+      .snowflake:nth-of-type(10) {
+        left: 25%;
+        animation-delay: 0s;
+      }
+      .snowflake:nth-of-type(10) .inner {
+        animation-delay: 2s;
+      }
+      .snowflake:nth-of-type(11) {
+        left: 65%;
+        animation-delay: 2.5s;
+      }
+      .snowflake:nth-of-type(11) .inner {
+        animation-delay: 4s;
       }
     </style>
   </head>
@@ -531,14 +747,26 @@
         </div>
       </div>
       <div class="sidebar-nav">
-        <a href="feed.html"><img src="icons/home.png" alt="" /> Home</a>
-        <a href="requests.html"
-          ><img src="icons/add-friend.png" alt="" /> Solicitudes</a
+        <a href="feed.html"
+          ><img src="icons/home.png" class="sidebar-icon" alt="" /> Home</a
         >
-        <a href="chat.html"><img src="icons/email.png" alt="" /> Chat</a>
-        <a href="user.html"><img src="icons/user.png" alt="" /> Profile</a>
+        <a href="requests.html"
+          ><img src="icons/add-friend.png" alt="" class="sidebar-icon" />
+          Solicitudes</a
+        >
+        <a href="chat.html"
+          ><img src="icons/email.png" class="sidebar-icon" alt="" /> Chat</a
+        >
+        <a href="user.html"
+          ><img src="icons/user.png" class="sidebar-icon" alt="" /> Profile</a
+        >
+        <a href="options.html" id="sidebarOptions">
+          <img src="icons/settings.png" alt="Opciones" class="sidebar-icon" />
+          Opciones
+        </a>
+
         <a href="#" id="sidebarLogout"
-          ><img src="icons/exit.png" alt="" /> Log out</a
+          ><img src="icons/exit.png" class="sidebar-icon" alt="" /> Log out</a
         >
       </div>
     </aside>
@@ -598,6 +826,7 @@
     <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
 
     <script>
+      document.body.dataset.theme = localStorage.getItem("mode") || "light";
       document.body.classList.add("theme-loading");
       // -------------------------
       // Config & estado
@@ -1227,5 +1456,19 @@
       }
       initUserTheme();
     </script>
+    <div class="snowflakes" aria-hidden="true">
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+    </div>
   </body>
 </html>

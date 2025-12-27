@@ -3,13 +3,72 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="icons/favicon.png" />
     <title>Perfil - Red Social</title>
     <style>
+      /* -----------------------
+     THEME & COLOR VARIABLES
+     ----------------------- */
       :root {
         --user-color: #1fe1d2;
         --user-color-dark: #3076e0;
+
+        /* LIGHT (values equal to current light-mode look) */
+        --bg-main: #ffffff; /* page background */
+        --bg-soft: #f5f8fa; /* subtle backgrounds (chat, hover, etc) */
+        --bg-card: #ffffff; /* cards / containers / tweets */
+
+        --text-main: #0f1419; /* primary text */
+        --text-soft: #535e73; /* secondary / meta text (approx rgb(83,100,113)) */
+        --muted: #657786;
+
+        --border-soft: #eff3f4; /* soft borders */
+        --border: #ccd6dd;
+
+        --hover-soft: #f5f8fa; /* hover bg in light mode */
+
+        --overlay-bg: rgba(255, 255, 255, 0.95); /* image overlay (light) */
+
+        --bubble-bg: #e6e8eb; /* public chat bubble (light) */
+
+        --link-color: #1d9bf0; /* blue links / twitter embeds */
+
+        --danger: #e0245e;
+        --success: #17bf63;
+
+        --post-disabled: #aab8c2;
       }
 
+      /* DARK MODE OVERRIDES (activate with body[data-theme="dark"]) */
+      body[data-theme="dark"] {
+        --bg-main: #0f1419;
+        --bg-soft: #16181c;
+        --bg-card: #1d1f23;
+
+        --text-main: #e7e9ea;
+        --text-soft: #8b98a5;
+        --muted: #8b98a5;
+
+        --border-soft: #2f3336;
+        --border: #2f3336;
+
+        --hover-soft: #202327;
+
+        --overlay-bg: rgba(0, 0, 0, 0.85);
+
+        --bubble-bg: #252a2d;
+
+        --link-color: #1d9bf0;
+
+        --danger: #f9708d;
+        --success: #3ddc84;
+
+        --post-disabled: #3a4146;
+      }
+
+      /* -----------------------
+     GENERAL
+     ----------------------- */
       body.theme-loading header,
       body.theme-loading .sidebar::before {
         opacity: 0;
@@ -22,13 +81,14 @@
       * {
         box-sizing: border-box;
       }
+
       body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
           Helvetica, Arial, sans-serif;
         line-height: 1.4;
-        color: #0f1419;
+        color: var(--text-main);
         margin: 0;
-        background: #fff;
+        background: var(--bg-main);
       }
 
       /* HEADER */
@@ -95,7 +155,7 @@
         height: 100%;
         width: 220px;
         max-width: 80%;
-        background: white;
+        background: var(--bg-card);
         box-shadow: 2px 0 12px rgba(0, 0, 0, 0.12);
         z-index: 1300;
         transform: translateX(-100%);
@@ -103,11 +163,12 @@
         display: flex;
         flex-direction: column;
         padding: 12px;
+        /* dejar overflow hidden en el contenedor principal para evitar 'double scroll' */
         overflow: hidden;
       }
 
       .sidebar-nav a:hover {
-        background: color-mix(in srgb, var(--user-color), white 85%);
+        background: color-mix(in srgb, var(--user-color), var(--bg-card) 85%);
       }
 
       .sidebar-nav a.active {
@@ -136,9 +197,11 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 14px;
+        gap: 4px;
         padding-top: 40px;
         padding-bottom: 24px;
+
+        flex: 0 0 auto;
       }
       .sidebar-user img {
         width: 96px;
@@ -149,7 +212,7 @@
       }
       .sidebar-user .displayname {
         font-weight: bold;
-        color: #000;
+        color: var(--text-main);
         font-size: 20px;
 
         overflow: hidden;
@@ -158,7 +221,7 @@
       }
       .sidebar-user .username-small {
         font-size: 16px;
-        color: rgb(83, 100, 113);
+        color: var(--text-soft);
 
         overflow: hidden;
         text-overflow: ellipsis;
@@ -168,8 +231,8 @@
         position: absolute;
         right: 8px;
         top: 110px;
-        background: white;
-        border: 1px solid #eff3f4;
+        background: var(--bg-card);
+        border: 1px solid var(--border-soft);
         border-radius: 8px;
         box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
         padding: 6px;
@@ -186,22 +249,48 @@
         align-items: center;
       }
       .sidebar-user-menu .opt:hover {
-        background: #f5f8fa;
+        background: var(--hover-soft);
       }
       .sidebar-user-menu .opt.logout {
-        color: #e0245e;
+        color: var(--danger);
       }
+      /* la nav ocupa el resto y puede scrollear */
       .sidebar-nav {
+        flex: 1 1 auto; /* ocupa el resto del alto disponible */
+        overflow-y: auto; /* aquí activamos scroll cuando haga falta */
+        padding-right: 6px; /* para que no choque con scrollbar */
+        margin-top: 12px;
         display: flex;
         flex-direction: column;
         gap: 12px;
-        margin-top: 24px;
       }
+
+      .sidebar-icon {
+        filter: none;
+      }
+      body[data-theme="dark"] .sidebar-icon {
+        filter: invert(1) brightness(0.95);
+      }
+
+      /* suaviza scroll en iOS */
+      .sidebar-nav {
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* opcional: estilos para scrollbar */
+      .sidebar-nav::-webkit-scrollbar {
+        width: 10px;
+      }
+      .sidebar-nav::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.12);
+        border-radius: 10px;
+      }
+
       .sidebar-nav a {
         display: flex;
         align-items: center;
         gap: 12px;
-        color: #111;
+        color: var(--text-main);
         text-decoration: none;
         padding: 12px 16px;
         border-radius: 12px;
@@ -214,7 +303,7 @@
         object-fit: cover;
       }
       .sidebar-nav a:hover {
-        background: #f5f8fa;
+        background: var(--hover-soft);
       }
 
       /* LAYOUT */
@@ -225,14 +314,14 @@
         padding: 0;
 
         /* Twitter-like */
-        background: white;
-        border-left: 1px solid #eff3f4;
-        border-right: 1px solid #eff3f4;
+        background: var(--bg-card);
+        border-left: 1px solid var(--border-soft);
+        border-right: 1px solid var(--border-soft);
       }
 
       /* PROFILE */
       .profile {
-        background: white;
+        background: var(--bg-card);
         padding: 15px;
 
         display: flex;
@@ -255,15 +344,17 @@
         margin: 0;
         font-size: 18px;
         font-weight: bold;
+        color: var(--text-main);
       }
 
       .profile-info .bio {
         margin: 10px 0 13px 0;
+        color: var(--text-main);
       }
 
       .profile-info .stats {
         font-size: 13px;
-        color: rgb(83, 100, 113);
+        color: var(--text-soft);
         margin: 4px 0;
       }
 
@@ -271,7 +362,7 @@
         margin-top: 8px;
         font-size: 14px;
         font-weight: bold;
-        color: #1da1f2;
+        color: var(--user-color);
         text-align: right;
       }
 
@@ -288,34 +379,35 @@
         font-weight: bold;
       }
       .actions .edit {
-        background: #1da1f2;
+        background: var(--user-color);
         color: white;
       }
       .actions .add {
-        background: #1da1f2;
+        background: var(--user-color);
         color: white;
       }
       .actions .remove {
-        background: #e0245e;
+        background: var(--danger);
         color: white;
       }
       .actions .cancel {
-        background: rgb(83, 100, 113);
+        background: var(--text-soft);
         color: white;
       }
 
       .tweeter-user .display-name {
         font-weight: bold;
         cursor: pointer;
+        color: var(--text-main);
       }
       .tweet-user .username {
         font-size: 15px;
-        color: rgb(83, 100, 113);
+        color: var(--text-soft);
         cursor: pointer;
       }
       .post-time {
         font-size: 15px;
-        color: rgb(83, 100, 113);
+        color: var(--text-soft);
         margin-left: auto;
       }
 
@@ -325,7 +417,7 @@
 
         font-size: 13px;
         font-weight: 500;
-        color: rgb(29, 155, 240); /* azul exacto X */
+        color: var(--link-color); /* azul exacto X */
 
         display: inline-flex;
         align-items: center;
@@ -336,7 +428,7 @@
 
       .tweet-privacy-inline {
         font-size: 13px;
-        color: rgb(83, 100, 113); /* gris Twitter */
+        color: var(--text-soft); /* gris */
         white-space: nowrap;
         opacity: 0.85;
       }
@@ -347,6 +439,7 @@
         overflow: hidden;
         border-radius: 12px;
         margin-top: 8px;
+        background: var(--bg-card);
       }
       .post-image-container img {
         width: 100%;
@@ -359,7 +452,7 @@
 
       /* ===== MENU ⋮ EN POSTS (Twitter-like) ===== */
       .tweet-header {
-        display: flex; /* 👈 ESTO FALTABA */
+        display: flex; /* 👈 keep layout */
         align-items: center;
         justify-content: space-between;
         position: relative;
@@ -369,10 +462,10 @@
 
       .tweet-header .options-menu {
         position: absolute;
-        top: 22px; /* justo debajo del ⋮ */
+        top: 22px; /* just under ⋮ */
         right: 0;
-        background: white;
-        border: 1px solid #eff3f4;
+        background: var(--bg-card);
+        border: 1px solid var(--border-soft);
         border-radius: 12px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         display: none;
@@ -392,11 +485,11 @@
       }
 
       .tweet-header .options-menu .option:hover {
-        background: #f5f8fa;
+        background: var(--hover-soft);
       }
 
       .tweet-header .options-menu .delete-option {
-        color: #e0245e;
+        color: var(--danger);
       }
 
       .tweet-header .options-menu .delete-option img {
@@ -407,13 +500,13 @@
       /* EMPTY */
       .empty {
         text-align: center;
-        color: rgb(83, 100, 113);
+        color: var(--text-soft);
         margin-top: 30px;
       }
 
       .display-name {
         font-weight: bold;
-        color: #000;
+        color: var(--text-main);
         cursor: pointer;
       }
 
@@ -444,8 +537,8 @@
         display: none;
         flex-direction: column;
 
-        background: white;
-        border: 1px solid #eff3f4;
+        background: var(--bg-card);
+        border: 1px solid var(--border-soft);
         border-radius: 12px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 
@@ -470,7 +563,7 @@
         width: 92%;
         max-width: 420px;
         max-height: 75vh;
-        background: white;
+        background: var(--bg-card);
         border-radius: 14px;
         display: none;
         flex-direction: column;
@@ -481,17 +574,20 @@
         padding: 12px;
         text-align: center;
         font-weight: bold;
-        border-bottom: 1px solid #eff3f4;
+        border-bottom: 1px solid var(--border-soft);
+        color: var(--text-main);
       }
       .friends-search {
         padding: 10px;
-        border-bottom: 1px solid #eff3f4;
+        border-bottom: 1px solid var(--border-soft);
       }
       .friends-search input {
         width: 100%;
         padding: 8px 12px;
         border-radius: 20px;
-        border: 1px solid #ccd6dd;
+        border: 1px solid var(--border);
+        background: var(--bg-card);
+        color: var(--text-main);
       }
       .friends-list {
         overflow-y: auto;
@@ -505,7 +601,7 @@
         align-items: center;
       }
       .friend-item:hover {
-        background: #f5f8fa;
+        background: var(--hover-soft);
       }
       .friend-item img {
         width: 44px;
@@ -516,10 +612,11 @@
       .friend-info .username {
         font-weight: bold;
         font-size: 14px;
+        color: var(--text-main);
       }
       .friend-info .displayname {
         font-size: 13px;
-        color: rgb(83, 100, 113);
+        color: var(--text-soft);
       }
 
       /* Cursor clickable en autor del post */
@@ -533,27 +630,21 @@
       .image-overlay {
         position: fixed;
         inset: 0;
-        background: #fff; /* background: rgba(0, 0, 0, 0.55); /* ✨ translúcido, no negro */
-        backdrop-filter: blur(2px); /* ✨ efecto moderno */
+        background: var(--overlay-bg);
+        backdrop-filter: blur(2px);
         display: none;
         align-items: center;
         justify-content: center;
         z-index: 3000;
-        padding: 24px; /* ✨ margen de seguridad */
+        padding: 24px;
       }
 
       .image-overlay img {
-        /* fuerza presencia visual */
         width: 80vw;
         height: 80vh;
-
-        /* límites reales */
         max-width: 900px;
         max-height: 700px;
-
-        /* pero sin deformar */
         object-fit: contain;
-
         border-radius: 14px;
         box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
         cursor: zoom-out;
@@ -586,7 +677,7 @@
         position: absolute;
         top: -78px;
 
-        background: white;
+        background: var(--bg-card);
         border-radius: 50%;
 
         /* Efecto Twitter */
@@ -595,7 +686,6 @@
       }
 
       /* SOLO el botón ⋮ arriba */
-      /* Contenedor superior derecho del perfil (⋮ + estado) */
       .profile-top-actions {
         position: absolute;
         top: 12px;
@@ -608,16 +698,15 @@
         z-index: 20;
       }
 
-      /* Texto "Son amigos" */
       .friend-status-top {
         position: absolute;
         top: 6px;
-        right: 44px; /* deja lugar para ⋮ */
+        right: 44px;
         font-size: 14px;
         font-weight: bold;
-        color: #1da1f2;
+        color: var(--user-color);
         white-space: nowrap;
-        pointer-events: none; /* opcional */
+        pointer-events: none;
       }
 
       .friend-status-top span {
@@ -632,21 +721,22 @@
         margin-top: 10px;
         display: flex;
         gap: 8px;
-        justify-content: flex-end; /* 👈 CLAVE */
+        justify-content: flex-end; /* clave para layout */
       }
 
       .profile-info {
         margin-top: 0;
-        padding-top: 70px; /* se adapta a cualquier caso */
+        padding-top: 70px;
       }
 
       .profile-info h2 {
         margin: 0;
         font-size: 20px;
+        color: var(--text-main);
       }
 
       .profile-info .username {
-        color: rgb(83, 100, 113);
+        color: var(--text-soft);
         margin-top: 0px;
       }
 
@@ -656,7 +746,7 @@
         gap: 6px;
         margin-top: 6px;
         font-size: 14px;
-        color: rgb(83, 100, 113);
+        color: var(--text-soft);
       }
 
       .profile-joined img {
@@ -668,16 +758,17 @@
       .profile-info .stats {
         margin-top: 10px;
         font-size: 14px;
+        color: var(--text-main);
       }
 
       /*Posts como x*/
       .tweet {
         margin: 0 auto;
         padding: 12px 16px 0;
-        background: white;
+        background: var(--bg-card);
 
         /* Twitter-like */
-        border-top: 1px solid #eff3f4;
+        border-top: 1px solid var(--border-soft);
         border-radius: 0;
       }
 
@@ -706,11 +797,10 @@
       }
 
       /* BOTÓN ⋮ EN POSTS (Twitter-like) */
-
       .tweet-header .more-btn {
         width: 18px;
         height: 18px;
-        flex-shrink: 0; /* 👈 importante */
+        flex-shrink: 0;
         cursor: pointer;
         opacity: 0.7;
       }
@@ -723,7 +813,7 @@
         display: flex;
         align-items: center;
         gap: 4px;
-        flex-wrap: wrap; /* permite salto si falta ancho */
+        flex-wrap: wrap;
         min-width: 0;
       }
 
@@ -734,12 +824,13 @@
 
         overflow-wrap: break-word;
         word-wrap: break-word;
+        color: var(--text-main);
       }
 
       .tweet-content a,
       .user-text a,
       .bio a {
-        color: #1d9bf0;
+        color: var(--link-color);
         text-decoration: none;
         white-space: pre-wrap;
       }
@@ -759,7 +850,7 @@
         align-items: center;
         justify-content: flex-start;
 
-        background: #fff;
+        background: var(--bg-card);
         cursor: pointer;
       }
 
@@ -773,12 +864,9 @@
         object-fit: contain;
         display: block;
 
-        border: 1px solid #eff3f4;
+        border: 1px solid var(--border-soft);
         border-radius: 16px;
         overflow: hidden;
-
-        /* ❌ NO border */
-        /* ❌ NO border-radius */
       }
 
       /* ===== MENU ⋮ PERFIL ===== */
@@ -790,8 +878,8 @@
         display: none;
         flex-direction: column;
 
-        background: white;
-        border: 1px solid #eff3f4;
+        background: var(--bg-card);
+        border: 1px solid var(--border-soft);
         border-radius: 12px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 
@@ -810,11 +898,11 @@
       }
 
       .profile-options-menu .option:hover {
-        background: #f5f8fa;
+        background: var(--hover-soft);
       }
 
       .profile-options-menu .delete-option {
-        color: #e0245e;
+        color: var(--danger);
       }
 
       .profile-options-menu img {
@@ -837,7 +925,7 @@
       }
 
       .tweet-clickable:hover {
-        background: #f5f8fa;
+        background: var(--hover-soft);
       }
 
       /* ===== TWEET ACTIONS ===== */
@@ -845,7 +933,7 @@
         display: flex;
         gap: 132px;
         margin-top: 14px;
-        color: #657786;
+        color: var(--text-soft);
         font-size: 14px;
       }
 
@@ -860,8 +948,8 @@
       .tweet-action img {
         width: 18px;
         height: 18px;
-        stroke: #657786;
-        fill: white;
+        stroke: var(--text-soft);
+        fill: var(--bg-card);
       }
 
       .tweet-action svg {
@@ -879,7 +967,7 @@
       }
 
       .like-action {
-        color: #657786;
+        color: var(--text-soft);
         cursor: pointer;
       }
 
@@ -892,8 +980,16 @@
         height: 20px;
       }
 
-      /* RESPONSIVE */
+      /* invertir colores en dark mode */
+      .no-filter {
+        filter: none;
+      }
 
+      body[data-theme="dark"] .filter-dark-mode {
+        filter: invert(1) brightness(0.95);
+      }
+
+      /* RESPONSIVE */
       @media (max-width: 480px) {
         .container {
           margin: 0px;
@@ -923,10 +1019,8 @@
           width: 100px;
           height: 100px;
           top: -75px;
-          left: 50%; /* mueve el borde izquierdo al 50% del contenedor */
-          transform: translateX(
-            -50%
-          ); /* desplaza el elemento hacia la izquierda la mitad de su ancho */
+          left: 50%;
+          transform: translateX(-50%);
           margin: 0 auto;
           text-align: center;
         }
@@ -942,16 +1036,14 @@
 
       @media (max-width: 480px) {
         .friend-status-top {
-          display: flex; /* Activamos flexbox */
-          justify-content: space-between; /* Uno a la izquierda, otro a la derecha */
-          align-items: center; /* Centrar verticalmente si hace falta */
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
           margin-bottom: 40px;
           margin-top: 40px;
           top: 3px;
-          right: 50%; /* mueve el borde izquierdo al 50% del contenedor */
-          transform: translateX(
-            -50%
-          ); /* desplaza el elemento hacia la izquierda la mitad de su ancho */
+          right: 50%;
+          transform: translateX(-50%);
         }
 
         .profile-top-actions {
@@ -986,6 +1078,137 @@
           font-size: 32px;
         }
       }
+
+      /* Efecto snowflake */
+      .snowflake {
+        color: #fff;
+        font-size: 1em;
+        font-family: Arial, sans-serif;
+        text-shadow: 0 0 5px #000;
+      }
+      .snowflake,
+      .snowflake .inner {
+        animation-iteration-count: infinite;
+        animation-play-state: running;
+      }
+      @keyframes snowflakes-fall {
+        0% {
+          transform: translateY(0);
+        }
+        100% {
+          transform: translateY(110vh);
+        }
+      }
+      @keyframes snowflakes-shake {
+        0%,
+        100% {
+          transform: translateX(0);
+        }
+        50% {
+          transform: translateX(80px);
+        }
+      }
+      .snowflake {
+        position: fixed;
+        top: -10%;
+        z-index: 9999;
+        -webkit-user-select: none;
+        user-select: none;
+        cursor: default;
+        pointer-events: none;
+        animation-name: snowflakes-shake;
+        animation-duration: 3s;
+        animation-timing-function: ease-in-out;
+      }
+      .snowflake .inner {
+        animation-duration: 10s;
+        animation-name: snowflakes-fall;
+        animation-timing-function: linear;
+      }
+      .snowflake:nth-of-type(0) {
+        left: 1%;
+        animation-delay: 0s;
+      }
+      .snowflake:nth-of-type(0) .inner {
+        animation-delay: 0s;
+      }
+      .snowflake:nth-of-type(1) {
+        left: 10%;
+        animation-delay: 1s;
+      }
+      .snowflake:nth-of-type(1) .inner {
+        animation-delay: 1s;
+      }
+      .snowflake:nth-of-type(2) {
+        left: 20%;
+        animation-delay: 0.5s;
+      }
+      .snowflake:nth-of-type(2) .inner {
+        animation-delay: 6s;
+      }
+      .snowflake:nth-of-type(3) {
+        left: 30%;
+        animation-delay: 2s;
+      }
+      .snowflake:nth-of-type(3) .inner {
+        animation-delay: 4s;
+      }
+      .snowflake:nth-of-type(4) {
+        left: 40%;
+        animation-delay: 2s;
+      }
+      .snowflake:nth-of-type(4) .inner {
+        animation-delay: 2s;
+      }
+      .snowflake:nth-of-type(5) {
+        left: 50%;
+        animation-delay: 3s;
+      }
+      .snowflake:nth-of-type(5) .inner {
+        animation-delay: 8s;
+      }
+      .snowflake:nth-of-type(6) {
+        left: 60%;
+        animation-delay: 2s;
+      }
+      .snowflake:nth-of-type(6) .inner {
+        animation-delay: 6s;
+      }
+      .snowflake:nth-of-type(7) {
+        left: 70%;
+        animation-delay: 1s;
+      }
+      .snowflake:nth-of-type(7) .inner {
+        animation-delay: 2.5s;
+      }
+      .snowflake:nth-of-type(8) {
+        left: 80%;
+        animation-delay: 0s;
+      }
+      .snowflake:nth-of-type(8) .inner {
+        animation-delay: 1s;
+      }
+      .snowflake:nth-of-type(9) {
+        left: 90%;
+        animation-delay: 1.5s;
+      }
+      .snowflake:nth-of-type(9) .inner {
+        animation-delay: 3s;
+      }
+      .snowflake:nth-of-type(10) {
+        left: 25%;
+        animation-delay: 0s;
+      }
+      .snowflake:nth-of-type(10) .inner {
+        animation-delay: 2s;
+      }
+      .snowflake:nth-of-type(11) {
+        left: 65%;
+        animation-delay: 2.5s;
+      }
+      .snowflake:nth-of-type(11) .inner {
+        animation-delay: 4s;
+      }
     </style>
   </head>
   <body>
@@ -1019,14 +1242,25 @@
         </div>
       </div>
       <div class="sidebar-nav">
-        <a href="feed.html"><img src="icons/home.png" alt="" /> Home</a>
-        <a href="requests.html"
-          ><img src="icons/add-friend.png" alt="" /> Solicitudes</a
+        <a href="feed.html"
+          ><img src="icons/home.png" class="sidebar-icon" alt="" /> Home</a
         >
-        <a href="chat.html"><img src="icons/email.png" alt="" /> Chat</a>
-        <a href="user.html"><img src="icons/user.png" alt="" /> Profile</a>
+        <a href="requests.html"
+          ><img src="icons/add-friend.png" class="sidebar-icon" alt="" />
+          Solicitudes</a
+        >
+        <a href="chat.html"
+          ><img src="icons/email.png" class="sidebar-icon" alt="" /> Chat</a
+        >
+        <a href="user.html"
+          ><img src="icons/user.png" class="sidebar-icon" alt="" /> Profile</a
+        >
+        <a href="options.html" id="sidebarOptions">
+          <img src="icons/settings.png" alt="Opciones" class="sidebar-icon" />
+          Opciones
+        </a>
         <a href="#" id="sidebarLogout"
-          ><img src="icons/exit.png" alt="" /> Log out</a
+          ><img src="icons/exit.png" class="sidebar-icon" alt="" /> Log out</a
         >
       </div>
     </aside>
@@ -1059,7 +1293,10 @@
     <script async src="https://platform.twitter.com/widgets.js"></script>
 
     <script>
+      document.body.dataset.theme = localStorage.getItem("mode") || "light";
+
       document.body.classList.add("theme-loading");
+
       const API = "http://localhost:8080";
       const token = localStorage.getItem("accessToken");
       const myUsername = localStorage.getItem("username");
@@ -1258,11 +1495,11 @@
           item.className = "friend-item";
           const av = await loadAvatar(f.avatarUrl);
           item.innerHTML = `
-      <img src="${av}" alt="avatar">
-      <div class="friend-info">
-        <div class="username">@${f.username}</div>
-        <div class="displayname">${f.displayName}</div>
-      </div>`;
+            <img src="${av}" alt="avatar">
+            <div class="friend-info">
+              <div class="username">@${f.username}</div>
+              <div class="displayname">${f.displayName}</div>
+            </div>`;
           item.onclick = (e) => {
             e.stopPropagation();
             location.href = `user.html?username=${f.username}`;
@@ -1314,39 +1551,39 @@
         if (!isMe) {
           if (u.isFriend) {
             topActions = `
-                <div class="friend-status-top" style="display:flex; align-items:center; gap:8px">
-                  
-                  <button 
-                    onclick="location.href='chat.html?username=${u.username}'"
-                    style="
-                        display: flex;
-                        align-items: center;
-                        gap: 8px;
-                        background: #888;        /* gris claro */
-                        color: white;
-                        border: none;
-                        padding: 8px 16px;       /* más corpulento */
-                        border-radius: 14px;
-                        cursor: pointer;
-                        font-weight: bold;
-                        font-size: 14px;
-                        transition: background 0.2s;
-                    "
-                    onmouseover="this.style.background='#999';"
-                    onmouseout="this.style.background='#888';"
-                >
-                    <img src="icons/message.png" alt="Chat" style="width:18px;height:18px; filter: invert(1);">
-                    Chatear
-                </button>
-                  <span>Son amigos</span>
-                </div>
-              `;
+                      <div class="friend-status-top" style="display:flex; align-items:center; gap:8px">
+
+                        <button
+                          onclick="location.href='chat.html?username=${u.username}'"
+                          style="
+                              display: flex;
+                              align-items: center;
+                              gap: 8px;
+                              background: #888;        /* gris claro */
+                              color: white;
+                              border: none;
+                              padding: 8px 16px;       /* más corpulento */
+                              border-radius: 14px;
+                              cursor: pointer;
+                              font-weight: bold;
+                              font-size: 14px;
+                              transition: background 0.2s;
+                          "
+                          onmouseover="this.style.background='#999';"
+                          onmouseout="this.style.background='#888';"
+                      >
+                          <img src="icons/message.png" alt="Chat" style="width:18px;height:18px; filter: invert(1);">
+                          Chatear
+                      </button>
+                        <span>Son amigos</span>
+                      </div>
+                    `;
           } else if (u.sentRequest) {
             topActions = `<button class="cancel" onclick="cancelRequest()">Cancelar solicitud</button>`;
           } else if (u.receivedRequest) {
             topActions = `
-      <button class="add" onclick="acceptRequest()">Aceptar</button>
-      <button class="remove" onclick="rejectRequest()">Rechazar</button>`;
+            <button class="add" onclick="acceptRequest()">Aceptar</button>
+            <button class="remove" onclick="rejectRequest()">Rechazar</button>`;
           } else {
             topActions = `<button class="add" onclick="addFriend()">Agregar amigo</button>`;
           }
@@ -1354,14 +1591,14 @@
 
         if (isMe) {
           menuOptions = `
-    <div class="option" onclick="location.href='editar.html'">
-      Editar perfil
-    </div>`;
+          <div class="option" onclick="location.href='editar.html'">
+            Editar perfil
+          </div>`;
         } else if (u.isFriend) {
           menuOptions = `
-    <div class="option delete-option" onclick="removeFriend()">
-      <img src="icons/delete.png"> Eliminar amigo
-    </div>`;
+          <div class="option delete-option" onclick="removeFriend()">
+            <img src="icons/delete.png"> Eliminar amigo
+          </div>`;
         }
 
         // Include friends clickable only if friendCount > 0 (keeps look & placement)
@@ -1371,61 +1608,61 @@
             : `${u.friendCount} amigos`;
 
         profile.innerHTML = `
-          <div class="profile-banner"></div>
+                <div class="profile-banner"></div>
 
-          <div class="profile-main">
-            <img class="profile-avatar big" src="${av}" />
+                <div class="profile-main">
+                  <img class="profile-avatar big" src="${av}" />
 
-            <div class="actions profile-top-actions">
-              ${topActions || ""}
-              ${
-                showMenu
-                  ? `<img src="icons/more.png" class="profile-more-btn">`
-                  : ""
-              }
+                  <div class="actions profile-top-actions">
+                    ${topActions || ""}
+                    ${
+                      showMenu
+                        ? `<img src="icons/more.png" class="profile-more-btn no-filter filter-dark-mode">`
+                        : ""
+                    }
 
-              ${
-                menuOptions
-                  ? `<div class="profile-options-menu">${menuOptions}</div>`
-                  : ""
-              }
+                    ${
+                      menuOptions
+                        ? `<div class="profile-options-menu">${menuOptions}</div>`
+                        : ""
+                    }
 
-            </div>
+                  </div>
 
 
 
-            <div class="profile-info">
-              <h2 class="user-text">${u.displayName}</h2>
-              <div class="username user-text">@${u.username}</div>
+                  <div class="profile-info">
+                    <h2 class="user-text">${u.displayName}</h2>
+                    <div class="username user-text">@${u.username}</div>
 
-              <div class="bio user-text">${renderUserText(
-                u.bio || "Sin bio"
-              )}</div>
+                    <div class="bio user-text">${renderUserText(
+                      u.bio || "Sin bio"
+                    )}</div>
 
-              
 
-              
 
-              <div class="profile-joined">
-                <img src="icons/calendar.png" alt="joined">
-                <span>Joined ${formatJoined(u.createdAt)}</span>
-              </div>
-              
 
-              <div class="stats">
-                ${
-                  u.friendCount > 0
-                    ? `<span id="friendsBtn" style="cursor:pointer;font-weight:bold">${u.friendCount}</span>`
-                    : u.friendCount
-                } amigos · ${u.postCount} posts
-              </div>
-            </div>
 
-            
+                    <div class="profile-joined">
+                      <img src="icons/calendar.png" alt="joined" class="no-filter filter-dark-mode">
+                      <span>Joined ${formatJoined(u.createdAt)}</span>
+                    </div>
 
-          
-          </div>
-        `;
+
+                    <div class="stats">
+                      ${
+                        u.friendCount > 0
+                          ? `<span id="friendsBtn" style="cursor:pointer;font-weight:bold">${u.friendCount}</span>`
+                          : u.friendCount
+                      } amigos · ${u.postCount} posts
+                    </div>
+                  </div>
+
+
+
+
+                </div>
+              `;
 
         const banner = profile.querySelector(".profile-banner");
 
@@ -1433,12 +1670,12 @@
           const darker = darkenColor(u.bannerColor, 25);
 
           banner.style.background = `
-          linear-gradient(
-            135deg,
-            ${u.bannerColor},
-            ${darker}
-          )
-        `;
+                linear-gradient(
+                  135deg,
+                  ${u.bannerColor},
+                  ${darker}
+                )
+              `;
           applyUserTheme(u.bannerColor);
         } else {
           banner.style.background = "linear-gradient(135deg, #1fe1d2, #3076e0)";
@@ -1545,52 +1782,52 @@
           post.className = "tweet";
 
           post.innerHTML = `
-          <div class="tweet-clickable">  
-      <div class="tweet-layout">
+                <div class="tweet-clickable">
+            <div class="tweet-layout">
 
-        <div class="tweet-avatar">
-          <img alt="avatar">
-        </div>
+              <div class="tweet-avatar">
+                <img alt="avatar">
+              </div>
 
-        <div class="tweet-body">
+              <div class="tweet-body">
 
-          <div class="tweet-header">
-            <div class="tweet-user">
-              <span class="display-name">${x.author.displayName}</span>
-              <span class="username">@${x.author.username}</span>
-              <span class="dot">·</span>
-              <span class="post-time" title="${new Date(
-                x.createdAt
-              ).toLocaleString("es-AR", {
-                dateStyle: "short",
-                timeStyle: "short",
-              })}">
-                ${timeAgo(x.createdAt)}
-              </span>
-              ${
-                x.privacy && x.privacy !== "PUBLIC"
-                  ? `
-                  <span class="tweet-privacy-inline">
-                    · ${formatPrivacy(x.privacy)}
-                  </span>
-                `
-                  : ""
-              }
+                <div class="tweet-header">
+                  <div class="tweet-user">
+                    <span class="display-name">${x.author.displayName}</span>
+                    <span class="username">@${x.author.username}</span>
+                    <span class="dot">·</span>
+                    <span class="post-time" title="${new Date(
+                      x.createdAt
+                    ).toLocaleString("es-AR", {
+                      dateStyle: "short",
+                      timeStyle: "short",
+                    })}">
+                      ${timeAgo(x.createdAt)}
+                    </span>
+                    ${
+                      x.privacy && x.privacy !== "PUBLIC"
+                        ? `
+                        <span class="tweet-privacy-inline">
+                          · ${formatPrivacy(x.privacy)}
+                        </span>
+                      `
+                        : ""
+                    }
+                  </div>
+
+                  <img src="icons/more.png" class="more-btn no-filter filter-dark-mode" alt="more">
+                  <div class="options-menu"></div>
+                </div>
+
+
+                <div class="tweet-content user-text">
+                  ${renderUserText(x.content)}
+                </div>
+
+              </div>
             </div>
-
-            <img src="icons/more.png" class="more-btn" alt="more">
-            <div class="options-menu"></div>
-          </div>
-
-
-          <div class="tweet-content user-text">
-            ${renderUserText(x.content)}
-          </div>
-
-        </div>
-      </div>
-      </div>
-    `;
+            </div>
+          `;
 
           const clickable = post.querySelector(".tweet-clickable");
 
@@ -1653,26 +1890,26 @@
           const yt = extractYouTubeId(x.content);
           if (yt && !x.file) {
             post.querySelector(".tweet-body").innerHTML += `
-                <div class="tweet-image">
-                  <iframe
-                    width="516"
-                    height="290"
-                    src="https://www.youtube.com/embed/${yt}"
-                    frameborder="0"
-                    allowfullscreen>
-                  </iframe>
-                </div>
-              `;
+                      <div class="tweet-image">
+                        <iframe
+                          width="516"
+                          height="290"
+                          src="https://www.youtube.com/embed/${yt}"
+                          frameborder="0"
+                          allowfullscreen>
+                        </iframe>
+                      </div>
+                    `;
           } else {
             if (tweetUrl && !x.file) {
               const wrap = document.createElement("div");
               wrap.className = "tweet-image";
 
               wrap.innerHTML = `
-                <blockquote class="twitter-tweet">
-                  <a href="${tweetUrl}"></a>
-                </blockquote>
-              `;
+                      <blockquote class="twitter-tweet">
+                        <a href="${tweetUrl}"></a>
+                      </blockquote>
+                    `;
 
               post.querySelector(".tweet-body").appendChild(wrap);
 
@@ -1740,24 +1977,26 @@
           actions.className = "tweet-actions";
 
           actions.innerHTML = `
-                        <div class="tweet-action comment-action">
-                          <img src="icons/comment.png">
-                          <span class="comment-count">${x.commentCount}</span>
-                        </div>
+                              <div class="tweet-action comment-action">
+                                <img src="icons/comment.png" class="no-filter filter-dark-mode">
+                                <span class="comment-count">${
+                                  x.commentCount
+                                }</span>
+                              </div>
 
-                        <div class="tweet-action like-action ${
-                          x.liked ? "liked" : ""
-                        }">
-                          <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M15.7 4C18.87 4 21 6.98 21 9.76C21 15.39 12.16 20 12 20C11.84 20 3 15.39 3 9.76C3 6.98 5.13 4 8.3 4C10.12 4 11.31 4.91 12 5.71C12.69 4.91 13.88 4 15.7 4Z"
-                              stroke="currentColor"
-                              stroke-width="2"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"/>
-                          </svg>
-                          <span class="like-count">${x.likeCount}</span>
-                        </div>
-`;
+                              <div class="tweet-action like-action ${
+                                x.liked ? "liked" : ""
+                              }">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                  <path d="M15.7 4C18.87 4 21 6.98 21 9.76C21 15.39 12.16 20 12 20C11.84 20 3 15.39 3 9.76C3 6.98 5.13 4 8.3 4C10.12 4 11.31 4.91 12 5.71C12.69 4.91 13.88 4 15.7 4Z"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"/>
+                                </svg>
+                                <span class="like-count">${x.likeCount}</span>
+                              </div>
+      `;
 
           const commentAction = actions.querySelector(".comment-action");
           const likeAction = actions.querySelector(".like-action");
@@ -1865,5 +2104,19 @@
       }
       initUserTheme();
     </script>
+    <div class="snowflakes" aria-hidden="true">
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+      <div class="snowflake"><div class="inner">❄</div></div>
+    </div>
   </body>
 </html>
