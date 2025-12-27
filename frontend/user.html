@@ -1291,13 +1291,14 @@
     </div>
 
     <script async src="https://platform.twitter.com/widgets.js"></script>
+    <script src="config.js"></script>
 
     <script>
       document.body.dataset.theme = localStorage.getItem("mode") || "light";
 
       document.body.classList.add("theme-loading");
 
-      const API = "http://localhost:8080";
+      const API = CONFIG.API_BASE_URL;
       const token = localStorage.getItem("accessToken");
       const myUsername = localStorage.getItem("username");
       const displayName = localStorage.getItem("displayName");

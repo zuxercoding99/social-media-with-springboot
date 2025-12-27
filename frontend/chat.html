@@ -824,6 +824,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <script src="config.js"></script>
 
     <script>
       document.body.dataset.theme = localStorage.getItem("mode") || "light";
@@ -831,7 +832,7 @@
       // -------------------------
       // Config & estado
       // -------------------------
-      const API = "http://localhost:8080";
+      const API = CONFIG.API_BASE_URL;
       let token = null;
       let myUsername = null;
       let myDisplayName = null;
