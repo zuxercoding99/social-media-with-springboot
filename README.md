@@ -136,7 +136,9 @@ Incluye:
 
 🔗 **Demo Online:**
 
-> [https://TU-LINK-AQUI](https://TU-LINK-AQUI)
+Prueba el frontend deployed en render que se conecta al backend deployed en render usando Docker:
+
+> [https://social-media-with-springboot-frontend.onrender.com/](https://social-media-with-springboot-frontend.onrender.com/)
 
 ---
 
