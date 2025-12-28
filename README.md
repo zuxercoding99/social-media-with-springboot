@@ -174,6 +174,31 @@ Desarrollado por **zuxercoding99**
 
 Proyecto creado con foco en **primer empleo backend / full‑stack Java**.
 
+Contactos
+Email:zkcoding99@gmail.com
+LinkedIn: https://www.linkedin.com/in/ezequiel-zk993213/
+
 ---
 
 ⭐ Si este proyecto te resulta interesante, ¡no dudes en dejar una estrella!
+
+## 📸 Capturas
+
+![Index](docs/img/index.png)
+![Register](docs/img/register.png)
+![Login](docs/img/login.png)
+![Feed](docs/img/feed.png)
+![Feed](docs/img/feed2.png)
+![Profile](docs/img/user.png)
+![Post](docs/img/post.png)
+![Post](docs/img/post2.png)
+![Chat](docs/img/chat.png)
+![Chat](docs/img/chat2.png)
+![Options](docs/img/options.png)
+![Friend](docs/img/friends.png)
+![Edit](docs/img/editar.png)
+![Edit](docs/img/editar2.png)
+![Request](docs/img/requests.png)
+![Login](docs/images/login.png)
+![Feed](docs/images/feed.png)
+![Chat](docs/images/chat.png)
