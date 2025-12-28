@@ -1285,9 +1285,19 @@
           myAvatar.src = a;
         });
       } else {
-        sidebarAvatar.src = "https://via.placeholder.com/64";
-        myAvatar.src = "https://via.placeholder.com/64";
+        sidebarAvatar.src = DEFAULT_AVATAR;
+        myAvatar.src = DEFAULT_AVATAR;
       }
+
+      // fallback por si el src falla en tiempo de render (evita loop infinito)
+      sidebarAvatar.onerror = function () {
+        this.onerror = null;
+        this.src = DEFAULT_AVATAR;
+      };
+      myAvatar.onerror = function () {
+        this.onerror = null;
+        this.src = DEFAULT_AVATAR;
+      };
 
       sidebarAvatar.addEventListener(
         "click",
@@ -1308,20 +1318,33 @@
 
       /* ---------- UTIL ---------- */
       async function loadAvatar(url) {
-        if (!url) return "https://via.placeholder.com/64";
+        // si no hay url -> imagen por defecto
+        if (!url) return DEFAULT_AVATAR;
+
+        // si ya está en caché, devolverla
         if (cache.has(url)) return cache.get(url);
+
         try {
           const r = await fetch(API + url, {
             headers: { Authorization: "Bearer " + token },
           });
-          if (!r.ok) return "https://via.placeholder.com/64";
-          const o = URL.createObjectURL(await r.blob());
+
+          // si el backend responde 404 -> imagen por defecto
+          if (r.status === 404) return DEFAULT_AVATAR;
+          if (!r.ok) return DEFAULT_AVATAR;
+
+          const blob = await r.blob();
+          const o = URL.createObjectURL(blob);
+
+          // guardar en caché para evitar nuevas descargas
           cache.set(url, o);
           return o;
-        } catch {
-          return "https://via.placeholder.com/64";
+        } catch (err) {
+          // error de red -> imagen por defecto
+          return DEFAULT_AVATAR;
         }
       }
+
       async function loadImg(url) {
         try {
           const r = await fetch(API + url, {
@@ -1539,6 +1562,13 @@
             // avatar
             const avImg = post.querySelector(".tweet-avatar img");
             loadAvatar(x.author.avatarUrl).then((a) => (avImg.src = a));
+
+            // fallback si falla al cargar la src
+            avImg.onerror = function () {
+              this.onerror = null;
+              this.src = DEFAULT_AVATAR;
+            };
+
             // clicks to profile
             const nameEl = post.querySelector(".display-name");
             const userEl = post.querySelector(".username");
@@ -1803,27 +1833,56 @@
       /* ---------- WEBSOCKET PUBLIC CHAT ---------- */
 
       let stompClient = null;
+      let reconnectAttempts = 0;
 
       function connectPublicChat() {
-        const socket = new SockJS(
-          API + "/ws?token=" + encodeURIComponent(token)
-        );
+        if (!token) {
+          console.error("No hay token JWT");
+          return;
+        }
+
+        const wsUrl = API + "/ws?token=" + encodeURIComponent(token);
+
+        const socket = new SockJS(wsUrl);
 
         stompClient = Stomp.over(socket);
 
-        // opcional: silenciar logs
+        // desactivar logs ruidosos
         stompClient.debug = null;
 
+        // heartbeats (IMPORTANTE para Render / proxies)
+        stompClient.heartbeat.outgoing = 20000;
+        stompClient.heartbeat.incoming = 20000;
+
         stompClient.connect(
-          {},
-          () => {
-            stompClient.subscribe("/topic/public", (msg) => {
-              const message = JSON.parse(msg.body);
-              renderPublicMessage(message);
-            });
-          },
-          (err) => console.error("Error WS público", err)
+          {}, // ❌ no headers
+          onConnected,
+          onWsError
         );
+      }
+
+      function onWsError(error) {
+        console.error("WS error / desconectado", error);
+
+        reconnectAttempts++;
+
+        const delay = Math.min(30000, 1000 * Math.pow(2, reconnectAttempts));
+
+        setTimeout(() => {
+          console.log("Reintentando WS...");
+          connectPublicChat();
+        }, delay);
+      }
+
+      function onConnected() {
+        console.log("WS conectado");
+
+        reconnectAttempts = 0;
+
+        stompClient.subscribe("/topic/public", (msg) => {
+          const body = JSON.parse(msg.body);
+          renderPublicMessage(body);
+        });
       }
 
       /* toggle */
@@ -1875,8 +1934,12 @@
             avatarChat.src = a;
           });
         } else {
-          avatarChat.src = "https://via.placeholder.com/64";
+          avatarChat.src = DEFAULT_AVATAR;
         }
+        avatarChat.onerror = function () {
+          this.onerror = null;
+          this.src = DEFAULT_AVATAR;
+        };
         // click al perfil
         row.querySelector(".chat-username").addEventListener("click", () => {
           location.href = `user.html?username=${m.senderUsername}`;

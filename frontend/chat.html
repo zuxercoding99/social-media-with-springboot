@@ -797,11 +797,7 @@
               ←
             </button>
 
-            <img
-              src="https://via.placeholder.com/48"
-              class="view-avatar"
-              id="viewAvatar"
-            />
+            <img src="img/default.png" class="view-avatar" id="viewAvatar" />
             <div class="view-title">
               <div id="viewName">Selecciona un chat</div>
               <div class="sub" id="viewSub">—</div>
@@ -866,6 +862,11 @@
       const messageInput = document.getElementById("messageInput");
       const sendBtn = document.getElementById("sendBtn");
 
+      viewAvatar.onerror = function () {
+        this.onerror = null;
+        this.src = DEFAULT_AVATAR;
+      };
+
       // -------------------------
       // Helpers
       // -------------------------
@@ -894,19 +895,24 @@
       }
 
       async function loadAvatar(url) {
-        if (!url) return "https://via.placeholder.com/64";
+        if (!url) return DEFAULT_AVATAR;
+
         if (avatarCache.has(url)) return avatarCache.get(url);
+
         try {
           const r = await fetch(API + url, {
             headers: { Authorization: "Bearer " + token },
           });
-          if (!r.ok) return "https://via.placeholder.com/64";
+
+          if (r.status === 404) return DEFAULT_AVATAR;
+          if (!r.ok) return DEFAULT_AVATAR;
+
           const blob = await r.blob();
           const o = URL.createObjectURL(blob);
           avatarCache.set(url, o);
           return o;
-        } catch (e) {
-          return "https://via.placeholder.com/64";
+        } catch {
+          return DEFAULT_AVATAR;
         }
       }
 
@@ -967,16 +973,15 @@
         sidebarUsernameEl.innerText = myUsername
           ? "@" + myUsername
           : "@usuario";
-        if (myAvatarUrl) {
-          loadAvatar(myAvatarUrl).then((a) => {
-            sidebarAvatar.src = a;
-          });
-          viewAvatar.src = myAvatarUrl.startsWith("/api")
-            ? API + myAvatarUrl
-            : myAvatarUrl;
-        } else {
-          sidebarAvatar.src = "https://via.placeholder.com/64";
-        }
+        loadAvatar(myAvatarUrl).then((a) => {
+          sidebarAvatar.src = a;
+        });
+
+        sidebarAvatar.onerror = function () {
+          this.onerror = null;
+          this.src = DEFAULT_AVATAR;
+        };
+
         sidebarAvatar.addEventListener(
           "click",
           () => (location.href = `user.html?username=${myUsername}`)
@@ -995,28 +1000,63 @@
       // WebSocket
       // -------------------------
       function connectWS() {
+        if (!token) return;
+
         try {
           const socket = new SockJS(
             API + "/ws?token=" + encodeURIComponent(token)
           );
+
           stompClient = Stomp.over(socket);
+
           stompClient.debug = null;
+
+          // 🔥 CLAVE PARA RENDER
+          stompClient.heartbeat.outgoing = 20000;
+          stompClient.heartbeat.incoming = 20000;
+
           stompClient.connect(
             {},
             () => {
-              // user-specific queue
+              console.log("WS conectado");
+
+              reconnectAttempts = 0;
+
               stompClient.subscribe("/user/queue/messages", (m) => {
                 const msg = JSON.parse(m.body);
                 handleIncomingMessage(msg);
               });
             },
             (err) => {
-              console.error("STOMP error", err);
+              console.error("WS error", err);
+              scheduleReconnect();
             }
           );
+
+          // 🔥 detectar close real del socket
+          socket.onclose = () => {
+            console.warn("WS cerrado");
+            scheduleReconnect();
+          };
         } catch (e) {
-          console.error("WS error", e);
+          console.error("WS exception", e);
+          scheduleReconnect();
         }
+      }
+
+      function scheduleReconnect() {
+        if (reconnectTimer) return;
+
+        reconnectAttempts++;
+
+        const delay = Math.min(30000, 1000 * Math.pow(2, reconnectAttempts));
+
+        console.log(`Reintentando WS en ${delay}ms`);
+
+        reconnectTimer = setTimeout(() => {
+          reconnectTimer = null;
+          connectWS();
+        }, delay);
       }
 
       // -------------------------
@@ -1203,7 +1243,7 @@
           const avatarSrc = await loadAvatar(otherAvatarUrl);
 
           row.innerHTML = `
-        <img class="chat-avatar" src="${avatarSrc}" alt="avatar" />
+        <img class="chat-avatar" src="${avatarSrc}" alt="avatar" onerror="this.onerror=null;this.src='${DEFAULT_AVATAR}'"  />
         <div class="chat-main">
           <div style="display:flex;align-items:center;">
             <div class="chat-name">${escapeHtml(
@@ -1283,7 +1323,7 @@
           const contentHtml = renderUserText(m.content);
 
           row.innerHTML = `
-        <img class="message-avatar" src="${avatarSrc}" alt="avatar" />
+        <img class="message-avatar" src="${avatarSrc}" alt="avatar" onerror="this.onerror=null;this.src='${DEFAULT_AVATAR}'"  />
         <div class="message-bubble-wrap">
           <div class="message-header">
             <div class="message-author">${escapeHtml(
