@@ -174,9 +174,10 @@ Desarrollado por **zuxercoding99**
 
 Proyecto creado con foco en **primer empleo backend / full‑stack Java**.
 
-Contactos
-Email:zkcoding99@gmail.com
-LinkedIn: https://www.linkedin.com/in/ezequiel-zk993213/
+## Contactos
+
+- Email: zkcoding99@gmail.com
+- LinkedIn: https://www.linkedin.com/in/ezequiel-zk993213/
 
 ---
 
