@@ -57,3 +57,4 @@ Thumbs.db
 # (Ignorar outputs si creás imágenes guardadas localmente)
 *.tar
 
+uploads/
