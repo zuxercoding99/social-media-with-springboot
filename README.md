@@ -199,6 +199,3 @@ LinkedIn: https://www.linkedin.com/in/ezequiel-zk993213/
 ![Edit](docs/img/editar.png)
 ![Edit](docs/img/editar2.png)
 ![Request](docs/img/requests.png)
-![Login](docs/images/login.png)
-![Feed](docs/images/feed.png)
-![Chat](docs/images/chat.png)
