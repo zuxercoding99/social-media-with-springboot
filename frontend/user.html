@@ -1765,8 +1765,16 @@
       const postsEl = document.getElementById("posts");
 
       async function loadPosts() {
+        const params = new URLSearchParams(location.search);
+        const page = params.get("page") ?? 0;
+        const size = params.get("size") ?? 10;
+
+        const endpoint = isMe
+        ? `/api/v1/posts/me?page=${page}&size=${size}`
+        : `/api/v1/posts/user/${username}?page=${page}&size=${size}`;
+
         const r = await fetch(
-          API + (isMe ? "/api/v1/posts/me" : `/api/v1/posts/user/${username}`),
+          API + endpoint,
           { headers: { Authorization: "Bearer " + token } }
         );
 

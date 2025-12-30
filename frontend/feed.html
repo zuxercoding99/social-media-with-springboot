@@ -1494,7 +1494,11 @@
       /* ---------- LOAD FEED (usa estructura .tweet para compatibilidad visual) ---------- */
       async function loadFeed() {
         try {
-          const r = await fetch(API + "/api/v1/posts/feed?page=0&size=10", {
+          const params = new URLSearchParams(window.location.search);
+          const page = params.get("page") ?? 0;
+          const size = params.get("size") ?? 10;
+
+          const r = await fetch(`${API}/api/v1/posts/feed?page=${page}&size=${size}`, {
             headers: { Authorization: "Bearer " + token },
           });
           const p = await r.json();
