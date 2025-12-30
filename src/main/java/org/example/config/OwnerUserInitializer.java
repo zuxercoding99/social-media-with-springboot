@@ -55,7 +55,7 @@ public class OwnerUserInitializer {
                 owner.setEmail("zk@example.com");
                 owner.setRoles(Set.of(role));
 
-                Post myPost = Post.builder().content("https://x.com/Morox991/status/2000313190094381390")
+                Post myPost = Post.builder().content("https://x.com/zuxercoding99/status/2006085015994585346")
                         .privacy(Privacy.PUBLIC).build();
                 owner.addPost(myPost);
 
