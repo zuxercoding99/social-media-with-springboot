@@ -65,5 +65,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
 
+    implementation 'org.flywaydb:flyway-core:11.20.0'
+    implementation 'org.flywaydb:flyway-database-postgresql:11.20.0'
+
 
 }
