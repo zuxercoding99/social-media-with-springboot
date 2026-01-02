@@ -16,6 +16,8 @@ This project highlights my ability to build a complete application from scratch,
 - **Themes & Effects:** Persistent light/dark modes using CSS variables, responsive design, and subtle animations like snowflake effects.
 - **Security & Performance:** Rate limiting, caching, password hashing (BCrypt), configurable CORS, and monitoring via Actuator.
 - **Admin Tools:** Automatic admin user seeding on startup, with Prometheus metrics exposure.
+- **Database Migrations:** Managed in production via Flyway, ensuring smooth, versioned schema updates.
+- **CI/CD:** Fully automated build and deployment pipeline using GitHub Actions, ready for cloud deployment.
 
 ---
 
@@ -23,25 +25,25 @@ This project highlights my ability to build a complete application from scratch,
 
 ### Backend
 
-- **Java 17** – Lenguaje principal
-- **Spring Boot 3.5.x** – Framework base
-- **Spring Web (REST API)** – Controladores y endpoints
-- **Spring Data JPA** – Persistencia y modelado de entidades
-- **Spring Security** – Autenticación y autorización
-- **JWT (jjwt)** – Seguridad basada en tokens
-- **Bean Validation (Jakarta Validation)** – Validación de datos
-- **Spring WebSocket** – Comunicación en tiempo real
-- **Spring Cache + Caffeine** – Cacheo en memoria
-- **Bucket4j** – Rate limiting (protección contra abuso)
-- **Spring Actuator** – Métricas y health checks
-- **Micrometer + Prometheus** – Observabilidad y métricas
-- **Springdoc OpenAPI** – Documentación automática de la API (Swagger UI)
-- **Apache Tika** – Análisis y validación de archivos
+- **Java 17** – Main language
+- **Spring Boot 3.5.x** – Core framework
+- **Spring Web (REST API)** – Controllers and endpoints
+- **Spring Data JPA** – ORM and database handling
+- **Spring Security + JWT (jjwt)** – Auth & role-based access
+- **Bean Validation (Jakarta Validation)** – Data validation
+- **Spring WebSocket** – Real-time communication
+- **Spring Cache + Caffeine** – Cache in local memory
+- **Bucket4j** – Rate limiting (protection against abuse)
+- **Spring Actuator** – Metrics and health checks
+- **Micrometer + Prometheus** – Observability
+- **Springdoc OpenAPI** – API documentation (Swagger UI)
+- **Apache Tika** – File analysis and validation
+- **Flyway** – Production-ready DB migrations
 
-### Base de Datos
+### Database
 
-- **H2** – Entorno de desarrollo
-- **PostgreSQL** – Entorno productivo
+- **H2** – Development
+- **PostgreSQL** – Production
 - **Hibernate (JPA Provider)** – ORM
 
 ### Testing
@@ -49,50 +51,46 @@ This project highlights my ability to build a complete application from scratch,
 - **JUnit 5**
 - **Spring Boot Test**
 
-### Build & Configuración
+### Build & Config
 
 - **Gradle**
 - **Profiles (dev / test / prod)**
-- **Variables de entorno** listas para cloud deployment
+- **Environment variables ready for cloud deployment**
+- **CI/CD pipeline via GitHub Actions**
 
 ---
 
 ## Frontend
 
-- **HTML5 semántico**
-- **CSS3** (responsive, dark / light mode)
-- **JavaScript (Vanilla)**
-- **Fetch API** para comunicación con el backend
-- Manejo de estado en el navegador (localStorage)
+- **HTML5 & CSS3 (responsive, dark/light mode)**
+- **Vanilla JavaScript**
+- **Fetch API for backend communication**
+- **State handling in browser (localStorage)**
 
-👉 The frontend was developed **without frameworks**, demonstrating an understanding of web fundamentals and with AI assistance.
+## Security Highlights
 
----
-
-## Seguridad
-
-- Autenticación mediante **JWT**
-- Protección de endpoints por roles
-- Validación de ownership (solo el dueño puede modificar/eliminar recursos)
-- Manejo correcto de errores (`401`, `403`, `404`)
-- Rate limiting por IP
+- JWT authentication
+- Role-based endpoint protection
+- Ownership validation (only owner can modify/delete resources)
+- Proper HTTP error handling (401, 403, 404)
+- Rate limiting by IP
 
 ---
 
 ## Funcionalidades Principales
 
-- Registro e inicio de sesión de usuarios
-- Creación, visualización y eliminación de posts
-- Sistema de comentarios
-- Relaciones entre usuarios (social graph)
-- Control de permisos por usuario
-- Modo claro / oscuro persistente
-- WebSockets para funcionalidades en tiempo real
-- Documentación interactiva con Swagger
+- User registration & login
+- Post with content and media creation, viewing, deletion and like
+- Comment system
+- Friend relationships between users
+- Permission control per user
+- Persistent dark/light theme
+- Real-time chat via WebSockets
+- Interactive API documentation with Swagger
 
 ---
 
-## Instalación y Ejecución local
+## Local Setup
 
 ### Backend
 
@@ -100,7 +98,7 @@ This project highlights my ability to build a complete application from scratch,
 ./gradlew build bootRun
 ```
 
-Perfil activo por defecto:
+Default active profile:
 
 ```text
 dev
@@ -108,11 +106,11 @@ dev
 
 ### Frontend
 
-Abrir directamente los archivos HTML con un servidor local como Live Server.
+Use a local server (e.g., Live Server).
 
 ---
 
-## Documentación de la API
+## API Documentation
 
 Disponible en:
 
@@ -122,59 +120,33 @@ Disponible en:
 
 ---
 
-## Preparado para la Nube
+## Cloud Deployment
 
-El proyecto está preparado para desplegarse en:
-
-- Render
-
-Incluye:
-
-- Separación de perfiles
-- Configuración por variables de entorno
-- Base de datos productiva
+- Prepared for any cloud deployment with docker
+- Supports environment-specific profiles and production database
 
 🔗 **Demo Online:**
-
-Prueba el frontend deployed en render que se conecta al backend deployed en render usando Docker:
+(Takes few minutes the backend to start because it's a free one)
 
 > [https://social-media-with-springboot-frontend.onrender.com/](https://social-media-with-springboot-frontend.onrender.com/)
 
 ---
 
-## Metodología y Habilidades Complementarias
+## Roadmap / Future Enhancements
 
-Además del desarrollo técnico, este proyecto demuestra:
-
-- **Capacidad de diseño backend completo** desde cero
-- **Uso estratégico de IA como herramienta de productividad**, aplicando _prompt engineering_ para:
-
-  - Acelerar el desarrollo
-  - Validar decisiones técnicas
-  - Mejorar calidad de código
-
-- **Comprensión de fundamentos de UI/UX**, incluso con conocimientos básicos de diseño frontend
-- Capacidad de aprendizaje autónomo y mejora continua
-
-> La IA fue utilizada como **asistente**, no como sustituto del criterio técnico.
+- Expanded integration tests
+- Notifications system
+- External image storage (S3)
 
 ---
 
-## Roadmap / Mejoras Futuras
+## 👨‍💻 Author
 
-- Tests de integración más extensos
-- Sistema de notificaciones
-- Subida de imágenes a storage externo (S3)
+Developed by **zuxercoding99**
 
----
+Focus: Backend & Full-Stack Java
 
-## 👨‍💻 Autor
-
-Desarrollado por **zuxercoding99**
-
-Proyecto creado con foco en **primer empleo backend / full‑stack Java**.
-
-## Contactos
+## Contact
 
 - Email: zkcoding99@gmail.com
 - LinkedIn: https://www.linkedin.com/in/ezequiel-zk993213/
