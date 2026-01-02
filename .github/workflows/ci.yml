@@ -22,7 +22,7 @@ jobs:
       - name: Grant execute permission to Gradle
         run: chmod +x gradlew
 
-      - name: Run tests
+      - name: Run spring tests
         run: ./gradlew test
 
       - name: Build Spring Boot jar
