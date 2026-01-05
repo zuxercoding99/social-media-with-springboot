@@ -4,8 +4,8 @@ COPY . .
 RUN chmod +x gradlew
 RUN ./gradlew clean bootJar
 
-FROM eclipse-temurin:17-jre
+FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 COPY --from=builder /app/build/libs/defaultsecurity-1.0.0.jar app.jar
 EXPOSE 8080
-ENTRYPOINT ["java","-XX:MaxRAM=512m","-XX:MaxRAMPercentage=70","-XX:InitialRAMPercentage=30","-XX:MaxMetaspaceSize=96m","-XX:+UseG1GC","-jar","app.jar"]
+ENTRYPOINT ["java","-XX:MaxRAMPercentage=65","-XX:InitialRAMPercentage=25","-XX:MaxMetaspaceSize=80m","-XX:+UseG1GC","-jar","app.jar"]
