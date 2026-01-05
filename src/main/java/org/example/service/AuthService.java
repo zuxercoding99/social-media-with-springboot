@@ -148,9 +148,15 @@ public class AuthService {
                 .orElseGet(() -> userRepository.findByEmail(email.toLowerCase())
                         .map(existing -> {
                             existing.setProviderId(providerId);
-                            return userRepository.save(existing);
+                            return existing;
                         })
                         .orElseGet(() -> createOAuthUser(email, providerId, name)));
+
+        try {
+            user = userRepository.save(user);
+        } catch (DataIntegrityViolationException e) {
+            throw new ConflictException("Ya existe un usuario con ese email");
+        }
 
         String accessToken = jwtUtil.generateToken(
                 user.getUsername(),
@@ -188,7 +194,7 @@ public class AuthService {
                 .roles(Set.of(roleUser))
                 .build();
 
-        return userRepository.save(user);
+        return user;
     }
 
     /* Puede mejorar */
