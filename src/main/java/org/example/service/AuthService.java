@@ -1,13 +1,16 @@
 package org.example.service;
 
+import java.time.LocalDate;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.example.dto.AuthResponse;
 import org.example.dto.LoginDto;
 import org.example.dto.RegisterDto;
+import org.example.entity.AuthProvider;
 import org.example.entity.Role;
 import org.example.entity.ThemeMode;
 import org.example.entity.User;
@@ -23,8 +26,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,7 +44,9 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final RefreshTokenService refreshTokenService;
+    private final JwtDecoder googleJwtDecoder;
 
+    // ---------------- REGISTER LOCAL ----------------
     @Transactional
     public String register(RegisterDto registerDto) {
 
@@ -63,19 +70,21 @@ public class AuthService {
                 });
 
         // Crear usuario
-        User user = new User();
-        user.setEmail(email);
-        user.setUsername(username);
-        user.setBio("");
-        user.setBannerColor("#1da1f2");
-
-        user.setThemeMode(ThemeMode.LIGHT);
-
-        user.setAvatarKey("default.png");
-        user.setPassword(passwordEncoder.encode(registerDto.password().trim()));
-        user.setDisplayName(username);
-        user.setBirthDate(registerDto.birthDate());
-        user.getRoles().add(roleUser);
+        User user = User.builder()
+                .email(registerDto.email().toLowerCase())
+                .username(registerDto.username().toLowerCase())
+                .displayName(registerDto.username())
+                .bio("")
+                .password(passwordEncoder.encode(registerDto.password().trim()))
+                .birthDate(registerDto.birthDate())
+                .bannerColor("#1da1f2")
+                .authProvider(AuthProvider.LOCAL)
+                .localPasswordSet(true)
+                .themeMode(ThemeMode.LIGHT)
+                .avatarKey("default.png")
+                .enabled(true)
+                .roles(Set.of(roleUser))
+                .build();
 
         try {
             userRepository.save(user);
@@ -86,14 +95,19 @@ public class AuthService {
         return "Usuario registrado con éxito!";
     }
 
+    // ---------------- LOGIN LOCAL ----------------
     @Transactional
     public AuthResponse login(LoginDto loginDto) {
 
         User user = userRepository.findByEmail(loginDto.email().trim().toLowerCase())
-                .orElseThrow(() -> new UsernameNotFoundException("No existe usuario con ese email"));
+                .orElseThrow(() -> new NotFoundException("No existe usuario con ese email"));
 
         if (!user.isEnabled()) {
             throw new UnauthorizedException("Usuario deshabilitado");
+        }
+
+        if (!user.isLocalPasswordSet()) {
+            throw new UnauthorizedException("Este usuario debe loguearse con OAuth");
         }
 
         // autenticación (lanza excepción si falla)
@@ -108,6 +122,83 @@ public class AuthService {
 
         // devolvemos ambos (controller manejará la cookie)
         return new AuthResponse(accessToken, refreshTokenEntity.getToken());
+    }
+
+    // ---------------- LOGIN OAUTH GOOGLE ----------------
+    @Transactional
+    public AuthResponse loginWithGoogle(String idToken) {
+
+        Jwt jwt;
+        try {
+            jwt = googleJwtDecoder.decode(idToken);
+        } catch (JwtException e) {
+            throw new UnauthorizedException("Token Google inválido");
+        }
+
+        String email = jwt.getClaimAsString("email");
+        Boolean verified = jwt.getClaimAsBoolean("email_verified");
+        String providerId = jwt.getSubject();
+        String name = jwt.getClaimAsString("name");
+
+        if (email == null || !Boolean.TRUE.equals(verified)) {
+            throw new UnauthorizedException("Email no verificado");
+        }
+
+        User user = userRepository.findByProviderId(providerId)
+                .orElseGet(() -> userRepository.findByEmail(email.toLowerCase())
+                        .map(existing -> {
+                            existing.setProviderId(providerId);
+                            return userRepository.save(existing);
+                        })
+                        .orElseGet(() -> createOAuthUser(email, providerId, name)));
+
+        String accessToken = jwtUtil.generateToken(
+                user.getUsername(),
+                user.getRoles().stream()
+                        .map(r -> new SimpleGrantedAuthority(r.getName()))
+                        .collect(Collectors.toSet()));
+
+        var refresh = refreshTokenService.createOrReplace(user);
+        return new AuthResponse(accessToken, refresh.getToken());
+    }
+
+    // ---------------- HELPERS ----------------
+    private User createOAuthUser(String email, String providerId, String name) {
+
+        Role roleUser = roleRepository.findByName("ROLE_USER")
+                .orElseThrow();
+
+        String baseUsername = email.split("@")[0];
+        String username = generateUniqueUsername(baseUsername);
+
+        User user = User.builder()
+                .email(email.toLowerCase())
+                .username(username)
+                .displayName(name != null ? name : username)
+                .password(passwordEncoder.encode(UUID.randomUUID().toString()))
+                .bio("")
+                .bannerColor("#1da1f2")
+                .authProvider(AuthProvider.GOOGLE)
+                .providerId(providerId)
+                .localPasswordSet(false)
+                .birthDate(LocalDate.now().minusYears(18))
+                .themeMode(ThemeMode.LIGHT)
+                .avatarKey("default.png")
+                .enabled(true)
+                .roles(Set.of(roleUser))
+                .build();
+
+        return userRepository.save(user);
+    }
+
+    /* Puede mejorar */
+    private String generateUniqueUsername(String base) {
+        String candidate = base.toLowerCase();
+        int i = 1;
+        while (userRepository.existsByUsernameIgnoreCase(candidate)) {
+            candidate = base + i++;
+        }
+        return candidate;
     }
 
     @Transactional

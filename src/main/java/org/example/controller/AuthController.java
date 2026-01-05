@@ -1,5 +1,7 @@
 package org.example.controller;
 
+import java.util.Map;
+
 import org.example.dto.AuthResponse;
 import org.example.dto.LoginDto;
 import org.example.dto.RegisterDto;
@@ -38,45 +40,20 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginDto loginDto, HttpServletResponse response) {
         AuthResponse auth = authService.login(loginDto);
-
-        // set cookie HttpOnly (el frontend no puede leerla)
-        ResponseCookie cookie = ResponseCookie.from("refresh_token", auth.refreshToken())
-                .httpOnly(true)
-                // Configuracion para reglas de seguridad del navegador
-                .secure(true) // true: La cookie SOLO se envía por HTTPS, false para dev
-                .path("/api/v1/auth/") // se enviará a /api/v1/auth/refresh y logout
-                .maxAge(refreshCookieMaxAgeSec / 1000)
-                .sameSite("None") // Lax para dev
-                .build();
-
-        response.addHeader("Set-Cookie", cookie.toString());
-
-        // devolvemos el access token en el body
+        addRefreshCookie(response, auth.refreshToken());
         return ResponseEntity.ok(new TokenResponse(auth.accessToken()));
     }
 
     @PostMapping("/refresh")
     public ResponseEntity<TokenResponse> refresh(
             @CookieValue(value = "refresh_token", required = false) String refreshToken, HttpServletResponse response) {
-
-        System.out.println("Refresh Token: " + refreshToken);
         if (refreshToken == null) {
             return ResponseEntity.status(401).build();
         }
 
         // Nuevo access + refresh tokens
         var authResponse = authService.refresh(refreshToken);
-
-        // Actualizar cookie con el nuevo refresh token
-        ResponseCookie cookie = ResponseCookie.from("refresh_token", authResponse.refreshToken())
-                .httpOnly(true)
-                .secure(true)
-                .path("/api/v1/auth/")
-                .maxAge(refreshCookieMaxAgeSec / 1000)
-                .sameSite("None") // mejor compatibilidad que Strict si usás dominios distintos
-                .build();
-
-        response.addHeader("Set-Cookie", cookie.toString());
+        addRefreshCookie(response, authResponse.refreshToken());
 
         return ResponseEntity.ok(new TokenResponse(authResponse.accessToken()));
     }
@@ -102,5 +79,27 @@ public class AuthController {
         response.addHeader("Set-Cookie", cookie.toString());
 
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/oauth/google")
+    public ResponseEntity<?> oauthGoogle(
+            @RequestBody Map<String, String> body,
+            HttpServletResponse response) {
+        String idToken = body.get("id_token");
+        AuthResponse auth = authService.loginWithGoogle(idToken);
+        addRefreshCookie(response, auth.refreshToken());
+        return ResponseEntity.ok(new TokenResponse(auth.accessToken()));
+    }
+
+    private void addRefreshCookie(HttpServletResponse response, String refreshToken) {
+        ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshToken)
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("None")
+                .path("/api/v1/auth/")
+                .maxAge(refreshCookieMaxAgeSec / 1000)
+                .build();
+
+        response.addHeader("Set-Cookie", cookie.toString());
     }
 }

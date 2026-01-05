@@ -6,6 +6,8 @@
     <title>Red Social</title>
     <link rel="icon" type="image/png" href="icons/favicon.png" />
 
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
     <style>
       * {
         box-sizing: border-box;
@@ -58,7 +60,7 @@
         width: 100%;
         max-width: 420px;
         */
-        
+
         height: 175px;
       }
 
@@ -82,14 +84,19 @@
 
       /* ---------- BUTTONS ---------- */
       .btn {
-        padding: 14px;
-        border-radius: 999px;
-        font-size: 16px;
-        font-weight: bold;
+        width: 300px; /* igual que Google */
+        padding: 12px 16px;
+        border-radius: 6px; /* rectangular */
+        font-size: 14px;
+        font-weight: 500;
         cursor: pointer;
-        border: none;
+        border: 1px solid transparent;
         text-align: center;
         text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 44px; /* misma altura */
       }
 
       .btn-register {
@@ -103,12 +110,38 @@
 
       .btn-login {
         background: white;
-        color: #0f1419;
-        border: 1px solid #ccd6dd;
+        color: #3c4043;
+        border: 1px solid #dadce0;
       }
 
       .btn-login:hover {
-        background: #f5f8fa;
+        background: #f8f9fa;
+      }
+
+      .google-wrapper {
+        width: 300px;
+      }
+
+      .divider {
+        display: flex;
+        align-items: center;
+        width: 300px;
+        color: #a4a6a8;
+        font-size: 13px;
+        margin: 6px 0;
+      }
+
+      .divider::before,
+      .divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: #dadce0;
+      }
+
+      .divider span {
+        padding: 0 10px;
+        white-space: nowrap;
       }
 
       /* ---------- RESPONSIVE ---------- */
@@ -291,10 +324,83 @@
         <div class="right">
           <a href="register.html" class="btn btn-register"> Crear cuenta </a>
           <a href="login.html" class="btn btn-login"> Iniciar sesión </a>
+
+          <div class="divider">
+            <span>o</span>
+          </div>
+
+          <div class="google-wrapper">
+            <div id="google-btn"></div>
+          </div>
         </div>
       </div>
     </div>
+    <script src="config.js"></script>
+    <script>
+      const API = CONFIG.API_BASE_URL;
 
+      const CLIENT_ID = CONFIG.CLIENT_ID;
+
+      // Redirigir si ya hay sesión
+      if (localStorage.getItem("accessToken")) {
+        window.location.href = "feed.html";
+      }
+
+      window.onload = function () {
+        google.accounts.id.initialize({
+          client_id: CLIENT_ID,
+          callback: handleGoogleLogin,
+        });
+
+        google.accounts.id.renderButton(document.getElementById("google-btn"), {
+          theme: "outline",
+          size: "large",
+          width: 300,
+        });
+      };
+
+      async function handleGoogleLogin(response) {
+        const idToken = response.credential;
+
+        const res = await fetch(`${API}/api/v1/auth/oauth/google`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include", // importante (refresh cookie)
+          body: JSON.stringify({ id_token: idToken }),
+        });
+
+        if (!res.ok) {
+          alert("Error al loguearse con Google");
+          return;
+        }
+
+        const data = await res.json();
+        localStorage.setItem("accessToken", data.accessToken);
+
+        const profileRes = await fetch(API + "/api/v1/users/me", {
+          headers: {
+            Authorization: "Bearer " + data.accessToken,
+          },
+        });
+
+        if (!profileRes.ok) {
+          msg.innerText = "Error al cargar el perfil";
+          return;
+        }
+
+        const profile = await profileRes.json();
+
+        localStorage.setItem("userId", profile.id);
+        localStorage.setItem("username", profile.username);
+        localStorage.setItem("displayName", profile.displayName);
+        localStorage.setItem("avatarUrl", profile.avatarUrl);
+        localStorage.setItem("mode", profile.themeMode.toLowerCase());
+
+        window.location.href = "feed.html";
+      }
+    </script>
     <script>
       // 🔐 Si ya está logueado → feed
       if (localStorage.getItem("accessToken")) {

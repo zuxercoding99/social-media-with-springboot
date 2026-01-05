@@ -82,6 +82,18 @@ public class User {
     @Column(nullable = false, length = 10)
     private ThemeMode themeMode;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private AuthProvider authProvider = AuthProvider.LOCAL;
+
+    @Column(unique = true)
+    private String providerId; // sub del proveedor
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean localPasswordSet = true;
+
     @CreatedDate
     private Instant createdAt;
 
