@@ -970,7 +970,9 @@
 
     <script src="config.js"></script>
 
-    <script>
+    <script type="module">
+      import { fetchWithAuth, forceLogout } from "./auth.js";
+
       document.body.dataset.theme = localStorage.getItem("mode") || "light";
       document.body.classList.add("theme-loading");
 
@@ -988,9 +990,7 @@
         if (!url) return "https://via.placeholder.com/64";
         if (cache.has(url)) return cache.get(url);
         try {
-          const r = await fetch(API + url, {
-            headers: { Authorization: "Bearer " + token },
-          });
+          const r = await fetchWithAuth(API + url);
           if (!r.ok) return "https://via.placeholder.com/64";
           const o = URL.createObjectURL(await r.blob());
           cache.set(url, o);
@@ -1001,9 +1001,7 @@
       }
       async function loadImg(url) {
         try {
-          const r = await fetch(API + url, {
-            headers: { Authorization: "Bearer " + token },
-          });
+          const r = await fetchWithAuth(API + url);
           if (!r.ok) return null;
           return URL.createObjectURL(await r.blob());
         } catch {
@@ -1056,10 +1054,7 @@
         "click",
         () => (location.href = `user.html?username=${myUsername}`)
       );
-      sidebarLogout.addEventListener("click", () => {
-        localStorage.clear();
-        location.href = "login.html";
-      });
+      sidebarLogout.addEventListener("click", forceLogout);
 
       function timeAgo(date) {
         const d = new Date(date),
@@ -1144,9 +1139,7 @@
 
       async function loadPostAndComments(id) {
         try {
-          const r = await fetch(`${API}/api/v1/posts/${id}`, {
-            headers: { Authorization: "Bearer " + token },
-          });
+          const r = await fetchWithAuth(`${API}/api/v1/posts/${id}`);
           if (!r.ok) {
             // If backend responds 403 or 404, show 404 page (según tu requisito)
             if (r.status === 403 || r.status === 404) {
@@ -1263,17 +1256,19 @@
 
           try {
             // fetch al endpoint de like del post
-            const res = await fetch(`${API}/api/v1/posts/${x.id}/like`, {
-              method: "POST",
-              headers: { Authorization: "Bearer " + token },
-            });
+            const res = await fetchWithAuth(
+              `${API}/api/v1/posts/${x.id}/like`,
+              {
+                method: "POST",
+              }
+            );
 
             if (!res.ok) throw new Error("Error al dar like");
 
             // no necesitamos parsear JSON porque tu endpoint no devuelve nada
           } catch (e) {
             console.error(e);
-            alert("No se pudo actualizar el like");
+            console.error("No se pudo actualizar el like");
 
             // revertir el cambio optimista si falla
             likeBtn.classList.toggle("liked", currentlyLiked);
@@ -1332,20 +1327,19 @@
           del.onclick = async (e) => {
             e.stopPropagation();
 
-            const res = await fetch(`${API}/api/v1/posts/${x.id}`, {
+            const res = await fetchWithAuth(`${API}/api/v1/posts/${x.id}`, {
               method: "DELETE",
-              headers: { Authorization: "Bearer " + token },
             });
 
             if (res.status === 204) {
               // post eliminado → mostrar el MISMO 404 que ya usás
               show404();
             } else if (res.status === 403) {
-              alert("No tenés permiso para eliminar este post");
+              console.err("No tenés permiso para eliminar este post");
             } else if (res.status === 404) {
               show404();
             } else {
-              alert("Error al eliminar el post");
+              console.err("Error al eliminar el post");
             }
           };
 
@@ -1445,9 +1439,9 @@
 
         // fetch comment list
         try {
-          const r = await fetch(`${API}/api/v1/posts/${postId}/comments`, {
-            headers: { Authorization: "Bearer " + token },
-          });
+          const r = await fetchWithAuth(
+            `${API}/api/v1/posts/${postId}/comments`
+          );
           if (!r.ok) {
             if (r.status === 403) {
               // no permission to view comments: show notice
@@ -1524,18 +1518,17 @@
             btn.innerText = "Eliminar";
             btn.onclick = async () => {
               //if (!confirm("Eliminar comentario?")) return;
-              const res = await fetch(
+              const res = await fetchWithAuth(
                 `${API}/api/v1/posts/${postId}/comments/${c.id}`,
                 {
                   method: "DELETE",
-                  headers: { Authorization: "Bearer " + token },
                 }
               );
               if (res.status === 204) item.remove();
               else if (res.status === 403)
-                alert("No podés eliminar este comentario");
-              else if (res.status === 404) alert("Comentario no encontrado");
-              else alert("Error al eliminar comentario");
+                console.err("No podés eliminar este comentario");
+              else if (res.status === 404) console.err("Comentario no encontrado");
+              else console.err("Error al eliminar comentario");
             };
             // append to meta area (right side)
             const meta = item.querySelector(".comment-meta");
@@ -1551,12 +1544,11 @@
         const btn = document.getElementById("commentBtn");
         btn.disabled = true;
         try {
-          const res = await fetch(
+          const res = await fetchWithAuth(
             `${API}/api/v1/posts/${postIdToUse}/comments`,
             {
               method: "POST",
               headers: {
-                Authorization: "Bearer " + token,
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({ content }),
@@ -1564,10 +1556,10 @@
           );
           if (!res.ok) {
             if (res.status === 403) {
-              alert("No tenés permiso para comentar este post");
+              console.err("No tenés permiso para comentar este post");
               return;
             }
-            alert("Error al enviar comentario");
+            console.err("Error al enviar comentario");
             return;
           }
           const created = await res.json();
@@ -1606,15 +1598,14 @@
             btn.innerText = "Eliminar";
             btn.onclick = async () => {
               //if (!confirm("Eliminar comentario?")) return;
-              const res = await fetch(
+              const res = await fetchWithAuth(
                 `${API}/api/v1/posts/${postId}/comments/${created.id}`,
                 {
                   method: "DELETE",
-                  headers: { Authorization: "Bearer " + token },
                 }
               );
               if (res.status === 204) item.remove();
-              else alert("Error al eliminar comentario");
+              else console.err("Error al eliminar comentario");
             };
             item.querySelector(".comment-meta").appendChild(btn);
           }
@@ -1632,7 +1623,7 @@
           document.getElementById("commentBtn").disabled = true;
         } catch (e) {
           console.error("Error creando comentario", e);
-          alert("Error al enviar comentario");
+          console.err("Error al enviar comentario");
         } finally {
           btn.disabled = false;
         }
@@ -1660,9 +1651,7 @@
       }
 
       async function fetchMyProfile() {
-        const r = await fetch(`${API}/api/v1/users/me`, {
-          headers: { Authorization: "Bearer " + token },
-        });
+        const r = await fetchWithAuth(`${API}/api/v1/users/me`);
 
         if (!r.ok) throw new Error("No se pudo cargar el perfil");
 

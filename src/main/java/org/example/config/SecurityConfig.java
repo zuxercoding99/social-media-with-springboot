@@ -36,6 +36,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import io.jsonwebtoken.JwtException;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -107,25 +109,37 @@ public class SecurityConfig {
                     throws ServletException, IOException {
 
                 String authHeader = req.getHeader("Authorization");
+                try {
+                    if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                        String token = authHeader.substring(7);
 
-                if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                    String token = authHeader.substring(7);
+                        if (jwtUtil.validateToken(token)) {
+                            String username = jwtUtil.extractUsername(token);
 
-                    if (jwtUtil.validateToken(token)) {
-                        String username = jwtUtil.extractUsername(token);
+                            if (SecurityContextHolder.getContext().getAuthentication() == null) {
+                                UserDetails userDetails = userDetailsService().loadUserByUsername(username);
 
-                        if (SecurityContextHolder.getContext().getAuthentication() == null) {
-                            UserDetails userDetails = userDetailsService().loadUserByUsername(username);
+                                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                                        userDetails, null, userDetails.getAuthorities());
 
-                            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                                    userDetails, null, userDetails.getAuthorities());
-
-                            SecurityContextHolder.getContext().setAuthentication(auth);
+                                SecurityContextHolder.getContext().setAuthentication(auth);
+                            }
                         }
                     }
+
+                    chain.doFilter(req, res);
+                } catch (JwtException | UsernameNotFoundException ex) {
+                    // 🔐 Token inválido o usuario inexistente → 401
+                    res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    res.setContentType("application/json");
+                    res.getWriter().write("""
+                                {
+                                  "error": "UNAUTHORIZED",
+                                  "message": "Invalid or expired token"
+                                }
+                            """);
                 }
 
-                chain.doFilter(req, res);
             }
         };
     }

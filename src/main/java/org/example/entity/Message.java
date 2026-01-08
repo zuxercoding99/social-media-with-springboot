@@ -5,6 +5,9 @@ import lombok.*;
 
 import java.time.Instant;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 @Entity
 @Table(name = "messages", indexes = {
         @Index(name = "idx_messages_friend", columnList = "friend_id"),
@@ -24,6 +27,7 @@ public class Message {
     // Chat (Friend = chat)
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "friend_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Friend friend;
 
     // Emisor

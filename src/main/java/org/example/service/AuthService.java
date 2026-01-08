@@ -121,7 +121,7 @@ public class AuthService {
         var refreshTokenEntity = refreshTokenService.createOrReplace(user);
 
         // devolvemos ambos (controller manejará la cookie)
-        return new AuthResponse(accessToken, refreshTokenEntity.getToken());
+        return new AuthResponse(accessToken, refreshTokenEntity.getToken(), user);
     }
 
     // ---------------- LOGIN OAUTH GOOGLE ----------------
@@ -165,7 +165,7 @@ public class AuthService {
                         .collect(Collectors.toSet()));
 
         var refresh = refreshTokenService.createOrReplace(user);
-        return new AuthResponse(accessToken, refresh.getToken());
+        return new AuthResponse(accessToken, refresh.getToken(), user);
     }
 
     // ---------------- HELPERS ----------------
@@ -224,7 +224,7 @@ public class AuthService {
                         .collect(Collectors.toSet()));
 
         // Devolver ambos (el controlador pondrá el nuevo refresh token en cookie)
-        return new AuthResponse(newAccessToken, newRefreshTokenEntity.getToken());
+        return new AuthResponse(newAccessToken, newRefreshTokenEntity.getToken(), user);
     }
 
     @Transactional

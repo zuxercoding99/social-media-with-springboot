@@ -10,10 +10,13 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
+import org.springframework.http.HttpStatus;
 
+import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 
 @Component
@@ -30,9 +33,12 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
             WebSocketHandler wsHandler,
             Map<String, Object> attributes) {
 
-        String token = extractToken(request);
+        try {
+            String token = extractToken(request);
 
-        if (token != null && jwtUtil.validateToken(token)) {
+            if (token == null || !jwtUtil.validateToken(token)) {
+                return false; // ❌ handshake rechazado
+            }
 
             String username = jwtUtil.extractUsername(token);
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
@@ -42,11 +48,13 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
                     null,
                     userDetails.getAuthorities());
 
-            // 🔑 Se guarda en atributos, NO en SecurityContextHolder
             attributes.put("SPRING.AUTHENTICATION", auth);
-        }
+            return true; // ✅ handshake aceptado
 
-        return true; // nunca bloquear acá
+        } catch (UsernameNotFoundException | JwtException ex) {
+            response.setStatusCode(HttpStatus.UNAUTHORIZED);
+            return false; // ❌ handshake rechazado
+        }
     }
 
     @Override

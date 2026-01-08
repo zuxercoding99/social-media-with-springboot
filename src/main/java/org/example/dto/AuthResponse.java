@@ -1,4 +1,6 @@
 package org.example.dto;
 
-public record AuthResponse(String accessToken, String refreshToken) {
+import org.example.entity.User;
+
+public record AuthResponse(String accessToken, String refreshToken, User user) {
 }

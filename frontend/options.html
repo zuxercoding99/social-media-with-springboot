@@ -394,13 +394,16 @@
 
     <script src="config.js"></script>
 
-    <script>
+    <script type="module">
+      import { fetchWithAuth, forceLogout } from "./auth.js";
+
       document.body.classList.add("theme-loading");
       const API = CONFIG.API_BASE_URL;
       const token = localStorage.getItem("accessToken");
       const username = localStorage.getItem("username");
       const displayName = localStorage.getItem("displayName");
       const avatarUrl = localStorage.getItem("avatarUrl");
+      if (!token) location.href = "login.html";
 
       // Sidebar wiring (same behavior as other pages)
       const headerMoreBtn = document.getElementById("headerMoreBtn");
@@ -433,9 +436,7 @@
       if (avatarUrl) {
         (async () => {
           try {
-            const r = await fetch(API + avatarUrl, {
-              headers: { Authorization: "Bearer " + token },
-            });
+            const r = await fetchWithAuth(API + avatarUrl);
             if (r.ok) {
               const b = await r.blob();
               sidebarAvatar.src = URL.createObjectURL(b);
@@ -456,10 +457,7 @@
         if (username) location.href = `user.html?username=${username}`;
       });
 
-      sidebarLogout.addEventListener("click", () => {
-        localStorage.clear();
-        location.href = "login.html";
-      });
+      sidebarLogout.addEventListener("click", forceLogout);
 
       // Theme controls
       const btnLight = document.getElementById("btnLight");
@@ -509,10 +507,9 @@
 
       async function saveThemeToServer(mode) {
         const body = { themeMode: mode };
-        const res = await fetch(`${API}/api/v1/users/me/theme`, {
+        const res = await fetchWithAuth(`${API}/api/v1/users/me/theme`, {
           method: "PATCH",
           headers: {
-            Authorization: "Bearer " + token,
             "Content-Type": "application/json",
           },
           body: JSON.stringify(body),
@@ -553,9 +550,7 @@
       });
 
       async function fetchMyProfile() {
-        const r = await fetch(`${API}/api/v1/users/me`, {
-          headers: { Authorization: "Bearer " + token },
-        });
+        const r = await fetchWithAuth(`${API}/api/v1/users/me`);
 
         if (!r.ok) throw new Error("No se pudo cargar el perfil");
 

@@ -377,26 +377,16 @@
         }
 
         const data = await res.json();
+        console.log(data);
+
         localStorage.setItem("accessToken", data.accessToken);
 
-        const profileRes = await fetch(API + "/api/v1/users/me", {
-          headers: {
-            Authorization: "Bearer " + data.accessToken,
-          },
-        });
-
-        if (!profileRes.ok) {
-          msg.innerText = "Error al cargar el perfil";
-          return;
-        }
-
-        const profile = await profileRes.json();
-
-        localStorage.setItem("userId", profile.id);
-        localStorage.setItem("username", profile.username);
-        localStorage.setItem("displayName", profile.displayName);
-        localStorage.setItem("avatarUrl", profile.avatarUrl);
-        localStorage.setItem("mode", profile.themeMode.toLowerCase());
+        const u = data.user;
+        localStorage.setItem("userId", u.id);
+        localStorage.setItem("username", u.username);
+        localStorage.setItem("displayName", u.displayName);
+        localStorage.setItem("avatarUrl", u.avatarUrl);
+        localStorage.setItem("mode", u.themeMode.toLowerCase());
 
         window.location.href = "feed.html";
       }

@@ -4,8 +4,11 @@ import java.util.Map;
 
 import org.example.dto.AuthResponse;
 import org.example.dto.LoginDto;
+import org.example.dto.LoginResponse;
 import org.example.dto.RegisterDto;
 import org.example.dto.TokenResponse;
+import org.example.dto.UserLoginResponse;
+import org.example.dto.UserProfileDto;
 import org.example.service.AuthService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
@@ -38,10 +41,13 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginDto loginDto, HttpServletResponse response) {
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginDto loginDto, HttpServletResponse response) {
         AuthResponse auth = authService.login(loginDto);
         addRefreshCookie(response, auth.refreshToken());
-        return ResponseEntity.ok(new TokenResponse(auth.accessToken()));
+
+        LoginResponse loginResponse = LoginResponse.builder().accessToken(new TokenResponse(auth.accessToken()))
+                .user(UserLoginResponse.from(auth.user())).build();
+        return ResponseEntity.ok(loginResponse);
     }
 
     @PostMapping("/refresh")
@@ -82,13 +88,16 @@ public class AuthController {
     }
 
     @PostMapping("/oauth/google")
-    public ResponseEntity<?> oauthGoogle(
+    public ResponseEntity<LoginResponse> oauthGoogle(
             @RequestBody Map<String, String> body,
             HttpServletResponse response) {
         String idToken = body.get("id_token");
         AuthResponse auth = authService.loginWithGoogle(idToken);
         addRefreshCookie(response, auth.refreshToken());
-        return ResponseEntity.ok(new TokenResponse(auth.accessToken()));
+
+        LoginResponse loginResponse = LoginResponse.builder().accessToken(new TokenResponse(auth.accessToken()))
+                .user(UserLoginResponse.from(auth.user())).build();
+        return ResponseEntity.ok(loginResponse);
     }
 
     private void addRefreshCookie(HttpServletResponse response, String refreshToken) {

@@ -41,6 +41,7 @@ public class RefreshTokenService {
 
     @Transactional
     public RefreshToken validateAndGet(String token) {
+        System.out.println("refresh token: " + token);
         RefreshToken refreshToken = repo.findByToken(token)
                 .orElseThrow(() -> new InvalidTokenException("Invalid refresh token"));
 

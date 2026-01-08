@@ -226,16 +226,15 @@
     </div>
     <script src="config.js"></script>
 
-    <script>
+    <script type="module">
+      import { fetchWithAuth } from "./auth.js";
       document.body.dataset.theme = localStorage.getItem("mode") || "light";
       const API = CONFIG.API_BASE_URL;
       const token = localStorage.getItem("accessToken");
       if (!token) location.href = "login.html";
 
       async function load() {
-        const r = await fetch(API + "/api/v1/users/me", {
-          headers: { Authorization: "Bearer " + token },
-        });
+        const r = await fetchWithAuth(API + "/api/v1/users/me");
         const u = await r.json();
         displayName.value = u.displayName;
         bio.value = u.bio || "";
@@ -244,30 +243,27 @@
 
       async function save() {
         // Actualizar displayName
-        await fetch(API + "/api/v1/users/me/display-name", {
+        await fetchWithAuth(API + "/api/v1/users/me/display-name", {
           method: "PATCH",
           headers: {
-            Authorization: "Bearer " + token,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ displayName: displayName.value }),
         });
 
         // Actualizar bio
-        await fetch(API + "/api/v1/users/me/bio", {
+        await fetchWithAuth(API + "/api/v1/users/me/bio", {
           method: "PATCH",
           headers: {
-            Authorization: "Bearer " + token,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ bio: bio.value }),
         });
 
         // Actualizar color del banner
-        await fetch(API + "/api/v1/users/me/banner-color", {
+        await fetchWithAuth(API + "/api/v1/users/me/banner-color", {
           method: "PATCH",
           headers: {
-            Authorization: "Bearer " + token,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ bannerColor: bannerColor.value }),
@@ -277,17 +273,14 @@
         if (avatar.files[0]) {
           const fd = new FormData();
           fd.append("file", avatar.files[0]);
-          await fetch(API + "/api/v1/avatars", {
+          await fetchWithAuth(API + "/api/v1/avatars", {
             method: "POST",
-            headers: { Authorization: "Bearer " + token },
             body: fd,
           });
         }
 
         // 🔄 Obtener perfil actualizado
-        const res = await fetch(API + "/api/v1/users/me", {
-          headers: { Authorization: "Bearer " + token },
-        });
+        const res = await fetchWithAuth(API + "/api/v1/users/me");
         const updated = await res.json();
         localStorage.setItem("displayName", updated.displayName);
         localStorage.setItem("avatarUrl", updated.avatarUrl);
@@ -298,6 +291,8 @@
       }
 
       load();
+
+      window.save = save;
     </script>
   </body>
 </html>

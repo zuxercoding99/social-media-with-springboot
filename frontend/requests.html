@@ -470,7 +470,9 @@
 
     <script src="config.js"></script>
 
-    <script>
+    <script type="module">
+      import { fetchWithAuth, forceLogout } from "./auth.js";
+
       document.body.dataset.theme = localStorage.getItem("mode") || "light";
       document.body.classList.add("theme-loading");
       const API = CONFIG.API_BASE_URL;
@@ -484,9 +486,7 @@
       /* avatar loader */
       async function loadAvatar(url) {
         if (!url) return "https://via.placeholder.com/48";
-        const r = await fetch(API + url, {
-          headers: { Authorization: "Bearer " + token },
-        });
+        const r = await fetchWithAuth(API + url);
         return URL.createObjectURL(await r.blob());
       }
 
@@ -509,10 +509,7 @@
       document.getElementById("sidebarUsername").innerText = "@" + username;
       if (avatarUrl) loadAvatar(avatarUrl).then((a) => (sidebarAvatar.src = a));
 
-      sidebarLogout.onclick = () => {
-        localStorage.clear();
-        location.href = "login.html";
-      };
+      sidebarLogout.onclick = () => forceLogout;
 
       /* ===== Requests ===== */
       const receivedEl = document.getElementById("received");
@@ -524,9 +521,9 @@
       }
 
       async function loadReceived() {
-        const r = await fetch(API + "/api/v1/users/me/requests-received", {
-          headers: { Authorization: "Bearer " + token },
-        });
+        const r = await fetchWithAuth(
+          API + "/api/v1/users/me/requests-received"
+        );
         const arr = await r.json();
         if (!arr.length) {
           receivedEl.innerHTML =
@@ -555,9 +552,7 @@
       }
 
       async function loadSent() {
-        const r = await fetch(API + "/api/v1/users/me/requests-sent", {
-          headers: { Authorization: "Bearer " + token },
-        });
+        const r = await fetchWithAuth(API + "/api/v1/users/me/requests-sent");
         const arr = await r.json();
         if (!arr.length) {
           sentEl.innerHTML =
@@ -582,26 +577,22 @@
       }
 
       /* actions */
-      const h = { Authorization: "Bearer " + token };
+
       const accept = (id) =>
-        fetch(API + "/api/v1/friends/accept/" + id, {
+        fetchWithAuth(API + "/api/v1/friends/accept/" + id, {
           method: "POST",
-          headers: h,
         }).then(() => location.reload());
       const reject = (id) =>
-        fetch(API + "/api/v1/friends/reject/" + id, {
+        fetchWithAuth(API + "/api/v1/friends/reject/" + id, {
           method: "POST",
-          headers: h,
         }).then(() => location.reload());
       const cancel = (id) =>
-        fetch(API + "/api/v1/friends/cancel/" + id, {
+        fetchWithAuth(API + "/api/v1/friends/cancel/" + id, {
           method: "DELETE",
-          headers: h,
         }).then(() => location.reload());
       const block = (id) =>
-        fetch(API + "/api/v1/friends/block/" + id, {
+        fetchWithAuth(API + "/api/v1/friends/block/" + id, {
           method: "POST",
-          headers: h,
         }).then(() => location.reload());
 
       loadAll();
@@ -621,9 +612,7 @@
       }
 
       async function fetchMyProfile() {
-        const r = await fetch(`${API}/api/v1/users/me`, {
-          headers: { Authorization: "Bearer " + token },
-        });
+        const r = await fetchWithAuth(`${API}/api/v1/users/me`);
 
         if (!r.ok) throw new Error("No se pudo cargar el perfil");
 
@@ -649,6 +638,11 @@
         return `rgb(${r}, ${g}, ${b})`;
       }
       initUserTheme();
+
+      window.accept = accept;
+      window.reject = reject;
+      window.cancel = cancel;
+      window.block = block;
     </script>
   </body>
 </html>

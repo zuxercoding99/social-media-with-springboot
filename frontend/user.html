@@ -764,7 +764,7 @@
       /*Posts como x*/
       .tweet {
         margin: 0 auto;
-        padding: 12px 16px 0;
+        
         background: var(--bg-card);
 
         /* Twitter-like */
@@ -919,7 +919,7 @@
       /* zona clickeable del post */
       .tweet-clickable {
         cursor: pointer;
-        padding: 4px 0;
+        padding: 12px 16px;
         border-radius: 8px;
         transition: background 0.15s ease;
       }
@@ -1293,7 +1293,9 @@
     <script async src="https://platform.twitter.com/widgets.js"></script>
     <script src="config.js"></script>
 
-    <script>
+    <script type="module">
+      import { fetchWithAuth, forceLogout, connectWSWithAuth } from "./auth.js";
+
       document.body.dataset.theme = localStorage.getItem("mode") || "light";
 
       document.body.classList.add("theme-loading");
@@ -1321,9 +1323,7 @@
         if (!url) return "https://via.placeholder.com/64";
         if (cache.has(url)) return cache.get(url);
         try {
-          const r = await fetch(API + url, {
-            headers: { Authorization: "Bearer " + token },
-          });
+          const r = await fetchWithAuth(API + url);
           if (!r.ok) return "https://via.placeholder.com/64";
           const o = URL.createObjectURL(await r.blob());
           cache.set(url, o);
@@ -1334,9 +1334,7 @@
       }
       async function loadImg(url) {
         try {
-          const r = await fetch(API + url, {
-            headers: { Authorization: "Bearer " + token },
-          });
+          const r = await fetchWithAuth(API + url);
           if (!r.ok) return null;
           return URL.createObjectURL(await r.blob());
         } catch {
@@ -1443,10 +1441,7 @@
         "click",
         () => (location.href = `user.html?username=${myUsername}`)
       );
-      sidebarLogout.addEventListener("click", () => {
-        localStorage.clear();
-        location.href = "login.html";
-      });
+      sidebarLogout.addEventListener("click", forceLogout);
 
       /* HEADER SCROLL */
       const header = document.querySelector("header");
@@ -1534,10 +1529,9 @@
       }
 
       async function loadProfile() {
-        const r = await fetch(
+        const r = await fetchWithAuth(
           API +
-            (isMe ? "/api/v1/users/me" : `/api/v1/users/${username}/profile`),
-          { headers: { Authorization: "Bearer " + token } }
+            (isMe ? "/api/v1/users/me" : `/api/v1/users/${username}/profile`)
         );
         const u = await r.json();
         profileUserId = u.id;
@@ -1687,9 +1681,8 @@
           const btn = document.getElementById("friendsBtn");
           btn.onclick = async () => {
             try {
-              const rr = await fetch(
-                `${API}/api/v1/users/${u.username}/friends`,
-                { headers: { Authorization: "Bearer " + token } }
+              const rr = await fetchWithAuth(
+                `${API}/api/v1/users/${u.username}/friends`
               );
               if (!rr.ok) {
                 // show empty if not ok
@@ -1726,37 +1719,32 @@
 
       /* ===== friendship actions (kept as-is) ===== */
       async function rejectRequest() {
-        await fetch(`${API}/api/v1/friends/reject/${profileUserId}`, {
+        await fetchWithAuth(`${API}/api/v1/friends/reject/${profileUserId}`, {
           method: "POST",
-          headers: { Authorization: "Bearer " + token },
         });
         loadProfile();
       }
       async function addFriend() {
-        await fetch(`${API}/api/v1/friends/send/${profileUserId}`, {
+        await fetchWithAuth(`${API}/api/v1/friends/send/${profileUserId}`, {
           method: "POST",
-          headers: { Authorization: "Bearer " + token },
         });
         loadProfile();
       }
       async function removeFriend() {
-        await fetch(`${API}/api/v1/friends/remove/${profileUserId}`, {
+        await fetchWithAuth(`${API}/api/v1/friends/remove/${profileUserId}`, {
           method: "DELETE",
-          headers: { Authorization: "Bearer " + token },
         });
         loadProfile();
       }
       async function cancelRequest() {
-        await fetch(`${API}/api/v1/friends/cancel/${profileUserId}`, {
+        await fetchWithAuth(`${API}/api/v1/friends/cancel/${profileUserId}`, {
           method: "DELETE",
-          headers: { Authorization: "Bearer " + token },
         });
         loadProfile();
       }
       async function acceptRequest() {
-        await fetch(`${API}/api/v1/friends/accept/${profileUserId}`, {
+        await fetchWithAuth(`${API}/api/v1/friends/accept/${profileUserId}`, {
           method: "POST",
-          headers: { Authorization: "Bearer " + token },
         });
         loadProfile();
       }
@@ -1770,13 +1758,10 @@
         const size = params.get("size") ?? 10;
 
         const endpoint = isMe
-        ? `/api/v1/posts/me?page=${page}&size=${size}`
-        : `/api/v1/posts/user/${username}?page=${page}&size=${size}`;
+          ? `/api/v1/posts/me?page=${page}&size=${size}`
+          : `/api/v1/posts/user/${username}?page=${page}&size=${size}`;
 
-        const r = await fetch(
-          API + endpoint,
-          { headers: { Authorization: "Bearer " + token } }
-        );
+        const r = await fetchWithAuth(API + endpoint);
 
         const p = await r.json();
         postsEl.innerHTML = "";
@@ -1971,9 +1956,8 @@
 
             del.onclick = async (e) => {
               e.stopPropagation();
-              const res = await fetch(`${API}/api/v1/posts/${x.id}`, {
+              const res = await fetchWithAuth(`${API}/api/v1/posts/${x.id}`, {
                 method: "DELETE",
-                headers: { Authorization: "Bearer " + token },
               });
               if (res.status === 204) post.remove();
               else alert("Error al eliminar");
@@ -2020,10 +2004,12 @@
             e.stopPropagation();
 
             try {
-              const res = await fetch(`${API}/api/v1/posts/${x.id}/like`, {
-                method: "POST",
-                headers: { Authorization: "Bearer " + token },
-              });
+              const res = await fetchWithAuth(
+                `${API}/api/v1/posts/${x.id}/like`,
+                {
+                  method: "POST",
+                }
+              );
 
               if (!res.ok) return;
 
@@ -2084,9 +2070,7 @@
       }
 
       async function fetchMyProfile() {
-        const r = await fetch(`${API}/api/v1/users/me`, {
-          headers: { Authorization: "Bearer " + token },
-        });
+        const r = await fetchWithAuth(`${API}/api/v1/users/me`);
 
         if (!r.ok) throw new Error("No se pudo cargar el perfil");
 
@@ -2102,16 +2086,15 @@
           applyUserTheme(null);
         }
       }
-      function darkenColor(hex, percent) {
-        const num = parseInt(hex.replace("#", ""), 16);
-        const amt = Math.round(2.55 * percent);
-        const r = Math.max(0, (num >> 16) - amt);
-        const g = Math.max(0, ((num >> 8) & 0x00ff) - amt);
-        const b = Math.max(0, (num & 0x0000ff) - amt);
 
-        return `rgb(${r}, ${g}, ${b})`;
-      }
       initUserTheme();
+
+      //Exportar funciones
+      window.addFriend = addFriend;
+      window.cancelRequest = cancelRequest;
+      window.acceptRequest = acceptRequest;
+      window.rejectRequest = rejectRequest;
+      window.removeFriend = removeFriend;
     </script>
     <div class="snowflakes" aria-hidden="true">
       <div class="snowflake"><div class="inner">❄</div></div>

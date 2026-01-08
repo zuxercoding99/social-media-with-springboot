@@ -822,7 +822,9 @@
     <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
     <script src="config.js"></script>
 
-    <script>
+    <script type="module">
+      import { fetchWithAuth, forceLogout, connectWSWithAuth } from "./auth.js";
+
       document.body.dataset.theme = localStorage.getItem("mode") || "light";
       document.body.classList.add("theme-loading");
       // -------------------------
@@ -835,6 +837,7 @@
       let myAvatarUrl = null;
 
       let chats = []; // array of previews from GET /api/v1/chats
+      let currentChatUsername = null;
       let messagesByFriend = {}; // friendId -> [messages]
       let currentFriendId = null;
       let stompClient = null;
@@ -900,9 +903,7 @@
         if (avatarCache.has(url)) return avatarCache.get(url);
 
         try {
-          const r = await fetch(API + url, {
-            headers: { Authorization: "Bearer " + token },
-          });
+          const r = await fetchWithAuth(API + url);
 
           if (r.status === 404) return DEFAULT_AVATAR;
           if (!r.ok) return DEFAULT_AVATAR;
@@ -961,11 +962,7 @@
         sidebar.classList.contains("open") ? closeSidebar() : openSidebar();
       });
       sidebarBackdrop.addEventListener("click", closeSidebar);
-      sidebarLogout.addEventListener("click", () => {
-        localStorage.clear();
-        document.cookie = "accessToken=; max-age=0; path=/";
-        location.href = "login.html";
-      });
+      sidebarLogout.addEventListener("click", forceLogout);
 
       // populate sidebar user
       function populateSidebar() {
@@ -999,64 +996,66 @@
       // -------------------------
       // WebSocket
       // -------------------------
-      function connectWS() {
-        if (!token) return;
+      /* ---------- WEBSOCKET PRIVATE CHAT ---------- */
 
-        try {
-          const socket = new SockJS(
-            API + "/ws?token=" + encodeURIComponent(token)
-          );
+      let reconnectAttempts = 0;
 
-          stompClient = Stomp.over(socket);
-
-          stompClient.debug = null;
-
-          // 🔥 CLAVE PARA RENDER
-          stompClient.heartbeat.outgoing = 20000;
-          stompClient.heartbeat.incoming = 20000;
-
-          stompClient.connect(
-            {},
-            () => {
-              console.log("WS conectado");
-
-              reconnectAttempts = 0;
-
-              stompClient.subscribe("/user/queue/messages", (m) => {
-                const msg = JSON.parse(m.body);
-                handleIncomingMessage(msg);
-              });
-            },
-            (err) => {
-              console.error("WS error", err);
-              scheduleReconnect();
-            }
-          );
-
-          // 🔥 detectar close real del socket
-          socket.onclose = () => {
-            console.warn("WS cerrado");
-            scheduleReconnect();
-          };
-        } catch (e) {
-          console.error("WS exception", e);
-          scheduleReconnect();
-        }
+      async function connectPrivateChat() {
+        await connectWSWithAuth(connectPrivateChatInternal);
       }
 
-      function scheduleReconnect() {
-        if (reconnectTimer) return;
+      function onPrivateWsError() {
+        console.warn("❌ WS privado desconectado");
+
+        if (stompClient) {
+          stompClient.disconnect(() => {});
+          stompClient = null;
+        }
 
         reconnectAttempts++;
+        const delay = Math.min(30000, 1000 * 2 ** reconnectAttempts);
 
-        const delay = Math.min(30000, 1000 * Math.pow(2, reconnectAttempts));
-
-        console.log(`Reintentando WS en ${delay}ms`);
-
-        reconnectTimer = setTimeout(() => {
-          reconnectTimer = null;
-          connectWS();
+        setTimeout(() => {
+          console.log("🔁 Reintentando WS privado...");
+          connectPrivateChat();
         }, delay);
+      }
+
+      function connectPrivateChatInternal(token) {
+        return new Promise((resolve) => {
+          try {
+            const socket = new SockJS(
+              API + "/ws?token=" + encodeURIComponent(token)
+            );
+
+            stompClient = Stomp.over(socket);
+            stompClient.debug = null;
+
+            stompClient.heartbeat.outgoing = 20000;
+            stompClient.heartbeat.incoming = 20000;
+
+            stompClient.connect(
+              {},
+              () => {
+                console.log("✅ WS privado conectado");
+                reconnectAttempts = 0;
+
+                stompClient.subscribe("/user/queue/messages", (msg) => {
+                  handleIncomingMessage(JSON.parse(msg.body));
+                });
+
+                resolve(true);
+              },
+              () => {
+                resolve(false);
+              }
+            );
+
+            socket.onclose = onPrivateWsError;
+          } catch {
+            resolve(false);
+          }
+        });
       }
 
       // -------------------------
@@ -1064,9 +1063,7 @@
       // -------------------------
       async function loadChats() {
         try {
-          const r = await fetch(API + "/api/v1/chats", {
-            headers: { Authorization: "Bearer " + token },
-          });
+          const r = await fetchWithAuth(API + "/api/v1/chats");
           if (!r.ok) throw new Error("no ok");
           chats = await r.json();
           renderChats();
@@ -1078,9 +1075,9 @@
 
       async function loadMessages(friendId) {
         try {
-          const r = await fetch(`${API}/api/v1/chats/${friendId}/messages`, {
-            headers: { Authorization: "Bearer " + token },
-          });
+          const r = await fetchWithAuth(
+            `${API}/api/v1/chats/${friendId}/messages`
+          );
           if (!r.ok) throw new Error("no ok");
           const arr = await r.json();
           messagesByFriend[friendId] = arr;
@@ -1171,12 +1168,11 @@
         sendBtn.disabled = true;
 
         try {
-          const r = await fetch(
+          const r = await fetchWithAuth(
             `${API}/api/v1/chats/${currentFriendId}/messages`,
             {
               method: "POST",
               headers: {
-                Authorization: "Bearer " + token,
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({ content }),
@@ -1401,7 +1397,7 @@
         }
 
         populateSidebar();
-        connectWS();
+        connectPrivateChat();
         await loadChats(); // carga la lista de chats
 
         const targetUsername = getQueryParam("username");
@@ -1468,9 +1464,7 @@
       }
 
       async function fetchMyProfile() {
-        const r = await fetch(`${API}/api/v1/users/me`, {
-          headers: { Authorization: "Bearer " + token },
-        });
+        const r = await fetchWithAuth(`${API}/api/v1/users/me`);
 
         if (!r.ok) throw new Error("No se pudo cargar el perfil");
 
@@ -1496,6 +1490,9 @@
         return `rgb(${r}, ${g}, ${b})`;
       }
       initUserTheme();
+
+      window.openChatsDrawer = openChatsDrawer;
+      window.closeChatsDrawer = closeChatsDrawer;
     </script>
     <div class="snowflakes" aria-hidden="true">
       <div class="snowflake"><div class="inner">❄</div></div>
