@@ -3,12 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Red Social</title>
+    <title>León Social · Conectá con tu mundo</title>
     <link rel="icon" type="image/png" href="icons/favicon.png" />
 
     <script src="https://accounts.google.com/gsi/client" defer></script>
 
     <style>
+      /* ---------- RESET ---------- */
       * {
         box-sizing: border-box;
       }
@@ -16,117 +17,182 @@
       body {
         margin: 0;
         min-height: 100vh;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Helvetica, Arial, sans-serif;
-        color: #fff;
-      }
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          Roboto, Helvetica, Arial, sans-serif;
+        background: radial-gradient(
+            1000px 600px at 30% 15%,
+            rgba(210, 170, 255, 0.3),
+            transparent 65%
+          ),
+          linear-gradient(180deg, #4b00ab, #241b3a);
 
-      /* ---------- BACKGROUND ---------- */
-      .bg {
-        min-height: 100vh;
-        background: linear-gradient(
-          to bottom,
-          #fff 0%,
-          #fff 65%,
-          #27ccff 65%,
-          #27ccff 100%
-        );
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 24px;
+        color: #eef2f7;
+        overflow-x: hidden;
       }
 
       /* ---------- LAYOUT ---------- */
-      .container {
-        width: 100%;
-        max-width: 1100px;
+      .page {
+        min-height: 100vh;
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        gap: 40px;
+        justify-content: center;
+        padding: 32px 20px;
       }
 
+      .container {
+        width: 100%;
+        max-width: 1200px;
+        display: flex;
+        gap: 64px;
+        align-items: center;
+        justify-content: space-between;
+        animation: fadeIn 0.8s ease forwards;
+      }
+
+      /* ---------- LEFT (HERO) ---------- */
       .left {
         flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 20px;
+        max-width: 520px;
+        animation: slideLeft 0.9s ease forwards;
       }
 
-      .left img {
-        /*
-        width: 100%;
-        max-width: 420px;
-        */
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-bottom: 24px;
+      }
 
-        height: 175px;
+      .brand img {
+        height: 90px;
+      }
+
+      .brand span {
+        font-size: 44px;
+        font-weight: 700;
+        letter-spacing: 0.4px;
       }
 
       .left h1 {
-        font-size: 69px;
-        text-shadow: -1px -1px 0 #616161, 1px -1px 0 #616161, -1px 1px 0 #616161,
-          1px 1px 0 #616161;
-        line-height: 1.4;
-        padding-bottom: 20px;
-        margin: 0;
-        color: #fff;
+        font-size: 56px;
+        line-height: 1.1;
+        margin: 0 0 16px;
+        background: linear-gradient(90deg, #ffffff, #9fdcff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
       }
 
+      .left p {
+        font-size: 18px;
+        color: #cbd5e1;
+        max-width: 480px;
+      }
+
+      /* ---------- RIGHT (CARD) ---------- */
       .right {
+        position: relative;
         flex: 1;
         display: flex;
+        justify-content: center;
+      }
+
+      /* Glow ambiental detrás */
+      .right::before {
+        content: "";
+        position: absolute;
+        width: 420px;
+        height: 420px;
+
+        filter: blur(60px);
+        z-index: 0;
+      }
+
+      .auth-card {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        max-width: 360px;
+
+        padding: 48px 32px;
+
+        display: flex;
         flex-direction: column;
-        gap: 14px;
-        max-width: 320px;
+        gap: 16px;
+
+        /* SIN fondo */
+        background: transparent;
+
+        /* Separación visual */
+        padding-left: 32px;
+      }
+
+      .auth-header {
+        display: flex;
+        flex-direction: column; /* 👈 uno debajo del otro */
+        align-items: center; /* 👈 centrado horizontal */
+        text-align: center;
+        gap: 8px;
+        margin-bottom: 22px;
+      }
+
+      .auth-header img {
+        height: 64px;
+        margin-bottom: -12px;
+      }
+
+      .auth-header h2 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 700;
+      }
+
+      .auth-header p {
+        margin: 0;
+        font-size: 14px;
+        color: #9aa3af;
+        max-width: 260px;
+        line-height: 1.4;
       }
 
       /* ---------- BUTTONS ---------- */
       .btn {
-        width: 300px; /* igual que Google */
-        padding: 12px 16px;
-        border-radius: 6px; /* rectangular */
-        font-size: 14px;
-        font-weight: 500;
+        height: 46px;
+        border-radius: 10px;
+        font-size: 15px;
+        font-weight: 600;
         cursor: pointer;
-        border: 1px solid transparent;
-        text-align: center;
-        text-decoration: none;
+        border: none;
         display: flex;
         align-items: center;
         justify-content: center;
-        height: 44px; /* misma altura */
+        text-decoration: none;
+        transition: all 0.25s ease;
       }
 
       .btn-register {
-        background: #1da1f2;
-        color: white;
+        background: linear-gradient(135deg, #27ccff, #1da1f2);
+        color: #fff;
       }
 
       .btn-register:hover {
-        background: #1a91da;
+        transform: translateY(-1px);
+        box-shadow: 0 8px 24px rgba(39, 204, 255, 0.35);
       }
 
       .btn-login {
-        background: white;
-        color: #3c4043;
-        border: 1px solid #dadce0;
+        background: #121821;
+        color: #e6e9ee;
+        border: 1px solid #263041;
       }
 
       .btn-login:hover {
-        background: #f8f9fa;
-      }
-
-      .google-wrapper {
-        width: 300px;
+        background: #182233;
       }
 
       .divider {
         display: flex;
         align-items: center;
-        width: 300px;
-        color: #a4a6a8;
+        color: #7f8896;
         font-size: 13px;
         margin: 6px 0;
       }
@@ -136,31 +202,31 @@
         content: "";
         flex: 1;
         height: 1px;
-        background: #dadce0;
+        background: #263041;
       }
 
       .divider span {
         padding: 0 10px;
-        white-space: nowrap;
+      }
+
+      .google-wrapper {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+      }
+
+      .center {
+        justify-content: center;
       }
 
       /* ---------- RESPONSIVE ---------- */
-      @media (max-width: 768px) {
+      @media (max-width: 900px) {
         .container {
-          flex-direction: column;
-          text-align: center;
+          justify-content: center;
         }
 
         .left {
-          align-items: center;
-        }
-
-        .left img {
-          max-width: 240px;
-        }
-
-        .left h1 {
-          font-size: 28px;
+          display: none;
         }
 
         .right {
@@ -168,180 +234,88 @@
         }
       }
 
-      @media (max-width: 480px) {
-        .left h1 {
-          font-size: 24px;
+      /* ---------- ANIMATIONS ---------- */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
         }
+        to {
+          opacity: 1;
+        }
+      }
 
-        .btn {
-          font-size: 17px;
+      @keyframes slideLeft {
+        from {
+          opacity: 0;
+          transform: translateX(-40px);
         }
-      }
-
-      /* Efecto snowflake */
-      .snowflake {
-        color: #fff;
-        font-size: 1em;
-        font-family: Arial, sans-serif;
-        text-shadow: 0 0 5px #000;
-      }
-      .snowflake,
-      .snowflake .inner {
-        animation-iteration-count: infinite;
-        animation-play-state: running;
-      }
-      @keyframes snowflakes-fall {
-        0% {
-          transform: translateY(0);
-        }
-        100% {
-          transform: translateY(110vh);
-        }
-      }
-      @keyframes snowflakes-shake {
-        0%,
-        100% {
+        to {
+          opacity: 1;
           transform: translateX(0);
         }
-        50% {
-          transform: translateX(80px);
+      }
+
+      @keyframes slideRight {
+        from {
+          opacity: 0;
+          transform: translateX(40px);
         }
-      }
-      .snowflake {
-        position: fixed;
-        top: -10%;
-        z-index: 9999;
-        -webkit-user-select: none;
-        user-select: none;
-        cursor: default;
-        pointer-events: none;
-        animation-name: snowflakes-shake;
-        animation-duration: 3s;
-        animation-timing-function: ease-in-out;
-      }
-      .snowflake .inner {
-        animation-duration: 10s;
-        animation-name: snowflakes-fall;
-        animation-timing-function: linear;
-      }
-      .snowflake:nth-of-type(0) {
-        left: 1%;
-        animation-delay: 0s;
-      }
-      .snowflake:nth-of-type(0) .inner {
-        animation-delay: 0s;
-      }
-      .snowflake:nth-of-type(1) {
-        left: 10%;
-        animation-delay: 1s;
-      }
-      .snowflake:nth-of-type(1) .inner {
-        animation-delay: 1s;
-      }
-      .snowflake:nth-of-type(2) {
-        left: 20%;
-        animation-delay: 0.5s;
-      }
-      .snowflake:nth-of-type(2) .inner {
-        animation-delay: 6s;
-      }
-      .snowflake:nth-of-type(3) {
-        left: 30%;
-        animation-delay: 2s;
-      }
-      .snowflake:nth-of-type(3) .inner {
-        animation-delay: 4s;
-      }
-      .snowflake:nth-of-type(4) {
-        left: 40%;
-        animation-delay: 2s;
-      }
-      .snowflake:nth-of-type(4) .inner {
-        animation-delay: 2s;
-      }
-      .snowflake:nth-of-type(5) {
-        left: 50%;
-        animation-delay: 3s;
-      }
-      .snowflake:nth-of-type(5) .inner {
-        animation-delay: 8s;
-      }
-      .snowflake:nth-of-type(6) {
-        left: 60%;
-        animation-delay: 2s;
-      }
-      .snowflake:nth-of-type(6) .inner {
-        animation-delay: 6s;
-      }
-      .snowflake:nth-of-type(7) {
-        left: 70%;
-        animation-delay: 1s;
-      }
-      .snowflake:nth-of-type(7) .inner {
-        animation-delay: 2.5s;
-      }
-      .snowflake:nth-of-type(8) {
-        left: 80%;
-        animation-delay: 0s;
-      }
-      .snowflake:nth-of-type(8) .inner {
-        animation-delay: 1s;
-      }
-      .snowflake:nth-of-type(9) {
-        left: 90%;
-        animation-delay: 1.5s;
-      }
-      .snowflake:nth-of-type(9) .inner {
-        animation-delay: 3s;
-      }
-      .snowflake:nth-of-type(10) {
-        left: 25%;
-        animation-delay: 0s;
-      }
-      .snowflake:nth-of-type(10) .inner {
-        animation-delay: 2s;
-      }
-      .snowflake:nth-of-type(11) {
-        left: 65%;
-        animation-delay: 2.5s;
-      }
-      .snowflake:nth-of-type(11) .inner {
-        animation-delay: 4s;
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
       }
     </style>
   </head>
 
   <body>
-    <div class="bg">
+    <div class="page">
       <div class="container">
         <!-- LEFT -->
         <div class="left">
-          <img src="icons/lion.png" alt="León" />
-          <h1>Comparte tus experiencias con el mundo</h1>
+          <div class="brand">
+            <img src="icons/lion.png" alt="León" />
+            <span>LionX</span>
+          </div>
+
+          <h1>Conectá ideas,<br />personas y momentos</h1>
+          <p>
+            Una nueva forma de compartir, expresarte y descubrir contenido en
+            tiempo real. Simple, rápido y hecho para vos.
+          </p>
         </div>
 
         <!-- RIGHT -->
         <div class="right">
-          <a href="register.html" class="btn btn-register"> Crear cuenta </a>
-          <a href="login.html" class="btn btn-login"> Iniciar sesión </a>
+          <div class="auth-card">
+            <div class="auth-header">
+              <img src="icons/lion.png" alt="León" />
+              <div class="center">
+                <h2>Bienvenido</h2>
+                <p>Accedé o creá una cuenta para empezar</p>
+              </div>
+            </div>
 
-          <div class="divider">
-            <span>o</span>
-          </div>
+            <a href="register.html" class="btn btn-register"> Crear cuenta </a>
+            <a href="login.html" class="btn btn-login"> Iniciar sesión </a>
 
-          <div class="google-wrapper">
-            <div id="google-btn"></div>
+            <div class="divider">
+              <span>o</span>
+            </div>
+
+            <div class="google-wrapper">
+              <div id="google-btn"></div>
+            </div>
           </div>
         </div>
       </div>
     </div>
+
     <script src="config.js"></script>
     <script>
       const API = CONFIG.API_BASE_URL;
-
       const CLIENT_ID = CONFIG.CLIENT_ID;
 
-      // Redirigir si ya hay sesión
       if (localStorage.getItem("accessToken")) {
         window.location.replace("feed.html");
       }
@@ -355,20 +329,16 @@
         google.accounts.id.renderButton(document.getElementById("google-btn"), {
           theme: "outline",
           size: "large",
-          width: 300,
+          width: 280,
         });
       };
 
       async function handleGoogleLogin(response) {
-        const idToken = response.credential;
-
         const res = await fetch(`${API}/api/v1/auth/oauth/google`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include", // importante (refresh cookie)
-          body: JSON.stringify({ id_token: idToken }),
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ id_token: response.credential }),
         });
 
         if (!res.ok) {
@@ -377,8 +347,6 @@
         }
 
         const data = await res.json();
-        console.log(data);
-
         localStorage.setItem("accessToken", data.accessToken);
 
         const u = data.user;
@@ -391,20 +359,5 @@
         window.location.href = "feed.html";
       }
     </script>
-
-    <div class="snowflakes" aria-hidden="true">
-      <div class="snowflake"><div class="inner">❄</div></div>
-      <div class="snowflake"><div class="inner">❄</div></div>
-      <div class="snowflake"><div class="inner">❄</div></div>
-      <div class="snowflake"><div class="inner">❄</div></div>
-      <div class="snowflake"><div class="inner">❄</div></div>
-      <div class="snowflake"><div class="inner">❄</div></div>
-      <div class="snowflake"><div class="inner">❄</div></div>
-      <div class="snowflake"><div class="inner">❄</div></div>
-      <div class="snowflake"><div class="inner">❄</div></div>
-      <div class="snowflake"><div class="inner">❄</div></div>
-      <div class="snowflake"><div class="inner">❄</div></div>
-      <div class="snowflake"><div class="inner">❄</div></div>
-    </div>
   </body>
 </html>
