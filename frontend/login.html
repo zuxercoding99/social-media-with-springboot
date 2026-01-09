@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="icons/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 
     <title>Login - Red Social</title>
 
@@ -129,6 +130,8 @@
         border: none;
         cursor: pointer;
         font-weight: bold;
+        height: 44px; /* 👈 igual a Google */
+        border-radius: 6px; /* 👈 cuadrado */
       }
 
       button:hover {
@@ -305,6 +308,34 @@
       .snowflake:nth-of-type(11) .inner {
         animation-delay: 4s;
       }
+
+      .divider {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        color: var(--text-muted);
+        font-size: 13px;
+        margin: 14px 0;
+      }
+
+      .divider::before,
+      .divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+      }
+
+      .divider span {
+        padding: 0 10px;
+        white-space: nowrap;
+      }
+
+      .google-wrapper {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+      }
     </style>
   </head>
 
@@ -323,6 +354,14 @@
 
         <button onclick="login()">Entrar</button>
 
+        <div class="divider">
+          <span>o</span>
+        </div>
+
+        <div class="google-wrapper">
+          <div id="google-btn"></div>
+        </div>
+
         <div id="msg" class="error"></div>
 
         <div class="switch">
@@ -335,10 +374,10 @@
     <script src="config.js"></script>
 
     <script>
-      const API_BASE_URL = CONFIG.API_BASE_URL;
+      const API = CONFIG.API_BASE_URL;
 
       if (localStorage.getItem("accessToken")) {
-        window.location.href = "feed.html";
+        window.location.replace("feed.html");
       }
 
       async function login() {
@@ -346,9 +385,10 @@
         msg.innerText = "";
 
         try {
-          const res = await fetch(API_BASE_URL + "/api/v1/auth/login", {
+          const res = await fetch(`${API}/api/v1/auth/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
+            credentials: "include", // 👈 por si luego usás refresh cookie
             body: JSON.stringify({
               email: email.value.trim(),
               password: password.value,
@@ -360,32 +400,60 @@
             return;
           }
 
-          const authData = await res.json();
-          localStorage.setItem("accessToken", authData.accessToken);
-
-          const profileRes = await fetch(API_BASE_URL + "/api/v1/users/me", {
-            headers: {
-              Authorization: "Bearer " + authData.accessToken,
-            },
-          });
-
-          if (!profileRes.ok) {
-            msg.innerText = "Error al cargar el perfil";
-            return;
-          }
-
-          const profile = await profileRes.json();
-
-          localStorage.setItem("userId", profile.id);
-          localStorage.setItem("username", profile.username);
-          localStorage.setItem("displayName", profile.displayName);
-          localStorage.setItem("avatarUrl", profile.avatarUrl);
-          localStorage.setItem("mode", profile.themeMode.toLowerCase());
+          const data = await res.json();
+          persistSession(data);
 
           window.location.href = "feed.html";
         } catch (e) {
           msg.innerText = "Error de conexión con el servidor";
         }
+      }
+
+      function persistSession(data) {
+        localStorage.setItem("accessToken", data.accessToken);
+
+        const u = data.user;
+        localStorage.setItem("userId", u.id);
+        localStorage.setItem("username", u.username);
+        localStorage.setItem("displayName", u.displayName);
+        localStorage.setItem("avatarUrl", u.avatarUrl);
+        localStorage.setItem("mode", u.themeMode.toLowerCase());
+      }
+
+      const CLIENT_ID = CONFIG.CLIENT_ID;
+
+      document.addEventListener("DOMContentLoaded", () => {
+        google.accounts.id.initialize({
+          client_id: CLIENT_ID,
+          callback: handleGoogleLogin,
+        });
+
+        google.accounts.id.renderButton(document.getElementById("google-btn"), {
+          theme: "outline",
+          size: "large",
+          width: 300,
+        });
+      });
+
+      async function handleGoogleLogin(response) {
+        const idToken = response.credential;
+
+        const res = await fetch(`${API}/api/v1/auth/oauth/google`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ id_token: idToken }),
+        });
+
+        if (!res.ok) {
+          alert("Error al loguearse con Google");
+          return;
+        }
+
+        const data = await res.json();
+        persistSession(data);
+
+        window.location.href = "feed.html";
       }
 
       /*Click to index*/

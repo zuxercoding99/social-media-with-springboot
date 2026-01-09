@@ -343,7 +343,7 @@
 
       // Redirigir si ya hay sesión
       if (localStorage.getItem("accessToken")) {
-        window.location.href = "feed.html";
+        window.location.replace("feed.html");
       }
 
       window.onload = function () {
@@ -391,12 +391,7 @@
         window.location.href = "feed.html";
       }
     </script>
-    <script>
-      // 🔐 Si ya está logueado → feed
-      if (localStorage.getItem("accessToken")) {
-        window.location.href = "feed.html";
-      }
-    </script>
+
     <div class="snowflakes" aria-hidden="true">
       <div class="snowflake"><div class="inner">❄</div></div>
       <div class="snowflake"><div class="inner">❄</div></div>
