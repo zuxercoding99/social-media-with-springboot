@@ -48,7 +48,7 @@ public class AuthService {
     private final RefreshTokenService refreshTokenService;
     private final JwtDecoder googleJwtDecoder;
 
-    private static final Pattern NONLATIN = Pattern.compile("[^a-z0-9]");
+    private static final Pattern NONLATIN = Pattern.compile("[^a-zA-Z0-9]");
     private static final Pattern WHITESPACE = Pattern.compile("\\s+");
     private static final Pattern DIACRITICS = Pattern.compile("\\p{M}+");
 
