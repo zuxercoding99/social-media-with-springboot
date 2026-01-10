@@ -8,7 +8,6 @@ import org.example.dto.LoginResponse;
 import org.example.dto.RegisterDto;
 import org.example.dto.TokenResponse;
 import org.example.dto.UserLoginResponse;
-import org.example.dto.UserProfileDto;
 import org.example.service.AuthService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;

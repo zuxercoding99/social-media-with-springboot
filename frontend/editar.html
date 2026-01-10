@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="icons/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Editar perfil</title>
+    <title>Editar perfil · Social Media</title>
 
     <style>
       /* -----------------------
@@ -218,7 +218,7 @@
       <label>Avatar</label>
       <input type="file" accept=".jpg,.jpeg,.png" id="avatar" />
 
-      <button onclick="save()">Guardar cambios</button>
+      <button id="saveBtn" type="button">Guardar cambios</button>
 
       <div class="back">
         <a href="user.html">← Volver al perfil</a>
@@ -228,7 +228,9 @@
 
     <script type="module">
       import { fetchWithAuth } from "./auth.js";
+
       document.body.dataset.theme = localStorage.getItem("mode") || "light";
+
       const API = CONFIG.API_BASE_URL;
       const token = localStorage.getItem("accessToken");
       if (!token) location.href = "login.html";
@@ -236,63 +238,71 @@
       async function load() {
         const r = await fetchWithAuth(API + "/api/v1/users/me");
         const u = await r.json();
-        displayName.value = u.displayName;
+
+        displayName.value = u.displayName || "";
         bio.value = u.bio || "";
         bannerColor.value = u.bannerColor || "#1da1f2";
       }
 
-      async function save() {
-        // Actualizar displayName
-        await fetchWithAuth(API + "/api/v1/users/me/display-name", {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ displayName: displayName.value }),
-        });
+      async function save(e) {
+        if (e) e.preventDefault();
 
-        // Actualizar bio
-        await fetchWithAuth(API + "/api/v1/users/me/bio", {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ bio: bio.value }),
-        });
+        const btn = document.getElementById("saveBtn");
+        btn.disabled = true;
+        const originalText = btn.textContent;
+        btn.textContent = "Guardando...";
 
-        // Actualizar color del banner
-        await fetchWithAuth(API + "/api/v1/users/me/banner-color", {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ bannerColor: bannerColor.value }),
-        });
-
-        // Subir avatar si hay archivo
-        if (avatar.files[0]) {
-          const fd = new FormData();
-          fd.append("file", avatar.files[0]);
-          await fetchWithAuth(API + "/api/v1/avatars", {
-            method: "POST",
-            body: fd,
+        try {
+          // 1️⃣ display name
+          await fetchWithAuth(API + "/api/v1/users/me/display-name", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ displayName: displayName.value.trim() }),
           });
+
+          // 2️⃣ bio
+          await fetchWithAuth(API + "/api/v1/users/me/bio", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ bio: bio.value.trim() }),
+          });
+
+          // 3️⃣ banner color
+          await fetchWithAuth(API + "/api/v1/users/me/banner-color", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ bannerColor: bannerColor.value }),
+          });
+
+          // 4️⃣ avatar (opcional)
+          if (avatar.files.length > 0) {
+            const fd = new FormData();
+            fd.append("file", avatar.files[0]);
+            await fetchWithAuth(API + "/api/v1/avatars", {
+              method: "POST",
+              body: fd,
+            });
+          }
+
+          // 5️⃣ Obtener perfil actualizado (solo para cache UI)
+          const res = await fetchWithAuth(API + "/api/v1/users/me");
+          const updated = await res.json();
+
+          localStorage.setItem("displayName", updated.displayName || "");
+          localStorage.setItem("avatarUrl", updated.avatarUrl || "");
+          localStorage.setItem("bio", updated.bio || "");
+
+          location.href = "user.html";
+        } catch (err) {
+          console.error(err);
+          alert("Error al guardar los cambios");
+          btn.disabled = false;
+          btn.textContent = originalText;
         }
-
-        // 🔄 Obtener perfil actualizado
-        const res = await fetchWithAuth(API + "/api/v1/users/me");
-        const updated = await res.json();
-        localStorage.setItem("displayName", updated.displayName);
-        localStorage.setItem("avatarUrl", updated.avatarUrl);
-        localStorage.setItem("bio", updated.bio || "");
-
-        // Redirigir
-        location.href = "user.html";
       }
 
       load();
-
-      window.save = save;
+      document.getElementById("saveBtn").addEventListener("click", save);
     </script>
   </body>
 </html>

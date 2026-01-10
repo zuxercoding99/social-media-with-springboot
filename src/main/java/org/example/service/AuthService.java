@@ -32,6 +32,8 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.text.Normalizer;
+import java.util.regex.Pattern;
 
 import lombok.RequiredArgsConstructor;
 
@@ -45,6 +47,10 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final RefreshTokenService refreshTokenService;
     private final JwtDecoder googleJwtDecoder;
+
+    private static final Pattern NONLATIN = Pattern.compile("[^a-z0-9]");
+    private static final Pattern WHITESPACE = Pattern.compile("\\s+");
+    private static final Pattern DIACRITICS = Pattern.compile("\\p{M}+");
 
     // ---------------- REGISTER LOCAL ----------------
     @Transactional
@@ -125,6 +131,7 @@ public class AuthService {
     }
 
     // ---------------- LOGIN OAUTH GOOGLE ----------------
+
     @Transactional
     public AuthResponse loginWithGoogle(String idToken) {
 
@@ -138,7 +145,7 @@ public class AuthService {
         String email = jwt.getClaimAsString("email");
         Boolean verified = jwt.getClaimAsBoolean("email_verified");
         String providerId = jwt.getSubject();
-        String name = jwt.getClaimAsString("name");
+        String displayName = jwt.getClaimAsString("name");
 
         if (email == null || !Boolean.TRUE.equals(verified)) {
             throw new UnauthorizedException("Email no verificado");
@@ -150,7 +157,7 @@ public class AuthService {
                             existing.setProviderId(providerId);
                             return existing;
                         })
-                        .orElseGet(() -> createOAuthUser(email, providerId, name)));
+                        .orElseGet(() -> createOAuthUser(email, providerId, displayName)));
 
         try {
             user = userRepository.save(user);
@@ -169,18 +176,26 @@ public class AuthService {
     }
 
     // ---------------- HELPERS ----------------
-    private User createOAuthUser(String email, String providerId, String name) {
+    private User createOAuthUser(String email, String providerId, String displayName) {
 
         Role roleUser = roleRepository.findByName("ROLE_USER")
-                .orElseThrow();
+                .orElseGet(() -> {
+                    Role newRole = new Role();
+                    newRole.setName("ROLE_USER");
+                    return roleRepository.save(newRole);
+                });
 
-        String baseUsername = email.split("@")[0];
+        String baseUsername = normalizeUsername(displayName);
+        if (baseUsername == null || baseUsername.isBlank()) {
+            baseUsername = "user";
+        }
+
         String username = generateUniqueUsername(baseUsername);
 
         User user = User.builder()
                 .email(email.toLowerCase())
                 .username(username)
-                .displayName(name != null ? name : username)
+                .displayName(displayName != null ? displayName : username)
                 .password(passwordEncoder.encode(UUID.randomUUID().toString()))
                 .bio("")
                 .bannerColor("#1da1f2")
@@ -197,13 +212,25 @@ public class AuthService {
         return user;
     }
 
+    private String normalizeUsername(String input) {
+        if (input == null)
+            return null;
+
+        String noWhitespace = WHITESPACE.matcher(input).replaceAll("");
+        String normalized = Normalizer.normalize(noWhitespace, Normalizer.Form.NFD);
+        String withoutAccents = DIACRITICS.matcher(normalized).replaceAll("");
+        return NONLATIN.matcher(withoutAccents).replaceAll("").toLowerCase();
+    }
+
     /* Puede mejorar */
     private String generateUniqueUsername(String base) {
-        String candidate = base.toLowerCase();
-        int i = 1;
+        String candidate = base;
+        int suffix = 1;
+
         while (userRepository.existsByUsernameIgnoreCase(candidate)) {
-            candidate = base + i++;
+            candidate = base + suffix++;
         }
+
         return candidate;
     }
 
