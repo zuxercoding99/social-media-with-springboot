@@ -216,6 +216,8 @@ public class AuthService {
         if (input == null)
             return null;
 
+        input = input.replaceAll("[\\p{Cf}]", "");
+
         String noWhitespace = WHITESPACE.matcher(input).replaceAll("");
         String normalized = Normalizer.normalize(noWhitespace, Normalizer.Form.NFD);
         String withoutAccents = DIACRITICS.matcher(normalized).replaceAll("");
