@@ -1,23 +1,69 @@
+![Banner](docs/img/banner.jpg)
+
 # Social Media Platform – Spring Boot & Vanilla Frontend
 
-**A full-stack social media application** built as a personal project to demonstrate my skills in backend development with **Spring Boot 3 and HTML, CSS and Vanilla JS.** This app enables users to register, post content with privacy controls, like and comment on posts, engage in real-time chat, and customize profiles with themes and avatars. Designed with a focus on security, performance, and scalability, it's ready for cloud deployment.
+**A full-stack social media application (Twitter-like)** built as a personal project to demonstrate my skills in **backend development with Spring Boot 3** and a **Vanilla HTML/CSS/JS frontend**.
 
-This project highlights my ability to build a complete application from scratch, leveraging AI-assisted development to accelerate frontend implementation efficiently, even with foundational knowledge in UI design and frontend programming. I'm eager to secure my first software engineering role—let's connect!
+The application allows users to authenticate securely (JWT + OAuth2), create and interact with posts, chat in real time, manage friendships, and customize their profiles. It was designed with a strong focus on **security, performance, and production readiness**, and is fully prepared for **Docker-based cloud deployment**.
+
+This project showcases my ability to design, implement, and deploy a complete system end‑to‑end.
 
 ---
 
-## Features
+![Feed](docs/img/feed.png)
 
-- **User Authentication:** Secure registration and login using JWT tokens, with role-based access (user/admin).
-- **Posts & Feed:** Create posts with text, images, and privacy levels (public, friends, private); paginated feed, likes, and comments.
-- **Profiles:** Customizable user profiles including bio, avatar uploads, birthdate, and theme modes (light/dark).
-- **Real-Time Chat:** Public chat room via WebSockets (STOMP), with support for private messaging.
-- **Media Handling:** Image uploads for posts and avatars (5MB limit), previews, and lightbox viewer.
-- **Themes & Effects:** Persistent light/dark modes using CSS variables, responsive design, and subtle animations like snowflake effects.
-- **Security & Performance:** Rate limiting, caching, password hashing (BCrypt), configurable CORS, and monitoring via Actuator.
-- **Admin Tools:** Automatic admin user seeding on startup, with Prometheus metrics exposure.
-- **Database Migrations:** Managed in production via Flyway, ensuring smooth, versioned schema updates.
-- **CI/CD:** Fully automated build and deployment pipeline using GitHub Actions, ready for cloud deployment.
+## ✨ Features
+
+- **Authentication & Authorization**
+
+  - JWT-based authentication
+  - OAuth2 login (Google)
+  - Refresh tokens for secure session renewal
+  - Role-based access control (USER / ADMIN)
+
+- **Posts & Feed**
+
+  - Create posts with text and images
+  - Privacy levels: public, friends-only, private
+  - Paginated feed, likes, and comments
+
+- **Profiles**
+
+  - Custom user profiles (bio, avatar, birthdate)
+  - Persistent light/dark theme per user
+
+- **Social Features**
+
+  - Friend requests and relationships
+  - Permission control per user and resource
+
+- **Real-Time Chat**
+
+  - Public chat room using WebSockets (STOMP)
+  - Private messaging support
+
+- **Media Handling**
+
+  - Image uploads for posts and avatars (5MB limit)
+  - File validation and previews
+
+- **Security & Performance**
+
+  - Password hashing with BCrypt
+  - Rate limiting by IP (Bucket4j)
+  - Caching with Caffeine
+  - Configurable CORS
+
+- **Admin & Observability**
+
+  - Automatic admin seeding on startup
+  - Actuator endpoints
+  - Micrometer + Prometheus metrics
+
+- **Database & Deployment**
+  - Flyway database migrations (production-ready)
+  - Dockerized setup
+  - CI/CD with GitHub Actions
 
 ---
 
@@ -25,74 +71,49 @@ This project highlights my ability to build a complete application from scratch,
 
 ### Backend
 
-- **Java 17** – Main language
-- **Spring Boot 3.5.x** – Core framework
-- **Spring Web (REST API)** – Controllers and endpoints
-- **Spring Data JPA** – ORM and database handling
-- **Spring Security + JWT (jjwt)** – Auth & role-based access
-- **Bean Validation (Jakarta Validation)** – Data validation
-- **Spring WebSocket** – Real-time communication
-- **Spring Cache + Caffeine** – Cache in local memory
-- **Bucket4j** – Rate limiting (protection against abuse)
-- **Spring Actuator** – Metrics and health checks
-- **Micrometer + Prometheus** – Observability
-- **Springdoc OpenAPI** – API documentation (Swagger UI)
-- **Apache Tika** – File analysis and validation
-- **Flyway** – Production-ready DB migrations
+- **Java 17**
+- **Spring Boot 3.5.x**
+- Spring Web (REST API)
+- Spring Data JPA (Hibernate)
+- Spring Security (JWT + OAuth2)
+- Spring WebSocket (STOMP)
+- Spring Cache + Caffeine
+- Bucket4j (rate limiting)
+- Spring Actuator
+- Micrometer + Prometheus
+- Springdoc OpenAPI (Swagger UI)
+- Apache Tika (file validation)
+- Flyway (DB migrations)
 
 ### Database
 
 - **H2** – Development
 - **PostgreSQL** – Production
-- **Hibernate (JPA Provider)** – ORM
+
+### Frontend
+
+- HTML5, CSS3 (responsive, light/dark mode)
+- Vanilla JavaScript
+- Fetch API
+- Browser state via localStorage
 
 ### Testing
 
-- **JUnit 5**
-- **Spring Boot Test**
+- JUnit 5
+- Spring Boot Test
 
 ### Build & Config
 
-- **Gradle**
-- **Profiles (dev / test / prod)**
-- **Environment variables ready for cloud deployment**
-- **CI/CD pipeline via GitHub Actions**
-
----
-
-## Frontend
-
-- **HTML5 & CSS3 (responsive, dark/light mode)**
-- **Vanilla JavaScript**
-- **Fetch API for backend communication**
-- **State handling in browser (localStorage)**
-
-## Security Highlights
-
-- JWT authentication
-- Role-based endpoint protection
-- Ownership validation (only owner can modify/delete resources)
-- Proper HTTP error handling (401, 403, 404)
-- Rate limiting by IP
-
----
-
-## Funcionalidades Principales
-
-- User registration & login
-- Post with content and media creation, viewing, deletion and like
-- Comment system
-- Friend relationships between users
-- Permission control per user
-- Persistent dark/light theme
-- Real-time chat via WebSockets
-- Interactive API documentation with Swagger
+- Gradle
+- Profiles: `dev`, `test`, `prod`
+- Environment-variable based configuration
+- GitHub Actions CI/CD pipeline
 
 ---
 
 ## Local Setup
 
-### Backend
+### Backend without docker
 
 ```bash
 ./gradlew build bootRun
@@ -104,15 +125,28 @@ Default active profile:
 dev
 ```
 
+### Backend with docker
+
+```bash
+docker build -t social-media . && docker run -d -p 8080:8080 --name social-media-container social-media
+
+```
+
+Default active profile:
+
+```text
+dev
+```
+
 ### Frontend
 
-Use a local server (e.g., Live Server).
+Use a local server with address localhost:5500 (e.g., Live Server).
 
 ---
 
-## API Documentation
+## 📖 API Documentation
 
-Disponible en:
+Swagger UI available at:
 
 ```text
 /swagger-ui.html
@@ -120,23 +154,11 @@ Disponible en:
 
 ---
 
-## Cloud Deployment
-
-- Prepared for any cloud deployment with docker
-- Supports environment-specific profiles and production database
+## Try it online - Cloud Deployment
 
 🔗 **Demo Online:**
-(Takes few minutes the backend to start because it's a free one)
 
 > [https://social-media-with-springboot-frontend.onrender.com/](https://social-media-with-springboot-frontend.onrender.com/)
-
----
-
-## Roadmap / Future Enhancements
-
-- Expanded integration tests
-- Notifications system
-- External image storage (S3)
 
 ---
 
@@ -153,9 +175,9 @@ Focus: Backend & Full-Stack Java
 
 ---
 
-⭐ Si este proyecto te resulta interesante, ¡no dudes en dejar una estrella!
+If you find this project interesting, feel free to give it a star! ⭐
 
-## 📸 Capturas
+## 📸 Screenshots
 
 ![Index](docs/img/index.png)
 ![Register](docs/img/register.png)
@@ -172,3 +194,4 @@ Focus: Backend & Full-Stack Java
 ![Edit](docs/img/editar.png)
 ![Edit](docs/img/editar2.png)
 ![Request](docs/img/requests.png)
+![Request](docs/img/refresh.png)
