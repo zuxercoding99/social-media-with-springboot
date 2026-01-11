@@ -10,7 +10,7 @@ This project showcases my ability to design, implement, and deploy a complete sy
 
 ---
 
-![Feed](docs/img/feed.png)
+![Feed](docs/img/feed_v2.png)
 
 ## ✨ Features
 
@@ -179,10 +179,10 @@ If you find this project interesting, feel free to give it a star! ⭐
 
 ## 📸 Screenshots
 
-![Index](docs/img/index.png)
-![Register](docs/img/register.png)
-![Login](docs/img/login.png)
-![Feed](docs/img/feed.png)
+![Index](docs/img/index_v2.png)
+![Register](docs/img/register_v2.png)
+![Login](docs/img/login_v2.png)
+![Feed](docs/img/feed_v2.png)
 ![Feed](docs/img/feed2.png)
 ![Profile](docs/img/user.png)
 ![Post](docs/img/post.png)
