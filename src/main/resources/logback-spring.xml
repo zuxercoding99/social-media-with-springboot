@@ -3,7 +3,21 @@
     <!-- Carpeta base -->
     <property name="LOG_HOME" value="./logs" />
 
-    <!-- Appender para errores -->
+    <!-- ===================== -->
+    <!-- APPENDER CONSOLA -->
+    <!-- ===================== -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>
+                %d{yyyy-MM-dd HH:mm:ss} [%X{logType}] [%thread] %-5level %logger{36} - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+
+    <!-- ===================== -->
+    <!-- APPENDERS ARCHIVO -->
+    <!-- ===================== -->
+
     <appender name="ERRORS" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_HOME}/errors.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
@@ -11,11 +25,12 @@
             <maxHistory>30</maxHistory>
         </rollingPolicy>
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>
+                %d{yyyy-MM-dd HH:mm:ss} [ERRORS] [%thread] %-5level %logger{36} - %msg%n
+            </pattern>
         </encoder>
     </appender>
 
-    <!-- Appender para unexpected errors -->
     <appender name="UNEXPECTED_ERRORS" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_HOME}/unexpected_errors.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
@@ -23,11 +38,12 @@
             <maxHistory>30</maxHistory>
         </rollingPolicy>
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>
+                %d{yyyy-MM-dd HH:mm:ss} [UNEXPECTED_ERRORS] [%thread] %-5level %logger{36} - %msg%n
+            </pattern>
         </encoder>
     </appender>
 
-    <!-- Appender para requests -->
     <appender name="REQUESTS" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_HOME}/requests.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
@@ -35,11 +51,12 @@
             <maxHistory>30</maxHistory>
         </rollingPolicy>
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>
+                %d{yyyy-MM-dd HH:mm:ss} [REQUESTS] [%thread] %-5level %logger{36} - %msg%n
+            </pattern>
         </encoder>
     </appender>
 
-    <!-- Appender para security -->
     <appender name="SECURITY" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_HOME}/security.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
@@ -47,36 +64,49 @@
             <maxHistory>30</maxHistory>
         </rollingPolicy>
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>
+                %d{yyyy-MM-dd HH:mm:ss} [SECURITY] [%thread] %-5level %logger{36} - %msg%n
+            </pattern>
         </encoder>
     </appender>
 
-    <!-- Asociar cada logger a su archivo -->
-    <logger name="errors" level="WARN" additivity="false">
+    <!-- ===================== -->
+    <!-- LOGGERS -->
+    <!-- ===================== -->
+
+    <logger name="errors" level="WARN">
         <appender-ref ref="ERRORS" />
+        <appender-ref ref="STDOUT" />
+        <MDCKey>logType</MDCKey>
+        <MDCValue>ERRORS</MDCValue>
     </logger>
 
-    <logger name="unexpected_errors" level="ERROR" additivity="false">
+    <logger name="unexpected_errors" level="ERROR">
         <appender-ref ref="UNEXPECTED_ERRORS" />
+        <appender-ref ref="STDOUT" />
+        <MDCKey>logType</MDCKey>
+        <MDCValue>UNEXPECTED_ERRORS</MDCValue>
     </logger>
 
-    <logger name="requests" level="INFO" additivity="false">
+    <logger name="requests" level="INFO">
         <appender-ref ref="REQUESTS" />
+        <appender-ref ref="STDOUT" />
+        <MDCKey>logType</MDCKey>
+        <MDCValue>REQUESTS</MDCValue>
     </logger>
 
-    <logger name="security" level="INFO" additivity="false">
+    <logger name="security" level="INFO">
         <appender-ref ref="SECURITY" />
+        <appender-ref ref="STDOUT" />
+        <MDCKey>logType</MDCKey>
+        <MDCValue>SECURITY</MDCValue>
     </logger>
 
-    <!-- Consola -->
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n</pattern>
-        </encoder>
-    </appender>
-
-    <!-- Root logger -->
+    <!-- ===================== -->
+    <!-- ROOT -->
+    <!-- ===================== -->
     <root level="INFO">
         <appender-ref ref="STDOUT" />
     </root>
+
 </configuration>
