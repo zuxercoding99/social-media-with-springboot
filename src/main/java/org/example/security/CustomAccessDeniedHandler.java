@@ -2,6 +2,7 @@ package org.example.security;
 
 import java.io.IOException;
 
+import org.example.util.ClientIpUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -28,7 +29,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
         log.warn("403 Forbidden [{} {}] user={} ip={}",
                 req.getMethod(), req.getRequestURI(),
                 SecurityContextHolder.getContext().getAuthentication().getName(),
-                req.getRemoteAddr());
+                ClientIpUtils.getClientIp(req));
 
         ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.FORBIDDEN);
         pd.setTitle("Access Denied");

@@ -3,6 +3,7 @@ package org.example.filter;
 import java.io.IOException;
 import java.util.UUID;
 
+import org.example.util.ClientIpUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -40,7 +41,7 @@ public class ExceptionLoggingFilter extends OncePerRequestFilter {
         } catch (Exception ex) {
             logError.error("UNEXPECTED 500 [{} {}] user={} ip={} error={}",
                     req.getMethod(), req.getRequestURI(),
-                    currentUser(), req.getRemoteAddr(), ex.getMessage(), ex);
+                    currentUser(), ClientIpUtils.getClientIp(req), ex.getMessage(), ex);
 
             ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.INTERNAL_SERVER_ERROR);
             pd.setTitle("Internal Server Error");
@@ -53,7 +54,7 @@ public class ExceptionLoggingFilter extends OncePerRequestFilter {
             long duration = System.currentTimeMillis() - start;
             log.info("[{} {}] user={} ip={} status={} duration={}ms requestId={}",
                     req.getMethod(), req.getRequestURI(),
-                    currentUser(), req.getRemoteAddr(), res.getStatus(), duration, requestId);
+                    currentUser(), ClientIpUtils.getClientIp(req), res.getStatus(), duration, requestId);
             MDC.clear();
         }
     }

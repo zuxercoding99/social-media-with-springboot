@@ -5,6 +5,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 
 import org.example.exception.customs.httpstatus.HttpStatusException;
+import org.example.util.ClientIpUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -63,7 +64,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         String requestId = MDC.get("requestId");
         String method = request.getHttpMethod().name();
         String uri = request.getRequest().getRequestURI();
-        String clientIp = request.getRequest().getRemoteAddr();
+        String clientIp = ClientIpUtils.getClientIp(request.getRequest());
+
         String user = getUserFromSecurityContext();
         String creds = (ex instanceof AuthenticationException || ex instanceof JwtException
                 || ex instanceof AccessDeniedException)
