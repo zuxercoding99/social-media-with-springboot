@@ -8,4 +8,4 @@ FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 COPY --from=builder /app/build/libs/defaultsecurity-1.0.0.jar app.jar
 EXPOSE 8080
-ENTRYPOINT ["java","-XX:+UseG1GC","-XX:MaxRAMPercentage=42","-XX:InitialRAMPercentage=20","-XX:MaxMetaspaceSize=140m","-XX:CompressedClassSpaceSize=48m","-XX:+ExitOnOutOfMemoryError","-jar","app.jar","--spring.profiles.active=devdeploy"]
+ENTRYPOINT ["java","-XX:+UseG1GC","-XX:MaxRAMPercentage=42","-XX:InitialRAMPercentage=20","-XX:MaxMetaspaceSize=140m","-XX:CompressedClassSpaceSize=48m","-XX:+ExitOnOutOfMemoryError","-jar","app.jar"]
