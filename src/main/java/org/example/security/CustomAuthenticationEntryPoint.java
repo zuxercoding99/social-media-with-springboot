@@ -2,6 +2,7 @@ package org.example.security;
 
 import java.io.IOException;
 
+import org.example.util.ClientIpUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -24,7 +25,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
     @Override
     public void commence(HttpServletRequest req, HttpServletResponse res,
             AuthenticationException ex) throws IOException {
-        log.warn("401 Unauthorized [{} {}] ip={}", req.getMethod(), req.getRequestURI(), req.getRemoteAddr());
+        log.warn("401 Unauthorized [{} {}] ip={}", req.getMethod(), req.getRequestURI(), ClientIpUtils.getClientIp(req));
 
         ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.UNAUTHORIZED);
         pd.setTitle("Unauthorized");
