@@ -4,7 +4,7 @@
 
 **A full-stack social media application (Twitter-like)** built as a personal project to demonstrate my skills in **backend development with Spring Boot 3** and a **Vanilla HTML/CSS/JS frontend**.
 
-The application allows users to authenticate securely (JWT + OAuth2), create and interact with posts, chat in real time, manage friendships, and customize their profiles. It was designed with a strong focus on **security, performance, and production readiness**, and is fully prepared for **Docker-based cloud deployment**.
+The application allows users to authenticate securely (JWT + OAuth2), create and interact with posts, chat in real time, manage friendships, and customize their profiles. It was designed with a strong focus on **security, performance, and production readiness**, including **backend observability through metrics and centralized logging** and is fully prepared for **Docker-based cloud deployment**.
 
 This project showcases my ability to design, implement, and deploy a complete system end‑to‑end.
 
@@ -15,50 +15,43 @@ This project showcases my ability to design, implement, and deploy a complete sy
 ## ✨ Features
 
 - **Authentication & Authorization**
-
   - JWT-based authentication
   - OAuth2 login (Google)
   - Refresh tokens for secure session renewal
   - Role-based access control (USER / ADMIN)
 
 - **Posts & Feed**
-
   - Create posts with text and images
   - Privacy levels: public, friends-only, private
   - Paginated feed, likes, and comments
 
 - **Profiles**
-
   - Custom user profiles (bio, avatar, birthdate)
   - Persistent light/dark theme per user
 
 - **Social Features**
-
   - Friend requests and relationships
   - Permission control per user and resource
 
 - **Real-Time Chat**
-
   - Public chat room using WebSockets (STOMP)
   - Private messaging support
 
 - **Media Handling**
-
   - Image uploads for posts and avatars (5MB limit)
   - File validation and previews
 
 - **Security & Performance**
-
   - Password hashing with BCrypt
   - Rate limiting by IP (Bucket4j)
   - Caching with Caffeine
   - Configurable CORS
 
 - **Admin & Observability**
-
-  - Automatic admin seeding on startup
-  - Actuator endpoints
-  - Micrometer + Prometheus metrics
+  - Spring Boot Actuator endpoints for health checks and runtime insights
+  - Micrometer metrics exported to Prometheus
+  - Application and JVM metrics visualization via Grafana dashboards
+  - Centralized application logging for production monitoring
 
 - **Database & Deployment**
   - Flyway database migrations (production-ready)
@@ -80,7 +73,11 @@ This project showcases my ability to design, implement, and deploy a complete sy
 - Spring Cache + Caffeine
 - Bucket4j (rate limiting)
 - Spring Actuator
-- Micrometer + Prometheus
+- Spring Boot Actuator (health, metrics, monitoring)
+- Micrometer (metrics instrumentation)
+- Prometheus (metrics scraping)
+- Grafana (metrics visualization)
+- Centralized logging (Better Stack – SaaS)
 - Springdoc OpenAPI (Swagger UI)
 - Apache Tika (file validation)
 - Flyway (DB migrations)
@@ -194,4 +191,11 @@ If you find this project interesting, feel free to give it a star! ⭐
 ![Edit](docs/img/editar.png)
 ![Edit](docs/img/editar2.png)
 ![Request](docs/img/requests.png)
+
+## Refresh token working
+
 ![Request](docs/img/refresh.png)
+
+## Centralized logging using Better Stack (SaaS)
+
+![Request](docs/img/logs.png)
