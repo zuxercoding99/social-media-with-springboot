@@ -129,6 +129,7 @@ public class SecurityConfig {
 
                     chain.doFilter(req, res);
                 } catch (JwtException | UsernameNotFoundException ex) {
+                    SecurityContextHolder.clearContext();
                     // 🔐 Token inválido o usuario inexistente → 401
                     res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     res.setContentType("application/json");
@@ -138,6 +139,7 @@ public class SecurityConfig {
                                   "message": "Invalid or expired token"
                                 }
                             """);
+                    return;
                 }
 
             }
