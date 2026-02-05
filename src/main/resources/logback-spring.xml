@@ -1,4 +1,4 @@
-<configuration scan="true">
+<configuration>
 
     <!-- Carpeta base -->
     <property name="LOG_HOME" value="./logs" />
