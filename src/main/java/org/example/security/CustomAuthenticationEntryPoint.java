@@ -25,7 +25,8 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
     @Override
     public void commence(HttpServletRequest req, HttpServletResponse res,
             AuthenticationException ex) throws IOException {
-        log.warn("401 Unauthorized [{} {}] ip={}", req.getMethod(), req.getRequestURI(), ClientIpUtils.getClientIp(req));
+        log.warn("401 Unauthorized [{} {}] ip={}", req.getMethod(), req.getRequestURI(),
+                ClientIpUtils.getClientIp(req));
 
         ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.UNAUTHORIZED);
         pd.setTitle("Unauthorized");
